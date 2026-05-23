@@ -83,7 +83,125 @@
     </section>
 
 
-    <section class="features" id="features">
+    <section class="workshop" id="workshop">
+        <div class="container">
+            <h2>Workshop Management</h2>
+            <div class="workshop-grid">
+                <div class="workshop-card">
+                    <h3>Today's Tasks</h3>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-text">Replace rear tires on Kart #3</span>
+                            <span class="task-status pending">Pending</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">Check brake pads on all karts</span>
+                            <span class="task-status in-progress">In Progress</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">Engine tune-up for Kart #1</span>
+                            <span class="task-status completed">Completed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="workshop-card">
+                    <h3>Parts Inventory</h3>
+                    <div class="inventory-list">
+                        <div class="inventory-item">
+                            <span class="part-name">Rear Tires (Set)</span>
+                            <span class="part-qty">12 sets</span>
+                        </div>
+                        <div class="inventory-item">
+                            <span class="part-name">Brake Pads</span>
+                            <span class="part-qty">24 pcs</span>
+                        </div>
+                        <div class="inventory-item">
+                            <span class="part-name">Engine Oil</span>
+                            <span class="part-qty">8 liters</span>
+                        </div>
+                        <div class="inventory-item">
+                            <span class="part-name">Spark Plugs</span>
+                            <span class="part-qty">30 pcs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="workshop-card">
+                    <h3>Service Schedule</h3>
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <span class="kart-name">Kart #1</span>
+                            <span class="service-date">Today 14:00</span>
+                            <span class="service-type">Engine Tune</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="kart-name">Kart #2</span>
+                            <span class="service-date">Today 16:30</span>
+                            <span class="service-type">Brake Inspection</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="kart-name">Kart #3</span>
+                            <span class="service-date">Tomorrow 09:00</span>
+                            <span class="service-type">Tire Change</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="dashboard" id="dashboard">
+        <div class="container">
+            <h2>Real-time Data Visualization</h2>
+            <div class="dashboard-grid">
+                <div class="chart-card">
+                    <h3>Lap Time Trends</h3>
+                    <div class="chart-placeholder">
+                        <div class="chart-title">Average Lap Time (Last 10 Sessions)</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" style="height: 80%;"></div>
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 90%;"></div>
+                            <div class="chart-bar" style="height: 70%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                        </div>
+                        <div class="chart-labels">Mon Tue Wed Thu Fri</div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Speed Distribution</h3>
+                    <div class="chart-placeholder">
+                        <div class="chart-title">Top Speeds Today</div>
+                        <div class="chart-pie-placeholder">
+                            <div class="pie-segment" style="background: var(--accent-primary); width: 40%; height: 40%;"></div>
+                            <div class="pie-segment" style="background: var(--accent-secondary); width: 30%; height: 30%;"></div>
+                            <div class="pie-segment" style="background: var(--accent-success); width: 20%; height: 20%;"></div>
+                            <div class="pie-segment" style="background: var(--accent-danger); width: 10%; height: 10%;"></div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-primary);"></span> < 80 km/h</div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-secondary);"></span> 80-90 km/h</div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-success);"></span> 90-100 km/h</div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-danger);"></span> > 100 km/h</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Engine Temperature</h3>
+                    <div class="chart-placeholder">
+                        <div class="chart-title">Temperature Over Time (Kart #1)</div>
+                        <div class="chart-line-container">
+                            <div class="chart-line" style="--points: '20,80 40,60 60,75 80,70 100,65';"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+ id="features">
         <div class="container">
             <h2>Key Features</h2>
             <div class="features-grid">
