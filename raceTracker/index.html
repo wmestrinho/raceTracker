@@ -15,6 +15,7 @@
     <meta name="twitter:title" content="raceTracker | Karting Operations & Telemetry">
     <meta name="twitter:description" content="Live telemetry, workshop workflow, and race operations in one interface.">
     <meta name="twitter:image" content="https://tracker.absolutelyplausible.com/assets/images/racetracker-logo.png">
+    <meta name="theme-color" content="#384AD3">
     <link rel="canonical" href="https://tracker.absolutelyplausible.com/">
     <link rel="icon" type="image/png" href="assets/images/racetracker-logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
@@ -41,7 +42,7 @@
     <section class="hero" id="home">
         <div class="container">
             <h1>raceTracker</h1>
-            <p>Edgy Futuristic Mechanic Shop Management</p>
+            <p>Karting operations, workshop execution, and telemetry visibility in one lightweight interface.</p>
             <div class="button-grid">
                 <a href="#dashboard" class="btn-primary">Track Dashboard</a>
                 <a href="#parts" class="btn-primary">Parts Management</a>
@@ -57,7 +58,9 @@
     <section class="telemetry" id="telemetry">
         <div class="container">
             <h2>Live Telemetry</h2>
-            <div class="telemetry-grid">
+            <p class="section-lead">Snapshot values with lightweight live variance for UI demonstration.</p>
+            <p class="telemetry-meta">Data updated: <span id="telemetry-updated-at">loading...</span></p>
+            <div class="telemetry-grid" aria-live="polite">
                 <div class="telemetry-card">
                     <h3>Kart #1</h3>
                     <div class="telemetry-data">
@@ -222,6 +225,7 @@
     <section class="features" id="features">
         <div class="container">
             <h2>Key Features</h2>
+            <p class="section-lead">Focused modules for race-day execution and between-session maintenance.</p>
             <div class="features-grid">
                 <div class="feature-card">
                     <h3>Real-time Tracking</h3>
@@ -314,10 +318,10 @@
     <footer role="contentinfo">
         <div class="container">
             <p>&copy; 2026 raceTracker.</p>
-            <div class="social">
-                <a href="#">LinkedIn</a>
-                <a href="#">Facebook</a>
-                <a href="#">Instagram</a>
+            <div class="social" aria-label="Social links">
+                <a href="#" aria-label="LinkedIn profile">LinkedIn</a>
+                <a href="#" aria-label="Facebook page">Facebook</a>
+                <a href="#" aria-label="Instagram profile">Instagram</a>
             </div>
         </div>
     </footer>

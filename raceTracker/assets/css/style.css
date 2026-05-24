@@ -118,9 +118,23 @@ header nav ul li a:hover::after {
     font-size: 1.25rem;
     color: var(--text-secondary);
     margin-bottom: 2rem;
-    max-width: 600px;
+    max-width: 720px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.section-lead {
+    max-width: 760px;
+    margin: 0 auto 1.75rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.telemetry-meta {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: -1rem 0 1.75rem;
 }
 .btn-primary {
     display: inline-block;

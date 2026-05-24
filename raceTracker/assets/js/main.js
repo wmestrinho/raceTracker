@@ -87,6 +87,14 @@ async function initTelemetryUpdates() {
     const state = (data.karts || []).slice(0, 2);
     if (state.length < 2) return;
 
+    const updatedAtEl = document.getElementById('telemetry-updated-at');
+    if (updatedAtEl && data.updatedAt) {
+        const parsed = new Date(data.updatedAt);
+        updatedAtEl.textContent = Number.isNaN(parsed.getTime())
+            ? data.updatedAt
+            : parsed.toLocaleString();
+    }
+
     setTelemetryCard(cards[0], state[0]);
     setTelemetryCard(cards[1], state[1]);
 
