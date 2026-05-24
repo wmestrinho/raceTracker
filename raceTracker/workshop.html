@@ -37,30 +37,44 @@
           <h1>Workshop</h1>
           <p>Maintenance workflow and service queue</p>
         </div>
+        <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </header>
       <main id="main-content" class="content" role="main">
         
 <section class="page-grid">
-  <div class="card split-2">
-    <h3>Today's Tasks</h3>
-    <table class="table" style="margin-top:.6rem;"><tbody>
-      <tr><td>Replace rear tires on Kart #3</td><td><span class="badge warn">Pending</span></td></tr>
-      <tr><td>Brake pad check all karts</td><td><span class="badge warn">In progress</span></td></tr>
-      <tr><td>Engine tune Kart #1</td><td><span class="badge ok">Done</span></td></tr>
-    </tbody></table>
+  <div class="kpi-grid full">
+    <div class="card kpi"><p class="label">My open tasks</p><p class="value" data-my-task-count>--</p><p class="delta up" data-my-task-owner>Choose mechanic</p></div>
+    <div class="card kpi"><p class="label">Team queue</p><p class="value">6</p><p class="delta warn">3 mechanics active</p></div>
+    <div class="card kpi"><p class="label">Due now</p><p class="value" data-my-due-count>--</p><p class="delta down">Personal accountability</p></div>
+    <div class="card kpi"><p class="label">Handoff notes</p><p class="value">4</p><p class="delta up">Visible to crew</p></div>
+  </div>
+  <div class="card full mechanic-panel">
+    <h3>Mechanic-owned task board</h3>
+    <p class="muted-copy">Each mechanic selects their profile, sees their assigned queue highlighted, and works from their own task ownership column.</p>
+    <table class="table mechanic-task-table" style="margin-top:.8rem;">
+      <thead><tr><th>Owner</th><th>Kart</th><th>Task</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr data-owner="Luiz" data-due="now"><td>Luiz</td><td>Kart #3</td><td>Rear axle alignment</td><td>Now</td><td><span class="badge alert">Due now</span></td></tr>
+        <tr data-owner="Luiz" data-due="next"><td>Luiz</td><td>Kart #1</td><td>Fuel line inspection</td><td>14:00</td><td><span class="badge warn">Pending</span></td></tr>
+        <tr data-owner="Leo" data-due="now"><td>Leo</td><td>Kart #2</td><td>Brake pad check</td><td>Now</td><td><span class="badge warn">In progress</span></td></tr>
+        <tr data-owner="Leo" data-due="next"><td>Leo</td><td>Kart #4</td><td>Front-end toe reset</td><td>15:30</td><td><span class="badge warn">Pending</span></td></tr>
+        <tr data-owner="Nico" data-due="next"><td>Nico</td><td>Kart #1</td><td>Telemetry sensor QA</td><td>16:30</td><td><span class="badge ok">Ready</span></td></tr>
+        <tr data-owner="Paula" data-due="next"><td>Paula</td><td>Team</td><td>Session staging checklist</td><td>17:00</td><td><span class="badge warn">Prep</span></td></tr>
+      </tbody>
+    </table>
   </div>
   <div class="card split-2">
-    <h3>Service Queue</h3>
-    <table class="table" style="margin-top:.6rem;"><tbody>
-      <tr><td>Kart #1</td><td>14:00</td><td>Engine tune</td></tr>
-      <tr><td>Kart #2</td><td>16:30</td><td>Brake inspection</td></tr>
-      <tr><td>Kart #3</td><td>09:00 tomorrow</td><td>Tire change</td></tr>
-    </tbody></table>
+    <h3>My current focus</h3>
+    <p class="mechanic-focus" data-my-focus>Select a mechanic to load your queue.</p>
+  </div>
+  <div class="card split-2">
+    <h3>Handoff rule</h3>
+    <p class="muted-copy">No anonymous tasks: every workshop item must have one owner, one kart or team target, one due window, and one visible status.</p>
   </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.3.1</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.4.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

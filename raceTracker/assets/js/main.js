@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initSidebarToggle();
   initActiveNav();
+  initMechanicContext();
   initTelemetryUpdates();
 });
 
@@ -34,6 +35,69 @@ function initActiveNav() {
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
     if (link.getAttribute('data-page') === bodyPage) link.classList.add('active');
   });
+}
+
+function initMechanicContext() {
+  const storageKey = 'raceTracker.mechanicProfile';
+  const mechanics = ['Luiz', 'Leo', 'Nico', 'Paula'];
+  const slots = document.querySelectorAll('[data-mechanic-slot]');
+  if (!slots.length) return;
+
+  const getSelected = () => localStorage.getItem(storageKey) || mechanics[0];
+  const saveSelected = (name) => {
+    localStorage.setItem(storageKey, name);
+    renderMechanicSlots(name);
+    updateMechanicOwnedTasks(name);
+  };
+
+  function renderMechanicSlots(selected) {
+    slots.forEach(slot => {
+      slot.innerHTML = `
+        <label class="mechanic-switcher">
+          <span>Mechanic</span>
+          <select data-mechanic-select aria-label="Select mechanic profile">
+            ${mechanics.map(name => `<option value="${name}" ${name === selected ? 'selected' : ''}>${name}</option>`).join('')}
+          </select>
+        </label>
+      `;
+      slot.querySelector('[data-mechanic-select]').addEventListener('change', (event) => {
+        saveSelected(event.target.value);
+      });
+    });
+  }
+
+  renderMechanicSlots(getSelected());
+  updateMechanicOwnedTasks(getSelected());
+}
+
+function updateMechanicOwnedTasks(mechanic) {
+  const rows = document.querySelectorAll('[data-owner]');
+  if (!rows.length) return;
+
+  let myOpenTasks = 0;
+  let myDueTasks = 0;
+  const focusItems = [];
+
+  rows.forEach(row => {
+    const isMine = row.getAttribute('data-owner') === mechanic;
+    row.classList.toggle('is-my-task', isMine);
+    if (!isMine) return;
+
+    myOpenTasks += 1;
+    if (row.getAttribute('data-due') === 'now') myDueTasks += 1;
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 4) focusItems.push(`${cells[1].textContent}: ${cells[2].textContent} (${cells[3].textContent})`);
+  });
+
+  const taskCount = document.querySelector('[data-my-task-count]');
+  const dueCount = document.querySelector('[data-my-due-count]');
+  const owner = document.querySelector('[data-my-task-owner]');
+  const focus = document.querySelector('[data-my-focus]');
+
+  if (taskCount) taskCount.textContent = String(myOpenTasks);
+  if (dueCount) dueCount.textContent = String(myDueTasks);
+  if (owner) owner.textContent = `${mechanic}'s queue`;
+  if (focus) focus.textContent = focusItems.length ? focusItems.join(' · ') : `${mechanic} has no assigned tasks right now.`;
 }
 
 async function initTelemetryUpdates() {

@@ -258,6 +258,57 @@ a { color: inherit; text-decoration: none; }
 }
 .footer a { color: var(--primary-dark); font-weight: 800; }
 
+.muted-copy {
+  color: var(--muted);
+  margin-top: .45rem;
+  line-height: 1.5;
+}
+
+.mechanic-slot {
+  margin-left: auto;
+}
+.mechanic-switcher {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.mechanic-switcher select {
+  appearance: none;
+  border: 1px solid var(--accent-blue);
+  border-radius: 0;
+  background: linear-gradient(90deg, var(--primary-soft), #fff);
+  color: var(--ink);
+  font-weight: 900;
+  padding: .46rem 2rem .46rem .65rem;
+  box-shadow: 0 0 0 3px rgba(18,157,240,.08);
+}
+.settings-profile {
+  margin-top: .85rem;
+}
+.settings-profile .mechanic-switcher {
+  align-items: flex-start;
+  flex-direction: column;
+}
+.mechanic-task-table tr.is-my-task td {
+  background: linear-gradient(90deg, rgba(191,255,0,.25), rgba(18,157,240,.08));
+  border-bottom-color: rgba(18,157,240,.28);
+  font-weight: 800;
+}
+.mechanic-task-table tr.is-my-task td:first-child {
+  box-shadow: inset 4px 0 0 var(--primary);
+}
+.mechanic-focus {
+  color: var(--text);
+  margin-top: .55rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 @media (max-width: 980px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar {
