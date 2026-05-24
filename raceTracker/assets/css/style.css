@@ -248,6 +248,36 @@ header nav ul li a:hover::after {
     font-size: 1.1rem;
     line-height: 1.8;
 }
+
+/* Contact Section */
+.contact {
+    padding: 4rem 0;
+}
+
+.contact h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.contact-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.contact-info p,
+.contact-info a {
+    color: var(--text-secondary);
+}
+
+.contact-info .btn-secondary {
+    color: var(--text-primary);
+}
+
 /* Footer */
 footer {
     background-color: var(--bg-darker);
