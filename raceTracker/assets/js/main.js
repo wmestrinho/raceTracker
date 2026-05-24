@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initChartInteractions();
     initTelemetryUpdates();
     initWorkshopInteractions();
+    initMobileNav();
 });
 
 function initChartInteractions() {
@@ -127,6 +128,31 @@ function initWorkshopInteractions() {
             statusSpan.className = `task-status ${nextStatus}`;
             statusSpan.textContent = nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1).replace('-', ' ');
         });
+    });
+}
+
+function initMobileNav() {
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.primary-nav');
+    if (!toggle || !nav) return;
+
+    toggle.addEventListener('click', () => {
+        const isOpen = nav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    nav.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', () => {
+            nav.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!nav.contains(event.target) && !toggle.contains(event.target)) {
+            nav.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
     });
 }
 

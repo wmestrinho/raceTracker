@@ -27,7 +27,12 @@
             <div class="logo">
                 <img src="assets/images/racetracker-logo.png" alt="raceTracker Logo">
             </div>
-            <nav aria-label="Primary navigation">
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Toggle navigation menu">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation">
                 <ul>
                     <li><a href="#home">Home</a></li>
                     <li><a href="#features">Features</a></li>
@@ -189,6 +194,13 @@
                             <div class="chart-bar" style="height: 85%;"></div>
                         </div>
                         <div class="chart-labels">Mon Tue Wed Thu Fri</div>
+                        <div class="chart-values" aria-label="Lap time values">
+                            <span>45.2s</span>
+                            <span>46.1s</span>
+                            <span>44.8s</span>
+                            <span>45.6s</span>
+                            <span>45.0s</span>
+                        </div>
                     </div>
                 </div>
                 <div class="chart-card">
@@ -202,10 +214,10 @@
                             <div class="pie-segment" style="background: var(--accent-danger); width: 10%; height: 10%;"></div>
                         </div>
                         <div class="chart-legend">
-                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-primary);"></span> < 80 km/h</div>
-                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-secondary);"></span> 80-90 km/h</div>
-                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-success);"></span> 90-100 km/h</div>
-                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-danger);"></span> > 100 km/h</div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-primary);"></span> < 80 km/h <strong>40%</strong></div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-secondary);"></span> 80-90 km/h <strong>30%</strong></div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-success);"></span> 90-100 km/h <strong>20%</strong></div>
+                            <div class="legend-item"><span class="legend-color" style="background: var(--accent-danger);"></span> > 100 km/h <strong>10%</strong></div>
                         </div>
                     </div>
                 </div>
@@ -215,6 +227,11 @@
                         <div class="chart-title">Temperature Over Time (Kart #1)</div>
                         <div class="chart-line-container">
                             <div class="chart-line" style="--points: '20,80 40,60 60,75 80,70 100,65';"></div>
+                        </div>
+                        <div class="temp-metrics" aria-label="Temperature metrics">
+                            <span class="metric-chip">Min 82°C</span>
+                            <span class="metric-chip">Avg 85°C</span>
+                            <span class="metric-chip">Peak 89°C</span>
                         </div>
                     </div>
                 </div>
@@ -317,10 +334,9 @@
     <footer role="contentinfo">
         <div class="container">
             <p>&copy; 2026 raceTracker.</p>
-            <div class="social" aria-label="Social links">
-                <a href="#" aria-label="LinkedIn profile">LinkedIn</a>
-                <a href="#" aria-label="Facebook page">Facebook</a>
-                <a href="#" aria-label="Instagram profile">Instagram</a>
+            <div class="social" aria-label="Links">
+                <a href="https://absolutelyplausible.com" target="_blank" rel="noopener" aria-label="Absolutely Plausible website">Absolutely Plausible</a>
+                <a href="https://robotfantome.com" target="_blank" rel="noopener" aria-label="Robot Fantôme website">Robot Fantôme</a>
             </div>
         </div>
     </footer>

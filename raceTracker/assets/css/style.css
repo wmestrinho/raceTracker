@@ -61,6 +61,22 @@ header nav ul {
     list-style: none;
     gap: 2rem;
 }
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 0.3rem;
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+.nav-toggle-bar {
+    width: 20px;
+    height: 2px;
+    background: var(--text-primary);
+    display: block;
+}
 header nav ul li a {
     color: var(--text-secondary);
     text-decoration: none;
@@ -424,6 +440,16 @@ footer .social a:hover {
         font-size: 0.8rem;
         gap: 0.35rem;
     }
+    .chart-values {
+        font-size: 0.75rem;
+    }
+    .temp-metrics {
+        gap: 0.35rem;
+    }
+    .metric-chip {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.45rem;
+    }
     .contact-info p {
         font-size: 0.9rem;
     }
@@ -551,6 +577,42 @@ input:focus-visible,
         padding: 0.6rem 1.2rem;
         font-size: 0.9rem;
     }
+
+    .nav-toggle {
+        display: inline-flex;
+    }
+
+    .primary-nav {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 1rem;
+        background: var(--bg-card);
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        padding: 0.5rem;
+        display: none;
+        min-width: 180px;
+    }
+
+    .primary-nav.is-open {
+        display: block;
+    }
+
+    .primary-nav ul {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .primary-nav a {
+        display: block;
+        padding: 0.55rem 0.6rem;
+        border-radius: 6px;
+    }
+
+    .primary-nav a:hover {
+        background: var(--bg-darker);
+    }
 }
 
 @media (max-width: 480px) {
@@ -564,4 +626,48 @@ input:focus-visible,
         padding: 0.5rem 1rem;
         font-size: 0.85rem;
     }
+
+    .primary-nav {
+        left: 0.5rem;
+        right: 0.5rem;
+        min-width: auto;
+    }
+}
+
+.chart-values {
+    margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.35rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.chart-values span {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    padding: 0.2rem 0.3rem;
+}
+
+.legend-item strong {
+    margin-left: 0.3rem;
+    color: var(--text-primary);
+}
+
+.temp-metrics {
+    margin-top: 0.8rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.metric-chip {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: rgba(56,74,211,0.08);
+    border: 1px solid rgba(56,74,211,0.2);
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
 }
