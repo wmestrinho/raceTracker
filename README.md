@@ -57,3 +57,31 @@ Roadmap (next)
 - Replace simulated telemetry with live/API-backed data source.
 - Accessibility pass: focus states, semantics, contrast.
 - SEO/social metadata: description, OG tags, favicon set.
+
+---
+
+## AI Agent Handoff
+
+Canonical local path:
+- `/Users/wmestrinho/Workspace/Projects/raceTracker`
+
+Legacy local path:
+- `/Users/wmestrinho/.openclaw/workspace/projects/raceTracker`
+
+Before editing:
+- Read `AGENTS.md`.
+- Check `git status --short --branch`.
+- Preserve any project-specific instructions in `CLAUDE.md`.
+
+Deployment notes:
+- Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
+
+Version rule:
+- Current baseline version: `v0.1.0 alpha`
+- Keep version source documented.
+- Web UIs must visibly display the version.
+
+Validation:
+- Run `python3 scripts/validate_agent_baseline.py`.
+- Also run project-specific tests/builds when present.
+
