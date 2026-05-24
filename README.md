@@ -6,9 +6,16 @@ Live site
 - https://tracker.absolutelyplausible.com
 
 Canonical project structure (single source of truth)
-- raceTracker/index.html
+- raceTracker/index.html (overview)
+- raceTracker/telemetry/index.html
+- raceTracker/workshop/index.html
+- raceTracker/inventory/index.html
+- raceTracker/schedule/index.html
+- raceTracker/team/index.html
+- raceTracker/settings/index.html
 - raceTracker/assets/css/style.css
 - raceTracker/assets/js/main.js
+- raceTracker/assets/data/telemetry.json
 - raceTracker/assets/images/racetracker-logo.png
 
 Deployment

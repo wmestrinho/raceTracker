@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overview | raceTracker</title>
+  <title>Inventory | raceTracker</title>
   <meta name="description" content="raceTracker karting operations dashboard">
   <meta name="theme-color" content="#384AD3">
   <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="overview">
+<body data-page="inventory">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Primary">
@@ -34,8 +34,8 @@
     <div class="main">
       <header class="topbar" role="banner">
         <div>
-          <h1>Overview</h1>
-          <p>Trackside status and priorities</p>
+          <h1>Inventory</h1>
+          <p>Parts stock, reorder points, shortages</p>
         </div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu">Menu</button>
       </header>
@@ -43,34 +43,16 @@
         
 <section class="page-grid">
   <div class="card full">
-    <h2>Race-day Command Center</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Multi-page operations dashboard for telemetry, workshop throughput, inventory readiness, team coordination, and schedule execution.</p>
-  </div>
-  <div class="kpi-grid full">
-    <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
-    <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
-    <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
-    <div class="card kpi"><p class="label">Upcoming sessions</p><p class="value">5</p><p class="delta up">Today · Orlando</p></div>
-  </div>
-  <div class="card split-2">
-    <h3>Next Actions</h3>
+    <h3>Parts Inventory</h3>
     <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Task</th><th>Owner</th><th>Status</th></tr></thead>
+      <thead><tr><th>Part</th><th>In stock</th><th>Reorder point</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td>Rear axle alignment Kart #3</td><td>Leo</td><td><span class="badge warn">In progress</span></td></tr>
-        <tr><td>Fuel line inspection Kart #1</td><td>Nico</td><td><span class="badge ok">Ready</span></td></tr>
-        <tr><td>Tire pressure check all classes</td><td>Team</td><td><span class="badge alert">Due now</span></td></tr>
+        <tr><td>Rear Tires (sets)</td><td>12</td><td>8</td><td><span class="badge ok">Healthy</span></td></tr>
+        <tr><td>Brake Pads</td><td>24</td><td>20</td><td><span class="badge warn">Watch</span></td></tr>
+        <tr><td>Engine Oil (liters)</td><td>8</td><td>10</td><td><span class="badge alert">Low</span></td></tr>
+        <tr><td>Spark Plugs</td><td>30</td><td>18</td><td><span class="badge ok">Healthy</span></td></tr>
       </tbody>
     </table>
-  </div>
-  <div class="card split-2">
-    <h3>Quick Access</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;">
-      <a class="nav-link active" style="margin:0;" href="/telemetry/index.html">Open Telemetry</a>
-      <a class="nav-link active" style="margin:0;" href="/workshop/index.html">Open Workshop</a>
-      <a class="nav-link active" style="margin:0;" href="/inventory/index.html">Open Inventory</a>
-      <a class="nav-link active" style="margin:0;" href="/schedule/index.html">Open Schedule</a>
-    </div>
   </div>
 </section>
 

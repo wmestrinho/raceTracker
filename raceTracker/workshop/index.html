@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overview | raceTracker</title>
+  <title>Workshop | raceTracker</title>
   <meta name="description" content="raceTracker karting operations dashboard">
   <meta name="theme-color" content="#384AD3">
   <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="overview">
+<body data-page="workshop">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Primary">
@@ -34,43 +34,29 @@
     <div class="main">
       <header class="topbar" role="banner">
         <div>
-          <h1>Overview</h1>
-          <p>Trackside status and priorities</p>
+          <h1>Workshop</h1>
+          <p>Maintenance workflow and service queue</p>
         </div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu">Menu</button>
       </header>
       <main id="main-content" class="content" role="main">
         
 <section class="page-grid">
-  <div class="card full">
-    <h2>Race-day Command Center</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Multi-page operations dashboard for telemetry, workshop throughput, inventory readiness, team coordination, and schedule execution.</p>
-  </div>
-  <div class="kpi-grid full">
-    <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
-    <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
-    <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
-    <div class="card kpi"><p class="label">Upcoming sessions</p><p class="value">5</p><p class="delta up">Today · Orlando</p></div>
+  <div class="card split-2">
+    <h3>Today's Tasks</h3>
+    <table class="table" style="margin-top:.6rem;"><tbody>
+      <tr><td>Replace rear tires on Kart #3</td><td><span class="badge warn">Pending</span></td></tr>
+      <tr><td>Brake pad check all karts</td><td><span class="badge warn">In progress</span></td></tr>
+      <tr><td>Engine tune Kart #1</td><td><span class="badge ok">Done</span></td></tr>
+    </tbody></table>
   </div>
   <div class="card split-2">
-    <h3>Next Actions</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Task</th><th>Owner</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>Rear axle alignment Kart #3</td><td>Leo</td><td><span class="badge warn">In progress</span></td></tr>
-        <tr><td>Fuel line inspection Kart #1</td><td>Nico</td><td><span class="badge ok">Ready</span></td></tr>
-        <tr><td>Tire pressure check all classes</td><td>Team</td><td><span class="badge alert">Due now</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card split-2">
-    <h3>Quick Access</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;">
-      <a class="nav-link active" style="margin:0;" href="/telemetry/index.html">Open Telemetry</a>
-      <a class="nav-link active" style="margin:0;" href="/workshop/index.html">Open Workshop</a>
-      <a class="nav-link active" style="margin:0;" href="/inventory/index.html">Open Inventory</a>
-      <a class="nav-link active" style="margin:0;" href="/schedule/index.html">Open Schedule</a>
-    </div>
+    <h3>Service Queue</h3>
+    <table class="table" style="margin-top:.6rem;"><tbody>
+      <tr><td>Kart #1</td><td>14:00</td><td>Engine tune</td></tr>
+      <tr><td>Kart #2</td><td>16:30</td><td>Brake inspection</td></tr>
+      <tr><td>Kart #3</td><td>09:00 tomorrow</td><td>Tire change</td></tr>
+    </tbody></table>
   </div>
 </section>
 
