@@ -8,12 +8,23 @@ function initSidebarToggle() {
   const btn = document.querySelector('[data-sidebar-toggle]');
   const sidebar = document.querySelector('.sidebar');
   if (!btn || !sidebar) return;
+
+  const setOpen = (isOpen) => {
+    sidebar.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+  };
+
   btn.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
+    setOpen(!sidebar.classList.contains('open'));
   });
+
+  sidebar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
   document.addEventListener('click', (e) => {
     if (window.innerWidth > 980) return;
-    if (!sidebar.contains(e.target) && !btn.contains(e.target)) sidebar.classList.remove('open');
+    if (!sidebar.contains(e.target) && !btn.contains(e.target)) setOpen(false);
   });
 }
 
