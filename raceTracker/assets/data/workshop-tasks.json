@@ -1,0 +1,65 @@
+{
+  "updatedAt": "2026-05-24T12:00:00-04:00",
+  "tasks": [
+    {
+      "id": "tsk-001",
+      "owner": "Luiz",
+      "kart": "Kart #3",
+      "task": "Rear axle alignment",
+      "due": "Now",
+      "dueState": "now",
+      "status": "Due now",
+      "priority": "alert"
+    },
+    {
+      "id": "tsk-002",
+      "owner": "Luiz",
+      "kart": "Kart #1",
+      "task": "Fuel line inspection",
+      "due": "14:00",
+      "dueState": "next",
+      "status": "Pending",
+      "priority": "warn"
+    },
+    {
+      "id": "tsk-003",
+      "owner": "Leo",
+      "kart": "Kart #2",
+      "task": "Brake pad check",
+      "due": "Now",
+      "dueState": "now",
+      "status": "In progress",
+      "priority": "warn"
+    },
+    {
+      "id": "tsk-004",
+      "owner": "Leo",
+      "kart": "Kart #4",
+      "task": "Front-end toe reset",
+      "due": "15:30",
+      "dueState": "next",
+      "status": "Pending",
+      "priority": "warn"
+    },
+    {
+      "id": "tsk-005",
+      "owner": "Nico",
+      "kart": "Kart #1",
+      "task": "Telemetry sensor QA",
+      "due": "16:30",
+      "dueState": "next",
+      "status": "Ready",
+      "priority": "ok"
+    },
+    {
+      "id": "tsk-006",
+      "owner": "Paula",
+      "kart": "Team",
+      "task": "Session staging checklist",
+      "due": "17:00",
+      "dueState": "next",
+      "status": "Prep",
+      "priority": "warn"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "updatedAt": "2026-05-24T12:00:00-04:00",
+  "mechanics": [
+    {
+      "id": "luiz",
+      "name": "Luiz",
+      "role": "Trackside mechanic",
+      "shift": "07:00-18:00",
+      "specialty": "Race-day execution"
+    },
+    {
+      "id": "leo",
+      "name": "Leo",
+      "role": "Lead mechanic",
+      "shift": "08:00-18:00",
+      "specialty": "Chassis alignment"
+    },
+    {
+      "id": "nico",
+      "name": "Nico",
+      "role": "Telemetry mechanic",
+      "shift": "09:00-17:00",
+      "specialty": "Sensors and live feed QA"
+    },
+    {
+      "id": "paula",
+      "name": "Paula",
+      "role": "Ops coordinator",
+      "shift": "07:00-16:00",
+      "specialty": "Session logistics"
+    }
+  ]
+}
