@@ -1,83 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overview | raceTracker</title>
-  <meta name="description" content="raceTracker karting operations dashboard">
-  <meta name="theme-color" content="#384AD3">
-  <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
-  <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body data-page="overview">
-  <a class="skip-link" href="#main-content">Skip to main content</a>
-  <div class="app-shell">
-    <aside class="sidebar" aria-label="Primary">
-      <a href="/index.html" class="brand">
-        <img src="/assets/images/racetracker-logo.png" alt="raceTracker">
-        <span><strong>raceTracker</strong><small>Operations</small></span>
-      </a>
-      <div class="nav-group">
-        <p class="nav-group-title">Core</p>
-        <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
-        <a class="nav-link" data-page="telemetry" href="/telemetry/index.html">Telemetry</a>
-        <a class="nav-link" data-page="workshop" href="/workshop/index.html">Workshop</a>
-        <a class="nav-link" data-page="inventory" href="/inventory/index.html">Inventory</a>
-      </div>
-      <div class="nav-group">
-        <p class="nav-group-title">Ops</p>
-        <a class="nav-link" data-page="schedule" href="/schedule/index.html">Schedule</a>
-        <a class="nav-link" data-page="team" href="/team/index.html">Team</a>
-        <a class="nav-link" data-page="settings" href="/settings/index.html">Settings</a>
-      </div>
-    </aside>
-    <div class="main">
-      <header class="topbar" role="banner">
-        <div>
-          <h1>Overview</h1>
-          <p>Trackside status and priorities</p>
-        </div>
-        <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu">Menu</button>
-      </header>
-      <main id="main-content" class="content" role="main">
-        
-<section class="page-grid">
-  <div class="card full">
-    <h2>Race-day Command Center</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Multi-page operations dashboard for telemetry, workshop throughput, inventory readiness, team coordination, and schedule execution.</p>
-  </div>
-  <div class="kpi-grid full">
-    <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
-    <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
-    <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
-    <div class="card kpi"><p class="label">Upcoming sessions</p><p class="value">5</p><p class="delta up">Today · Orlando</p></div>
-  </div>
-  <div class="card split-2">
-    <h3>Next Actions</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Task</th><th>Owner</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>Rear axle alignment Kart #3</td><td>Leo</td><td><span class="badge warn">In progress</span></td></tr>
-        <tr><td>Fuel line inspection Kart #1</td><td>Nico</td><td><span class="badge ok">Ready</span></td></tr>
-        <tr><td>Tire pressure check all classes</td><td>Team</td><td><span class="badge alert">Due now</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card split-2">
-    <h3>Quick Access</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;">
-      <a class="nav-link active" style="margin:0;" href="/telemetry/index.html">Open Telemetry</a>
-      <a class="nav-link active" style="margin:0;" href="/workshop/index.html">Open Workshop</a>
-      <a class="nav-link active" style="margin:0;" href="/inventory/index.html">Open Inventory</a>
-      <a class="nav-link active" style="margin:0;" href="/schedule/index.html">Open Schedule</a>
-    </div>
-  </div>
-</section>
-
-        <p class="footer">© 2026 raceTracker · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-      </main>
-    </div>
-  </div>
-  <script src="/assets/js/main.js"></script>
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|  <meta charset="UTF-8">
+     5|  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|  <title>Overview | raceTracker</title>
+     7|  <meta name="description" content="raceTracker karting operations dashboard">
+     8|  <meta name="theme-color" content="#384AD3">
+     9|  <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
+    10|  <link rel="stylesheet" href="/assets/css/style.css">
+    11|</head>
+    12|<body data-page="overview">
+    13|  <a class="skip-link" href="#main-content">Skip to main content</a>
+    14|  <div class="app-shell">
+    15|    <aside class="sidebar" aria-label="Primary">
+    16|      <a href="/index.html" class="brand">
+    17|        <img src="/assets/images/racetracker-logo.png" alt="raceTracker">
+    18|        <span><strong>raceTracker</strong><small>Operations</small></span>
+    19|      </a>
+    20|      <div class="nav-group">
+    21|        <p class="nav-group-title">Core</p>
+    22|        <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
+    23|        <a class="nav-link" data-page="telemetry" href="/telemetry.html">Telemetry</a>
+    24|        <a class="nav-link" data-page="workshop" href="/workshop.html">Workshop</a>
+    25|        <a class="nav-link" data-page="inventory" href="/inventory.html">Inventory</a>
+    26|      </div>
+    27|      <div class="nav-group">
+    28|        <p class="nav-group-title">Ops</p>
+    29|        <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
+    30|        <a class="nav-link" data-page="team" href="/team.html">Team</a>
+    31|        <a class="nav-link" data-page="settings" href="/settings.html">Settings</a>
+    32|      </div>
+    33|    </aside>
+    34|    <div class="main">
+    35|      <header class="topbar" role="banner">
+    36|        <div>
+    37|          <h1>Overview</h1>
+    38|          <p>Trackside status and priorities</p>
+    39|        </div>
+    40|        <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu">Menu</button>
+    41|      </header>
+    42|      <main id="main-content" class="content" role="main">
+    43|        
+    44|<section class="page-grid">
+    45|  <div class="card full">
+    46|    <h2>Race-day Command Center</h2>
+    47|    <p style="color:var(--muted);margin-top:.35rem;">Multi-page operations dashboard for telemetry, workshop throughput, inventory readiness, team coordination, and schedule execution.</p>
+    48|  </div>
+    49|  <div class="kpi-grid full">
+    50|    <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
+    51|    <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
+    52|    <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
+    53|    <div class="card kpi"><p class="label">Upcoming sessions</p><p class="value">5</p><p class="delta up">Today · Orlando</p></div>
+    54|  </div>
+    55|  <div class="card split-2">
+    56|    <h3>Next Actions</h3>
+    57|    <table class="table" style="margin-top:.6rem;">
+    58|      <thead><tr><th>Task</th><th>Owner</th><th>Status</th></tr></thead>
+    59|      <tbody>
+    60|        <tr><td>Rear axle alignment Kart #3</td><td>Leo</td><td><span class="badge warn">In progress</span></td></tr>
+    61|        <tr><td>Fuel line inspection Kart #1</td><td>Nico</td><td><span class="badge ok">Ready</span></td></tr>
+    62|        <tr><td>Tire pressure check all classes</td><td>Team</td><td><span class="badge alert">Due now</span></td></tr>
+    63|      </tbody>
+    64|    </table>
+    65|  </div>
+    66|  <div class="card split-2">
+    67|    <h3>Quick Access</h3>
+    68|    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;">
+    69|      <a class="nav-link active" style="margin:0;" href="/telemetry.html">Open Telemetry</a>
+    70|      <a class="nav-link active" style="margin:0;" href="/workshop.html">Open Workshop</a>
+    71|      <a class="nav-link active" style="margin:0;" href="/inventory.html">Open Inventory</a>
+    72|      <a class="nav-link active" style="margin:0;" href="/schedule.html">Open Schedule</a>
+    73|    </div>
+    74|  </div>
+    75|</section>
+    76|
+    77|        <p class="footer">© 2026 raceTracker · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+    78|      </main>
+    79|    </div>
+    80|  </div>
+    81|  <script src="/assets/js/main.js"></script>
+    82|</body>
+    83|</html>
+    84|
