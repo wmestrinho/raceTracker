@@ -1,48 +1,30 @@
 # raceTracker
 
-## Edgy Futuristic Mechanic Shop Front-End
+Prototype frontend for raceTracker (karting operations + telemetry).
 
-This project is a prototype front-end for **raceTracker**, a karting mechanic and race tracking application inspired by the Nash Motorsportz brand.
+Live site
+- https://tracker.absolutelyplausible.com
 
-### Vision
-Built to provide a modern, technical interface for karting teams to:
-- Track real-time kart performance and lap times
-- Manage workshop maintenance and parts inventory
-- Analyze race telemetry and performance metrics
-- Coordinate team logistics and race day operations
+Canonical project structure (single source of truth)
+- raceTracker/index.html
+- raceTracker/assets/css/style.css
+- raceTracker/assets/js/main.js
+- raceTracker/assets/images/racetracker-logo.png
 
-### Design Inspiration
-- **Color palette** extracted from Nash Motorsportz website
-- **Futuristic dark theme** with glowing accents
-- **Mechanic shop aesthetic** blended with high-tech racing telemetry
-- **Responsive layout** for use in workshop pits and trackside
+Deployment
+- Cloudflare Workers/Pages via Wrangler
+- Config: wrangler.jsonc
+- Static assets directory: raceTracker
 
-### Current Features
-- Sticky navigation with Nash logo
-- Hero section with gradient title
-- Feature cards highlighting core capabilities
-- About section explaining the concept
-- Footer with social media links
+Local preview
+- Open raceTracker/index.html in a browser
 
-### Technology Stack
-- HTML5 semantic structure
-- CSS3 with CSS variables for theme consistency
-- Responsive design (mobile-first approach)
-- GitHub Pages for live demo
+Guardrails
+- Do not create parallel site roots (for example docs/ plus raceTracker/).
+- Keep all frontend edits inside raceTracker/ only.
+- Run `python3 scripts/validate_structure.py` before commit.
 
-### Getting Started
-1. Clone the repository: `git clone https://github.com/wmestrinho/raceTracker.git`
-2. Open `index.html` in your browser
-3. Or view the live demo at: [https://tracker.absolutelyplausible.com](https://tracker.absolutelyplausible.com) (once configured)
-
-### Future Development
-As we gather requirements from Nuno and the team, we plan to implement:
-- Real-time data visualization dashboard
-- Mechanic workshop management interface
-- Kart telemetry input and analysis
-- Team and driver management tools
-- Race schedule and event tracking
-
----
-*Inspired by Nash Motorsportz • Built for absolutelyplausible.com*
-
+Roadmap (next)
+- Replace simulated telemetry with JSON-fed data source
+- Accessibility pass (focus states, semantics, contrast)
+- SEO/social metadata (description, OG tags, favicon set)

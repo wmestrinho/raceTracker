@@ -3,16 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>raceTracker - Nash Motorsportz Inspired</title>
+    <title>raceTracker | Karting Operations & Telemetry</title>
+    <meta name="description" content="raceTracker is a karting operations and telemetry frontend prototype for trackside teams: live data, workshop management, and race-day coordination.">
+    <meta name="robots" content="index,follow">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="raceTracker | Karting Operations & Telemetry">
+    <meta property="og:description" content="Live telemetry, workshop workflow, and race operations in one interface.">
+    <meta property="og:url" content="https://tracker.absolutelyplausible.com">
+    <meta property="og:image" content="https://tracker.absolutelyplausible.com/assets/images/racetracker-logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="raceTracker | Karting Operations & Telemetry">
+    <meta name="twitter:description" content="Live telemetry, workshop workflow, and race operations in one interface.">
+    <meta name="twitter:image" content="https://tracker.absolutelyplausible.com/assets/images/racetracker-logo.png">
+    <link rel="canonical" href="https://tracker.absolutelyplausible.com/">
+    <link rel="icon" type="image/png" href="assets/images/racetracker-logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <header>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header role="banner">
         <div class="container">
             <div class="logo">
-                <img src="assets/images/nash-logo.png" alt="Nash Motorsportz Logo">
+                <img src="assets/images/racetracker-logo.png" alt="raceTracker Logo">
             </div>
-            <nav>
+            <nav aria-label="Primary navigation">
                 <ul>
                     <li><a href="#home">Home</a></li>
                     <li><a href="#features">Features</a></li>
@@ -23,14 +37,22 @@
         </div>
     </header>
 
+    <main id="main-content" role="main">
     <section class="hero" id="home">
         <div class="container">
             <h1>raceTracker</h1>
             <p>Edgy Futuristic Mechanic Shop Management</p>
-            <a href="#features" class="btn-primary">Explore Features</a>
+            <div class="button-grid">
+                <a href="#dashboard" class="btn-primary">Track Dashboard</a>
+                <a href="#parts" class="btn-primary">Parts Management</a>
+                <a href="#practice" class="btn-primary">Practice Day</a>
+                <a href="#races" class="btn-primary">Upcoming Races</a>
+                <a href="#inventory" class="btn-primary">Inventory Control</a>
+                <a href="#drivers" class="btn-primary">Drivers</a>
+                <a href="#mechanics" class="btn-primary">Mechanics Team</a>
+            </div>
         </div>
     </section>
-
 
     <section class="telemetry" id="telemetry">
         <div class="container">
@@ -81,7 +103,6 @@
             </div>
         </div>
     </section>
-
 
     <section class="workshop" id="workshop">
         <div class="container">
@@ -149,8 +170,6 @@
         </div>
     </section>
 
-
-
     <section class="dashboard" id="dashboard">
         <div class="container">
             <h2>Real-time Data Visualization</h2>
@@ -200,8 +219,7 @@
         </div>
     </section>
 
-
- id="features">
+    <section class="features" id="features">
         <div class="container">
             <h2>Key Features</h2>
             <div class="features-grid">
@@ -228,13 +246,74 @@
     <section class="about" id="about">
         <div class="container">
             <h2>About raceTracker</h2>
-            <p>Built for the modern karting enthusiast, raceTracker combines the rugged reliability of a mechanic's shop with a futuristic interface inspired by Nash Motorsportz. Track, tune, and triumph.</p>
+            <p>Built for the modern karting enthusiast, raceTracker combines the rugged reliability of a mechanic's shop with a futuristic interface. Track, tune, and triumph.</p>
         </div>
     </section>
 
-    <footer>
+    <section class="contact" id="contact">
         <div class="container">
-            <p>&copy; 2026 raceTracker. Inspired by Nash Motorsportz.</p>
+            <h2>Contact Us</h2>
+            <p>Have questions or need support? Reach out to us!</p>
+            <!-- Add contact form or details here -->
+            <div class="contact-info">
+                <p>Email: info@absolutelyplausible.com</p>
+                <p>Follow us on social media for updates.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="parts" id="parts">
+        <div class="container">
+            <h2>Parts Management</h2>
+            <p>Manage your kart parts inventory, orders, and suppliers.</p>
+            <a href="#workshop" class="btn-secondary">View Workshop</a>
+        </div>
+    </section>
+
+    <section class="practice" id="practice">
+        <div class="container">
+            <h2>Practice Day</h2>
+            <p>Track and analyze your practice sessions, lap times, and performance metrics.</p>
+            <a href="#telemetry" class="btn-secondary">View Telemetry</a>
+        </div>
+    </section>
+
+    <section class="races" id="races">
+        <div class="container">
+            <h2>Upcoming Races</h2>
+            <p>See your race schedule, entry lists, and event details.</p>
+            <a href="#contact" class="btn-secondary">Contact Us</a>
+        </div>
+    </section>
+
+    <section class="inventory" id="inventory">
+        <div class="container">
+            <h2>Inventory Control</h2>
+            <p>Monitor stock levels, reorder points, and inventory valuation.</p>
+            <a href="#parts" class="btn-secondary">View Parts</a>
+        </div>
+    </section>
+
+    <section class="drivers" id="drivers">
+        <div class="container">
+            <h2>Drivers</h2>
+            <p>Manage driver profiles, licenses, performance history, and assignments.</p>
+            <a href="#about" class="btn-secondary">Learn More</a>
+        </div>
+    </section>
+
+    <section class="mechanics" id="mechanics">
+        <div class="container">
+            <h2>Mechanics Team</h2>
+            <p>Manage your mechanic team, certifications, schedules, and task assignments.</p>
+            <a href="#workshop" class="btn-secondary">View Workshop</a>
+        </div>
+    </section>
+
+    </main>
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; 2026 raceTracker.</p>
             <div class="social">
                 <a href="#">LinkedIn</a>
                 <a href="#">Facebook</a>

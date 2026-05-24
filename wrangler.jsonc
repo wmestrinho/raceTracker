@@ -6,7 +6,7 @@
     "enabled": true
   },
   "assets": {
-    "directory": "docs"
+    "directory": "raceTracker"
   },
   "compatibility_flags": [
     "nodejs_compat"

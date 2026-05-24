@@ -1,0 +1,19 @@
+{
+  "updatedAt": "2026-05-24T00:00:00Z",
+  "karts": [
+    {
+      "id": "Kart #1",
+      "lapTime": 45.234,
+      "speedKmh": 87.5,
+      "rpm": 12400,
+      "temperatureC": 85
+    },
+    {
+      "id": "Kart #2",
+      "lapTime": 44.876,
+      "speedKmh": 89.2,
+      "rpm": 12650,
+      "temperatureC": 82
+    }
+  ]
+}
