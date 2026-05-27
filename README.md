@@ -12,6 +12,12 @@ Legacy local path
 - `/Users/wmestrinho/.openclaw/workspace/projects/raceTracker`
 - Deprecated after migration. Do not start new work there.
 
+
+Client / MVP context
+- Current client context: Sergio “Nuno” Campos.
+- “Nash” may appear in internal theme/branding references; it is the original internal naming for this client-specific theme and is intentional.
+- Keep external app naming as raceTracker so the prototype can later be adapted for other teams, mechanics, or vendors.
+
 Agent instructions
 - Read `AGENTS.md` before making changes.
 - Check `git status --short --branch` before editing, committing, rebasing, or pushing.
@@ -31,7 +37,7 @@ Canonical project structure (single source of truth)
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.2.1`
+- Current version: `v1.5.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -77,7 +83,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v0.1.0 alpha`
+- Current baseline version: `v1.5.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 
@@ -85,3 +91,8 @@ Validation:
 - Run `python3 scripts/validate_agent_baseline.py`.
 - Also run project-specific tests/builds when present.
 
+
+Case-sensitive path guardrail
+- The only canonical frontend directory name is exactly `raceTracker/`.
+- On macOS, `RaceTracker/` or `racetracker/` may appear to resolve because the filesystem is case-insensitive; do not create or reference those aliases.
+- Future agents should run `python3 scripts/validate_structure.py` before committing to catch duplicate roots, logo variants, stale versions, and macOS metadata.

@@ -5,9 +5,10 @@
   "observability": {
     "enabled": true
   },
-  "assets": {
-    "directory": "raceTracker"
-  },
+  "pages_build_output_dir": "raceTracker",
+  "custom_domain": [
+    "tracker.absolutelyplausible.com"
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

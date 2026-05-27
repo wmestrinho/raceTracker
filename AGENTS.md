@@ -13,10 +13,21 @@ Project purpose
 - Static frontend prototype for karting operations, workshop execution, and telemetry visibility.
 - Live target: `https://tracker.absolutelyplausible.com`
 
+Client / branding context
+- Current client context: Sergio “Nuno” Campos.
+- “Nash” may appear in internal theme/branding references; it is intentional original naming for this client-specific theme.
+- Keep external app naming as raceTracker so this prototype/MVP can later be adapted for other teams, mechanics, or vendors.
+
 Source of truth
 - Frontend assets live only under `raceTracker/`.
 - Do not create parallel site roots such as `docs/`, root `assets/`, `site/`, or duplicate HTML trees.
 - Deployment config lives in `wrangler.jsonc`.
+
+Case/path guardrails
+- The canonical frontend directory is exactly `raceTracker/`.
+- On macOS, `RaceTracker/` and `racetracker/` may resolve to the same directory because the filesystem is case-insensitive; do not create or reference those aliases.
+- Do not add logo variants under `raceTracker/assets/images/` unless the validation script is intentionally updated. The canonical logo is `raceTracker/assets/images/racetracker-logo.png`.
+- Do not commit `.DS_Store` files.
 
 Required files
 - `README.md` — project overview, local preview, deploy notes, guardrails.

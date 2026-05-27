@@ -37,13 +37,22 @@ function initActiveNav() {
   });
 }
 
-function initMechanicContext() {
+async function initMechanicContext() {
   const storageKey = 'raceTracker.mechanicProfile';
-  const mechanics = ['Luiz', 'Leo', 'Nico', 'Paula'];
+  const mechanicData = await loadMechanicData();
+  const mechanics = mechanicData.mechanics.map(mechanic => mechanic.name);
+  const tasks = mechanicData.tasks;
   const slots = document.querySelectorAll('[data-mechanic-slot]');
-  if (!slots.length) return;
+  renderWorkshopTasks(tasks);
+  if (!slots.length) {
+    updateMechanicOwnedTasks(localStorage.getItem(storageKey) || mechanics[0]);
+    return;
+  }
 
-  const getSelected = () => localStorage.getItem(storageKey) || mechanics[0];
+  const getSelected = () => {
+    const saved = localStorage.getItem(storageKey);
+    return mechanics.includes(saved) ? saved : mechanics[0];
+  };
   const saveSelected = (name) => {
     localStorage.setItem(storageKey, name);
     renderMechanicSlots(name);
@@ -68,6 +77,64 @@ function initMechanicContext() {
 
   renderMechanicSlots(getSelected());
   updateMechanicOwnedTasks(getSelected());
+}
+
+async function loadMechanicData() {
+  const fallback = {
+    mechanics: [
+      { name: 'Luiz' },
+      { name: 'Leo' },
+      { name: 'Nico' },
+      { name: 'Paula' }
+    ],
+    tasks: [
+      { owner: 'Luiz', kart: 'Kart #3', task: 'Rear axle alignment', due: 'Now', dueState: 'now', status: 'Due now', priority: 'alert' },
+      { owner: 'Luiz', kart: 'Kart #1', task: 'Fuel line inspection', due: '14:00', dueState: 'next', status: 'Pending', priority: 'warn' },
+      { owner: 'Leo', kart: 'Kart #2', task: 'Brake pad check', due: 'Now', dueState: 'now', status: 'In progress', priority: 'warn' },
+      { owner: 'Leo', kart: 'Kart #4', task: 'Front-end toe reset', due: '15:30', dueState: 'next', status: 'Pending', priority: 'warn' },
+      { owner: 'Nico', kart: 'Kart #1', task: 'Telemetry sensor QA', due: '16:30', dueState: 'next', status: 'Ready', priority: 'ok' },
+      { owner: 'Paula', kart: 'Team', task: 'Session staging checklist', due: '17:00', dueState: 'next', status: 'Prep', priority: 'warn' }
+    ]
+  };
+
+  try {
+    const [mechanicsRes, tasksRes] = await Promise.all([
+      fetch('/assets/data/mechanics.json', { cache: 'no-store' }),
+      fetch('/assets/data/workshop-tasks.json', { cache: 'no-store' })
+    ]);
+    if (!mechanicsRes.ok || !tasksRes.ok) throw new Error('Mechanic data unavailable');
+    const mechanics = await mechanicsRes.json();
+    const tasks = await tasksRes.json();
+    return {
+      mechanics: mechanics.mechanics || fallback.mechanics,
+      tasks: tasks.tasks || fallback.tasks
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function renderWorkshopTasks(tasks) {
+  const body = document.querySelector('[data-workshop-task-body]');
+  if (!body || !tasks.length) return;
+  body.innerHTML = tasks.map(task => `
+    <tr data-owner="${escapeHtml(task.owner)}" data-due="${escapeHtml(task.dueState || 'next')}">
+      <td>${escapeHtml(task.owner)}</td>
+      <td>${escapeHtml(task.kart)}</td>
+      <td>${escapeHtml(task.task)}</td>
+      <td>${escapeHtml(task.due)}</td>
+      <td><span class="badge ${escapeHtml(task.priority || 'warn')}">${escapeHtml(task.status)}</span></td>
+    </tr>
+  `).join('');
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 function updateMechanicOwnedTasks(mechanic) {
