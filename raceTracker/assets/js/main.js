@@ -385,7 +385,26 @@ function renderEventSchedule(data, tracks) {
       </tr>
     `;
   }).join('');
-  setText('[data-event-source-status]', data.sourceStatus === 'connected' ? 'Connected' : 'Source needed');
+  const statusLabels = {
+    connected: 'Connected',
+    'google-sheets-bridge': 'Google Sheets bridge',
+    'candidate-sources-found': 'Source candidates'
+  };
+  setText('[data-event-source-status]', statusLabels[data.sourceStatus] || 'Source needed');
+  renderSourceCandidates(data.sourceCandidates || []);
+}
+
+function renderSourceCandidates(candidates) {
+  const list = document.querySelector('[data-source-candidate-list]');
+  if (!list || !candidates.length) return;
+  list.innerHTML = candidates.map(source => `
+    <div class="source-item">
+      <strong>${escapeHtml(source.name || 'Source candidate')}</strong>
+      <span>${escapeHtml(source.providerType || 'source')} · ${escapeHtml(source.confidence || 'candidate')}</span>
+      <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.url)}</a>
+      <small>${escapeHtml(source.notes || '')}</small>
+    </div>
+  `).join('');
 }
 
 function setText(selector, value) {

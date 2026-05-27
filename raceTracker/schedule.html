@@ -78,20 +78,50 @@
         <h3>Event Schedule + Registration Lists</h3>
         <p class="muted-copy">Highest-value orchestration target: pull each event, registration list, class entries, mechanic workload, and source status into one operations view.</p>
       </div>
-      <span class="badge warn" data-event-source-status>Source needed</span>
+      <span class="badge warn" data-event-source-status>Source candidates</span>
+    </div>
+    <div class="integration-path">
+      <div>
+        <span>Now</span>
+        <strong>Google Sheets bridge</strong>
+        <small>Manual CSV entry can feed event-schedule JSON while sources are confirmed.</small>
+      </div>
+      <div>
+        <span>Next</span>
+        <strong>Supabase backend</strong>
+        <small>Durable events, registrations, teams, tasks, setup notes, and exports.</small>
+      </div>
+      <div>
+        <span>Guardrail</span>
+        <strong>No secret keys in browser</strong>
+        <small>Credentialed sources must run through a backend or Worker proxy.</small>
+      </div>
     </div>
     <table class="table" style="margin-top:.7rem;">
       <thead><tr><th>Track</th><th>Event</th><th>Date</th><th>Registration</th><th>Source</th></tr></thead>
       <tbody data-event-schedule-body>
-        <tr><td>New Castle, IN</td><td>Connect official schedule</td><td>Source needed</td><td>Provider needed</td><td>TBD</td></tr>
-        <tr><td>Mooresville, NC</td><td>Connect official schedule</td><td>Source needed</td><td>Provider needed</td><td>TBD</td></tr>
+        <tr><td>New Castle, IN</td><td>Review official schedule + Race Select</td><td>Source candidate found</td><td>Confirm provider</td><td>NCMP / Race Select</td></tr>
+        <tr><td>Mooresville, NC</td><td>Review Trackhouse events + MotorsportReg</td><td>Source candidate found</td><td>Candidate</td><td>Trackhouse / MotorsportReg</td></tr>
       </tbody>
     </table>
   </div>
 
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Candidate Data Sources</h3>
+        <p class="muted-copy">These are not final integrations yet. They are the likely official/registration providers to verify with Sergio/Nuno before scraping or API work.</p>
+      </div>
+    </div>
+    <div class="source-list" data-source-candidate-list>
+      <div class="source-item"><strong>NCMP official schedule</strong><span>https://newcastlemotorsportspark.com/schedule</span></div>
+      <div class="source-item"><strong>Trackhouse MotorsportReg</strong><span>https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc</span></div>
+    </div>
+  </div>
+
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.6.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.7.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

@@ -39,17 +39,24 @@ Canonical project structure (single source of truth)
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.6.0`
+- Current version: `v1.7.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
 Live data
 - Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
 - Default high-frequency tracks: New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
-- Event source placeholder: `raceTracker/assets/data/event-schedule.json` until the official schedule/registration-list provider is confirmed.
+- Event source scaffold: `raceTracker/assets/data/event-schedule.json` now tracks candidate official/registration providers.
 - Highest-value orchestration target: event schedule + registration list ingestion by event/track.
+- Candidate sources found:
+  - New Castle Motorsports Park official schedule: `https://newcastlemotorsportspark.com/schedule`
+  - Route 66 / USPKS Race Select registration candidates: `https://raceselect.com/route66/2026`, `https://raceselect.com/uspks/2026`
+  - Trackhouse official events: `https://trackhousemotorplex.com/events/`
+  - Trackhouse MotorsportReg venue: `https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc`
+  - Trackhouse Clubspeed booking/timing candidate: `https://bookings.clubspeed.com/MM/MMMooresville`
 - Keep public/browser-safe APIs in frontend JS only; any credentialed data source needs a backend/Worker proxy.
-- Google Sheets can work for early ops data, but Supabase is the likely durable backend once schema and auth settle.
+- Google Sheets bridge: publish a Sheet tab as CSV and run `python3 scripts/ingest_google_sheet.py` with `RACETRACKER_EVENT_SHEET_CSV_URL` set.
+- Supabase plan: `supabase/schema.sql` defines the durable backend model. Local Supabase secrets are kept in ignored `.env.local`, never in Git.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection unless a team-approved API/source is confirmed.
 
 Deployment
@@ -94,7 +101,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.6.0`
+- Current baseline version: `v1.7.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

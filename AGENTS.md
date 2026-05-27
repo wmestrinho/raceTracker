@@ -64,7 +64,9 @@ Live data guardrails
 - Track/weather defaults live in `raceTracker/assets/data/track-context.json`.
 - Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
 - Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
-- Early ops data may use Google Sheets, but design toward Supabase/backend ownership for durable multi-client use.
+- Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward Supabase/backend ownership for durable multi-client use.
+- Supabase planning lives under `supabase/`; local secrets belong only in ignored `.env.local` and must not be copied into Git, static JS, markdown, or memory.
+- Candidate event/registration sources currently include NCMP official schedule, Route 66/USPKS Race Select, Trackhouse official events, Trackhouse MotorsportReg, and Trackhouse Clubspeed/timing.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection without a team-approved source/API.
 
 Coordination warning
