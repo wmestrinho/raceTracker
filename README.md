@@ -33,13 +33,24 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/css/style.css`
 - `raceTracker/assets/js/main.js`
 - `raceTracker/assets/data/telemetry.json`
+- `raceTracker/assets/data/track-context.json`
+- `raceTracker/assets/data/event-schedule.json`
 - `raceTracker/assets/images/racetracker-logo.png`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.5.0`
+- Current version: `v1.6.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
+
+Live data
+- Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
+- Default high-frequency tracks: New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
+- Event source placeholder: `raceTracker/assets/data/event-schedule.json` until the official schedule/registration-list provider is confirmed.
+- Highest-value orchestration target: event schedule + registration list ingestion by event/track.
+- Keep public/browser-safe APIs in frontend JS only; any credentialed data source needs a backend/Worker proxy.
+- Google Sheets can work for early ops data, but Supabase is the likely durable backend once schema and auth settle.
+- Telemetry is integration/export-only for now; do not build first-party telemetry collection unless a team-approved API/source is confirmed.
 
 Deployment
 - Cloudflare Workers/Pages via Wrangler
@@ -83,7 +94,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.5.0`
+- Current baseline version: `v1.6.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

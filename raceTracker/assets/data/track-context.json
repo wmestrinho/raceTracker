@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2026-05-27T00:00:00-04:00",
+  "activeTrackId": "new-castle-motorsports-park",
+  "tracks": [
+    {
+      "id": "new-castle-motorsports-park",
+      "name": "New Castle Motorsports Park",
+      "shortName": "New Castle, IN",
+      "latitude": 39.8496829,
+      "longitude": -85.4080572,
+      "timezone": "America/Indiana/Indianapolis",
+      "weatherProvider": "Open-Meteo",
+      "weatherApi": "https://api.open-meteo.com/v1/forecast",
+      "priority": "primary",
+      "notes": "One of the two highest-frequency event tracks for raceTracker planning."
+    },
+    {
+      "id": "trackhouse-motorplex",
+      "name": "Trackhouse Motorplex",
+      "shortName": "Mooresville, NC",
+      "latitude": 35.6408237,
+      "longitude": -80.7912472,
+      "timezone": "America/New_York",
+      "weatherProvider": "Open-Meteo",
+      "weatherApi": "https://api.open-meteo.com/v1/forecast",
+      "priority": "primary",
+      "notes": "One of the two highest-frequency event tracks for raceTracker planning."
+    }
+  ]
+}

@@ -54,9 +54,44 @@
       </tbody>
     </table>
   </div>
+  <div class="card full live-context-card" data-weather-panel>
+    <div class="section-headline">
+      <div>
+        <h3>Race-Day Weather Readiness</h3>
+        <p class="muted-copy">Live conditions for <span data-track-name>Orlando, FL</span> feed the go/no-go prep notes before sessions.</p>
+      </div>
+      <div class="track-selector" data-track-selector></div>
+      <span class="badge warn" data-weather-risk>Loading</span>
+    </div>
+    <div class="weather-grid">
+      <div><span>Temp</span><strong data-weather-temp>--°F</strong></div>
+      <div><span>Wind</span><strong data-weather-wind>-- mph</strong></div>
+      <div><span>Gusts</span><strong data-weather-gust>-- mph</strong></div>
+      <div><span>Updated</span><strong data-weather-updated>Connecting</strong></div>
+    </div>
+    <p class="mechanic-focus" data-weather-guidance>Loading live weather guidance...</p>
+  </div>
+
+  <div class="card full" data-event-schedule-panel>
+    <div class="section-headline">
+      <div>
+        <h3>Event Schedule + Registration Lists</h3>
+        <p class="muted-copy">Highest-value orchestration target: pull each event, registration list, class entries, mechanic workload, and source status into one operations view.</p>
+      </div>
+      <span class="badge warn" data-event-source-status>Source needed</span>
+    </div>
+    <table class="table" style="margin-top:.7rem;">
+      <thead><tr><th>Track</th><th>Event</th><th>Date</th><th>Registration</th><th>Source</th></tr></thead>
+      <tbody data-event-schedule-body>
+        <tr><td>New Castle, IN</td><td>Connect official schedule</td><td>Source needed</td><td>Provider needed</td><td>TBD</td></tr>
+        <tr><td>Mooresville, NC</td><td>Connect official schedule</td><td>Source needed</td><td>Provider needed</td><td>TBD</td></tr>
+      </tbody>
+    </table>
+  </div>
+
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.5.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.6.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

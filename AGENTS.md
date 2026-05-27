@@ -58,5 +58,14 @@ Deployment
 - Config: `wrangler.jsonc`
 - Deploy using Wrangler/Cloudflare Workers or Pages according to the configured project.
 
+Live data guardrails
+- Browser-side live data must use public, credential-free APIs only.
+- Credentialed sources must go through a backend/Cloudflare Worker proxy; never put API keys in static JS or checked-in data files.
+- Track/weather defaults live in `raceTracker/assets/data/track-context.json`.
+- Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
+- Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
+- Early ops data may use Google Sheets, but design toward Supabase/backend ownership for durable multi-client use.
+- Telemetry is integration/export-only for now; do not build first-party telemetry collection without a team-approved source/API.
+
 Coordination warning
 - Another AI agent may be working on this project. Before destructive edits, branch resets, rebases, or force pushes, check `git status` and coordinate with Luiz.

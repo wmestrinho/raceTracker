@@ -1,0 +1,27 @@
+{
+  "updatedAt": "2026-05-27T00:00:00-04:00",
+  "sourceStatus": "source-needed",
+  "notes": "Live event schedule and registration-list ingestion is the highest-value raceTracker orchestration. Connect the official schedule/registration provider here once confirmed.",
+  "events": [
+    {
+      "id": "ncmp-source-needed",
+      "trackId": "new-castle-motorsports-park",
+      "track": "New Castle Motorsports Park",
+      "name": "Connect official event schedule",
+      "date": "Source needed",
+      "registrationStatus": "Provider needed",
+      "registrationUrl": "",
+      "source": "TBD"
+    },
+    {
+      "id": "trackhouse-source-needed",
+      "trackId": "trackhouse-motorplex",
+      "track": "Trackhouse Motorplex",
+      "name": "Connect official event schedule",
+      "date": "Source needed",
+      "registrationStatus": "Provider needed",
+      "registrationUrl": "",
+      "source": "TBD"
+    }
+  ]
+}

@@ -31,6 +31,8 @@ required_files = [
     CANON / "assets/data/telemetry.json",
     CANON / "assets/data/mechanics.json",
     CANON / "assets/data/workshop-tasks.json",
+    CANON / "assets/data/track-context.json",
+    CANON / "assets/data/event-schedule.json",
     CANONICAL_LOGO,
 ]
 for f in required_files:

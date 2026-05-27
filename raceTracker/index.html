@@ -51,7 +51,24 @@
     <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
     <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
     <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
-    <div class="card kpi"><p class="label">Upcoming sessions</p><p class="value">5</p><p class="delta up">Today · Orlando</p></div>
+    <div class="card kpi"><p class="label">Track weather</p><p class="value" data-weather-temp>--°</p><p class="delta warn" data-weather-risk>Loading live context</p></div>
+  </div>
+  <div class="card full live-context-card" data-weather-panel>
+    <div class="section-headline">
+      <div>
+        <h3>Live Track Context</h3>
+        <p class="muted-copy">Real-world weather from Open-Meteo for <span data-track-name>Orlando, FL</span>. Built for race-day tire, jetting, and workshop readiness calls.</p>
+      </div>
+      <div class="track-selector" data-track-selector></div>
+      <span class="badge warn" data-weather-updated>Connecting</span>
+    </div>
+    <div class="weather-grid">
+      <div><span>Feels like</span><strong data-weather-feels>--°F</strong></div>
+      <div><span>Wind</span><strong data-weather-wind>-- mph</strong></div>
+      <div><span>Gusts</span><strong data-weather-gust>-- mph</strong></div>
+      <div><span>Rain now</span><strong data-weather-rain>-- in</strong></div>
+    </div>
+    <p class="mechanic-focus" data-weather-guidance>Loading live weather guidance...</p>
   </div>
   <div class="card split-2">
     <h3>Next Actions</h3>
@@ -75,7 +92,7 @@
   </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.5.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.6.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

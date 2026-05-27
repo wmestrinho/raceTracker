@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initActiveNav();
   initMechanicContext();
   initTelemetryUpdates();
+  initWeatherContext();
 });
 
 function initSidebarToggle() {
@@ -203,4 +204,213 @@ function setCard(card, row) {
   if (map.speed) map.speed.textContent = `${Number(row.speedKmh).toFixed(1)} km/h`;
   if (map.rpm) map.rpm.textContent = Number(row.rpm).toLocaleString();
   if (map.temp) map.temp.textContent = `${Math.round(Number(row.temperatureC))}°C`;
+}
+
+async function initWeatherContext() {
+  const panels = document.querySelectorAll('[data-weather-panel]');
+  const tempTargets = document.querySelectorAll('[data-weather-temp]');
+  if (!panels.length && !tempTargets.length) return;
+
+  const context = await loadTrackContext();
+  const tracks = context.tracks;
+  const storageKey = 'raceTracker.activeTrackId';
+  const getTrack = () => tracks.find(track => track.id === localStorage.getItem(storageKey)) || tracks.find(track => track.id === context.activeTrackId) || tracks[0];
+
+  renderTrackSelectors(tracks, getTrack().id, async (trackId) => {
+    localStorage.setItem(storageKey, trackId);
+    await updateWeatherForTrack(getTrack());
+  });
+  await updateWeatherForTrack(getTrack());
+  initEventSchedule(context);
+}
+
+async function updateWeatherForTrack(track) {
+  setText('[data-track-name]', track.shortName || track.name);
+  try {
+    const weather = await fetchCurrentWeather(track);
+    renderWeatherContext(track, weather);
+  } catch {
+    renderWeatherFallback(track);
+  }
+}
+
+function renderTrackSelectors(tracks, selectedId, onChange) {
+  document.querySelectorAll('[data-track-selector]').forEach(slot => {
+    slot.innerHTML = `
+      <label class="track-switcher">
+        <span>Track</span>
+        <select data-track-select aria-label="Select event track">
+          ${tracks.map(track => `<option value="${escapeHtml(track.id)}" ${track.id === selectedId ? 'selected' : ''}>${escapeHtml(track.name)}</option>`).join('')}
+        </select>
+      </label>
+    `;
+    slot.querySelector('[data-track-select]').addEventListener('change', (event) => {
+      onChange(event.target.value);
+      document.querySelectorAll('[data-track-select]').forEach(select => {
+        select.value = event.target.value;
+      });
+    });
+  });
+}
+
+async function loadTrackContext() {
+  const fallbackTrack = {
+    id: 'new-castle-motorsports-park',
+    name: 'New Castle Motorsports Park',
+    shortName: 'New Castle, IN',
+    latitude: 39.8496829,
+    longitude: -85.4080572,
+    timezone: 'America/Indiana/Indianapolis',
+    weatherProvider: 'Open-Meteo'
+  };
+  const fallback = {
+    activeTrackId: fallbackTrack.id,
+    tracks: [fallbackTrack]
+  };
+
+  try {
+    const res = await fetch('/assets/data/track-context.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Track context unavailable');
+    const data = await res.json();
+    if (Array.isArray(data.tracks) && data.tracks.length) return data;
+    if (data.activeTrack) return { activeTrackId: data.activeTrack.id || fallbackTrack.id, tracks: [data.activeTrack] };
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function fetchCurrentWeather(track) {
+  const params = new URLSearchParams({
+    latitude: String(track.latitude),
+    longitude: String(track.longitude),
+    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,wind_gusts_10m,weather_code',
+    temperature_unit: 'fahrenheit',
+    wind_speed_unit: 'mph',
+    precipitation_unit: 'inch',
+    timezone: track.timezone || 'auto'
+  });
+  const endpoint = `${track.weatherApi || 'https://api.open-meteo.com/v1/forecast'}?${params}`;
+  const res = await fetch(endpoint, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Weather HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data.current) throw new Error('Weather current payload missing');
+  return data.current;
+}
+
+function renderWeatherContext(track, weather) {
+  const temp = Number(weather.temperature_2m);
+  const feels = Number(weather.apparent_temperature);
+  const wind = Number(weather.wind_speed_10m);
+  const gust = Number(weather.wind_gusts_10m || wind);
+  const rain = Number(weather.precipitation || 0);
+  const risk = classifyWeatherRisk({ temp, wind, gust, rain, code: weather.weather_code });
+
+  setText('[data-weather-temp]', `${Math.round(temp)}°F`);
+  setText('[data-weather-feels]', `${Math.round(feels)}°F`);
+  setText('[data-weather-wind]', `${Math.round(wind)} mph`);
+  setText('[data-weather-gust]', `${Math.round(gust)} mph`);
+  setText('[data-weather-rain]', `${rain.toFixed(2)} in`);
+  setText('[data-weather-risk]', risk.label);
+  setText('[data-weather-guidance]', risk.guidance);
+  setText('[data-weather-updated]', formatWeatherTime(weather.time, track.timezone));
+  setWeatherBadgeState(risk.state);
+}
+
+function renderWeatherFallback(track) {
+  setText('[data-weather-temp]', '--°F');
+  setText('[data-weather-feels]', '--°F');
+  setText('[data-weather-wind]', '-- mph');
+  setText('[data-weather-gust]', '-- mph');
+  setText('[data-weather-rain]', '-- in');
+  setText('[data-weather-risk]', 'Offline');
+  setText('[data-weather-guidance]', `Live weather is unavailable. Confirm ${track.shortName || track.name} conditions manually before session calls.`);
+  setText('[data-weather-updated]', 'Offline');
+  setWeatherBadgeState('warn');
+}
+
+function classifyWeatherRisk({ temp, wind, gust, rain, code }) {
+  const rainyCode = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(Number(code));
+  if (rain >= 0.03 || rainyCode || gust >= 28) {
+    return {
+      state: 'alert',
+      label: 'Weather risk high',
+      guidance: 'Track conditions can move quickly. Prioritize rain setup, visor prep, tire pressure notes, and extra brake/fuel checks before release.'
+    };
+  }
+  if (wind >= 14 || gust >= 20 || temp >= 92 || temp <= 50) {
+    return {
+      state: 'warn',
+      label: 'Watch conditions',
+      guidance: 'Flag the session for setup review. Re-check pressures, gearing/jetting assumptions, and driver feedback after the first run.'
+    };
+  }
+  return {
+    state: 'ok',
+    label: 'Good track window',
+    guidance: 'Conditions look stable. Keep normal pressure logs and compare telemetry against the current weather stamp.'
+  };
+}
+
+async function initEventSchedule(context) {
+  const body = document.querySelector('[data-event-schedule-body]');
+  if (!body) return;
+  try {
+    const res = await fetch('/assets/data/event-schedule.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Event schedule unavailable');
+    const data = await res.json();
+    renderEventSchedule(data, context.tracks);
+  } catch {
+    setText('[data-event-source-status]', 'Offline');
+  }
+}
+
+function renderEventSchedule(data, tracks) {
+  const body = document.querySelector('[data-event-schedule-body]');
+  if (!body) return;
+  const trackNames = new Map(tracks.map(track => [track.id, track.shortName || track.name]));
+  const events = Array.isArray(data.events) ? data.events : [];
+  if (!events.length) return;
+  body.innerHTML = events.map(event => {
+    const registration = event.registrationUrl
+      ? `<a href="${escapeHtml(event.registrationUrl)}" target="_blank" rel="noopener">${escapeHtml(event.registrationStatus || 'Open')}</a>`
+      : escapeHtml(event.registrationStatus || 'Provider needed');
+    return `
+      <tr>
+        <td>${escapeHtml(trackNames.get(event.trackId) || event.track || 'TBD')}</td>
+        <td>${escapeHtml(event.name || 'Connect official schedule')}</td>
+        <td>${escapeHtml(event.date || 'Source needed')}</td>
+        <td>${registration}</td>
+        <td>${escapeHtml(event.source || 'TBD')}</td>
+      </tr>
+    `;
+  }).join('');
+  setText('[data-event-source-status]', data.sourceStatus === 'connected' ? 'Connected' : 'Source needed');
+}
+
+function setText(selector, value) {
+  document.querySelectorAll(selector).forEach(el => {
+    el.textContent = value;
+  });
+}
+
+function setWeatherBadgeState(state) {
+  document.querySelectorAll('[data-weather-risk], [data-weather-updated]').forEach(el => {
+    el.classList.remove('ok', 'warn', 'alert', 'up', 'down');
+    if (el.classList.contains('badge')) el.classList.add(state);
+    if (el.classList.contains('delta')) {
+      el.classList.add(state === 'ok' ? 'up' : state === 'alert' ? 'down' : 'warn');
+    }
+  });
+}
+
+function formatWeatherTime(value, timezone) {
+  if (!value) return 'Live';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Live';
+  return date.toLocaleTimeString([], {
+    timeZone: timezone || undefined,
+    hour: 'numeric',
+    minute: '2-digit'
+  });
 }

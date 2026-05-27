@@ -249,6 +249,67 @@ a { color: inherit; text-decoration: none; }
 .split-4 { grid-column: span 3; }
 .full { grid-column: 1 / -1; }
 
+
+.section-headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.live-context-card {
+  border-top-color: var(--accent-blue);
+}
+.track-selector {
+  margin-left: auto;
+}
+.track-switcher {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.track-switcher select {
+  appearance: none;
+  border: 1px solid var(--accent-blue);
+  border-radius: 0;
+  background: linear-gradient(90deg, #fff, var(--accent-blue-soft));
+  color: var(--ink);
+  font-weight: 900;
+  max-width: 260px;
+  padding: .46rem 2rem .46rem .65rem;
+  box-shadow: 0 0 0 3px rgba(18,157,240,.08);
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+  margin-top: .85rem;
+}
+.weather-grid div {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-soft), #fff);
+  padding: .75rem;
+}
+.weather-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.weather-grid strong {
+  display: block;
+  margin-top: .25rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .footer {
   color: var(--muted);
   font-size: .85rem;
@@ -324,6 +385,7 @@ a { color: inherit; text-decoration: none; }
   .mobile-toggle { display: inline-block; }
   .topbar::after { display:none; }
   .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .weather-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .split-2, .split-3, .split-4 { grid-column: 1 / -1; }
 }
 
@@ -332,5 +394,9 @@ a { color: inherit; text-decoration: none; }
   .topbar { align-items: flex-start; }
   .topbar h1 { font-size: .96rem; }
   .kpi-grid { grid-template-columns: 1fr; }
+  .weather-grid { grid-template-columns: 1fr; }
+  .section-headline { flex-direction: column; }
+  .track-selector { margin-left: 0; }
+  .track-switcher { align-items: flex-start; flex-direction: column; }
   .card.full:first-child { background: linear-gradient(180deg, var(--carbon), #07131b); }
 }
