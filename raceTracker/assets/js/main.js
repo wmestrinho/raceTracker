@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWeatherContext();
   initAddTaskForm();
   initSetupSheet();
+  initTeamRoster();
 });
 
 function initSidebarToggle() {
@@ -60,6 +61,8 @@ async function initMechanicContext() {
     localStorage.setItem(storageKey, name);
     renderMechanicSlots(name);
     updateMechanicOwnedTasks(name);
+    const person = mechanicData.mechanics.find(m => m.name === name);
+    applyNavClearance(person ? person.clearance : 'staff');
   };
 
   function renderMechanicSlots(selected) {
@@ -78,17 +81,33 @@ async function initMechanicContext() {
     });
   }
 
-  renderMechanicSlots(getSelected());
-  updateMechanicOwnedTasks(getSelected());
+  const selected = getSelected();
+  renderMechanicSlots(selected);
+  updateMechanicOwnedTasks(selected);
+  const person = mechanicData.mechanics.find(m => m.name === selected);
+  applyNavClearance(person ? person.clearance : 'staff');
+}
+
+function applyNavClearance(clearance) {
+  const navLinks = document.querySelectorAll('.nav-link[data-min-clearance]');
+  navLinks.forEach(link => {
+    const min = link.getAttribute('data-min-clearance');
+    const order = { admin: 3, staff: 2, driver: 1, parent: 0 };
+    const userLevel  = order[clearance] ?? 1;
+    const minLevel   = order[min]       ?? 1;
+    link.style.display = userLevel >= minLevel ? '' : 'none';
+  });
 }
 
 async function loadMechanicData() {
   const fallback = {
     mechanics: [
-      { name: 'Luiz' },
-      { name: 'Leo' },
-      { name: 'Nico' },
-      { name: 'Paula' }
+      { name: 'Nuno',  role: 'Team Principal / Driver',          clearance: 'admin' },
+      { name: 'Seth',  role: 'Team Owner',                       clearance: 'admin' },
+      { name: 'Enzo',  role: 'Coach Mechanic / Telemetry',       clearance: 'staff' },
+      { name: 'Tyler', role: 'Mechanic',                         clearance: 'staff' },
+      { name: 'Jason', role: 'Mechanic',                         clearance: 'staff' },
+      { name: 'Luiz',  role: 'Trackside Mechanic (AP)',          clearance: 'staff' }
     ],
     tasks: [
       { owner: 'Luiz', kart: 'Kart #3', task: 'Rear axle alignment', due: 'Now', dueState: 'now', status: 'Due now', priority: 'alert' },
@@ -260,13 +279,22 @@ async function updateWeatherForTrack(track) {
 }
 
 function renderTrackSelectors(tracks, selectedId, onChange) {
+  const primary = tracks.filter(t => t.priority === 'primary');
+  const venues  = tracks.filter(t => t.priority === 'venue');
+
+  const optionHtml = (track) =>
+    `<option value="${escapeHtml(track.id)}" ${track.id === selectedId ? 'selected' : ''}>${escapeHtml(track.shortName || track.name)}</option>`;
+
+  const groupsHtml = [
+    primary.length ? `<optgroup label="Karting Tracks">${primary.map(optionHtml).join('')}</optgroup>` : '',
+    venues.length  ? `<optgroup label="NASCAR / Major Venues">${venues.map(optionHtml).join('')}</optgroup>` : '',
+  ].filter(Boolean).join('') || tracks.map(optionHtml).join('');
+
   document.querySelectorAll('[data-track-selector]').forEach(slot => {
     slot.innerHTML = `
       <label class="track-switcher">
         <span>Track</span>
-        <select data-track-select aria-label="Select event track">
-          ${tracks.map(track => `<option value="${escapeHtml(track.id)}" ${track.id === selectedId ? 'selected' : ''}>${escapeHtml(track.name)}</option>`).join('')}
-        </select>
+        <select data-track-select aria-label="Select event track">${groupsHtml}</select>
       </label>
     `;
     slot.querySelector('[data-track-select]').addEventListener('change', (event) => {
@@ -457,6 +485,45 @@ function formatWeatherTime(value, timezone) {
     hour: 'numeric',
     minute: '2-digit'
   });
+}
+
+// ── Team roster ───────────────────────────────────────────────
+
+async function initTeamRoster() {
+  const staffGrid  = document.querySelector('[data-team-staff-grid]');
+  const driverGrid = document.querySelector('[data-team-driver-grid]');
+  const parentGrid = document.querySelector('[data-team-parent-grid]');
+  if (!staffGrid && !driverGrid && !parentGrid) return;
+
+  let data;
+  try {
+    const res = await fetch('/assets/data/mechanics.json', { cache: 'no-store' });
+    data = await res.json();
+  } catch { return; }
+
+  const renderCard = (person) => `
+    <div class="team-person-card">
+      <div class="team-person-header">
+        <span class="team-person-name">${escapeHtml(person.name)}</span>
+        <span class="badge clearance-${escapeHtml(person.clearance || 'staff')}">${escapeHtml(person.clearance || 'staff')}</span>
+      </div>
+      <div class="team-person-role">${escapeHtml(person.role || '')}</div>
+      ${person.specialty ? `<div class="team-person-specialty">${escapeHtml(person.specialty)}</div>` : ''}
+      ${person.shift     ? `<div class="team-person-shift">Shift: ${escapeHtml(person.shift)}</div>` : ''}
+      ${person.class     ? `<div class="team-person-shift">Class: ${escapeHtml(person.class)}</div>` : ''}
+      ${person.note      ? `<div class="team-person-note">${escapeHtml(person.note)}</div>` : ''}
+    </div>
+  `;
+
+  if (staffGrid && data.mechanics) {
+    staffGrid.innerHTML = data.mechanics.map(renderCard).join('');
+  }
+  if (driverGrid && data.driverRoster) {
+    driverGrid.innerHTML = data.driverRoster.map(renderCard).join('');
+  }
+  if (parentGrid && data.guardianRoster) {
+    parentGrid.innerHTML = data.guardianRoster.map(renderCard).join('');
+  }
 }
 
 // ── Add-task form ─────────────────────────────────────────────

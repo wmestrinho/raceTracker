@@ -418,6 +418,26 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.5;
 }
 
+/* ── Clearance badges ────────────────────────────────────────── */
+.clearance-admin  { background:#dff3ff; color:#0d6fa8; border-color:#129df0; }
+.clearance-staff  { background:var(--primary-soft); color:var(--primary-dark); border-color:var(--primary-dark); }
+.clearance-driver { background:#fff8e1; color:#7a5000; border-color:#e6a817; }
+.clearance-parent { background:#f4f5f7; color:#5f6872; border-color:#aeb8ad; }
+
+/* ── Team roster ─────────────────────────────────────────────── */
+.team-roster-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:.75rem; }
+.team-person-card { border:1px solid var(--border); background:var(--surface-soft); padding:.85rem; }
+.team-person-header { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:.4rem; }
+.team-person-name { font-weight:900; font-size:.98rem; }
+.team-person-role { font-size:.8rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.28rem; }
+.team-person-specialty { font-size:.82rem; color:var(--text); line-height:1.4; }
+.team-person-shift { font-size:.76rem; color:var(--muted); margin-top:.2rem; }
+.team-person-note { font-size:.75rem; color:var(--muted); margin-top:.35rem; font-style:italic; border-top:1px solid var(--border); padding-top:.35rem; }
+
+.clearance-legend { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:.75rem; margin-top:.85rem; }
+.clearance-legend div { border:1px solid var(--border); background:var(--surface-soft); padding:.75rem; display:flex; flex-direction:column; gap:.4rem; }
+.clearance-legend p { font-size:.82rem; color:var(--muted); line-height:1.4; }
+
 /* ── Lap timer ───────────────────────────────────────────────── */
 .timer-kart-row { display:flex; align-items:center; gap:1rem; margin-bottom:.85rem; }
 .timer-kart-label { display:flex; align-items:center; gap:.5rem; font-size:.78rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }

@@ -1,40 +1,80 @@
 {
   "updatedAt": "2026-06-02T00:00:00-04:00",
+  "clearanceLevels": {
+    "admin":  "Full access — owner/principal. Sees all data, clearance info, and settings.",
+    "staff":  "Ops access — mechanics, coaches, consultants. Sees all operational pages.",
+    "driver": "Driver access — own telemetry, lap times, schedule, registration status.",
+    "parent": "View-only — schedule, registration lists, and driver status."
+  },
   "mechanics": [
     {
       "id": "nuno",
       "name": "Nuno",
       "role": "Team Principal / Driver",
+      "clearance": "admin",
       "shift": "All day",
       "specialty": "Race strategy and driver feedback"
     },
     {
+      "id": "seth",
+      "name": "Seth",
+      "role": "Team Owner",
+      "clearance": "admin",
+      "shift": "All day",
+      "specialty": "Team management and operations"
+    },
+    {
+      "id": "enzo",
+      "name": "Enzo",
+      "role": "Coach Mechanic / Telemetry Supervisor",
+      "clearance": "staff",
+      "shift": "Race days",
+      "specialty": "Driver coaching and live telemetry"
+    },
+    {
+      "id": "tyler",
+      "name": "Tyler",
+      "role": "Mechanic",
+      "clearance": "staff",
+      "shift": "Race days",
+      "specialty": "Kart setup and maintenance"
+    },
+    {
+      "id": "jason",
+      "name": "Jason",
+      "role": "Mechanic",
+      "clearance": "staff",
+      "shift": "Race days",
+      "specialty": "Kart setup and maintenance"
+    },
+    {
       "id": "luiz",
       "name": "Luiz",
-      "role": "Trackside mechanic",
+      "role": "Trackside Mechanic (AP)",
+      "clearance": "staff",
       "shift": "07:00-18:00",
-      "specialty": "Race-day execution"
-    },
+      "specialty": "Race-day execution and AP ops"
+    }
+  ],
+  "driverRoster": [
     {
-      "id": "leo",
-      "name": "Leo",
-      "role": "Lead mechanic",
-      "shift": "08:00-18:00",
-      "specialty": "Chassis alignment"
-    },
+      "id": "driver-1",
+      "name": "Add Driver",
+      "role": "Driver",
+      "clearance": "driver",
+      "kartNumber": "--",
+      "class": "--",
+      "note": "Replace with real driver name, kart number, and class once confirmed."
+    }
+  ],
+  "guardianRoster": [
     {
-      "id": "nico",
-      "name": "Nico",
-      "role": "Telemetry mechanic",
-      "shift": "09:00-17:00",
-      "specialty": "Sensors and live feed QA"
-    },
-    {
-      "id": "paula",
-      "name": "Paula",
-      "role": "Ops coordinator",
-      "shift": "07:00-16:00",
-      "specialty": "Session logistics"
+      "id": "parent-1",
+      "name": "Add Parent / Guardian",
+      "role": "Parent",
+      "clearance": "parent",
+      "linkedDriverId": "driver-1",
+      "note": "View-only access: schedule, registration lists, and linked driver status."
     }
   ]
 }

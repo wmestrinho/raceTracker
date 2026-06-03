@@ -82,12 +82,32 @@ async function pullEntries(event) {
 
   try {
     let apiUrl;
-    if (event.registrationProvider === 'motorsportreg' && event.motorsportregEventId) {
+    const p = event.registrationProvider;
+    if (p === 'motorsportreg' && event.motorsportregEventId) {
       apiUrl = `/api/registrations?source=motorsportreg&eventId=${encodeURIComponent(event.motorsportregEventId)}`;
-    } else if (event.registrationProvider === 'raceselect' && event.raceSelectUrl) {
+    } else if (p === 'raceselect' && event.raceSelectUrl) {
       apiUrl = `/api/registrations?source=raceselect&eventUrl=${encodeURIComponent(event.raceSelectUrl)}`;
+    } else if (p === 'mylaps' && event.mylapsEventId) {
+      apiUrl = `/api/registrations?source=mylaps&eventId=${encodeURIComponent(event.mylapsEventId)}`;
+    } else if (p === 'raceentry' && event.raceEntryUrl) {
+      apiUrl = `/api/registrations?source=raceentry&eventUrl=${encodeURIComponent(event.raceEntryUrl)}`;
+    } else if (p === 'racemonitor' && event.raceMonitorEventId) {
+      apiUrl = `/api/registrations?source=racemonitor&eventId=${encodeURIComponent(event.raceMonitorEventId)}`;
+    } else if (p === 'google-sheets' && event.googleSheetsCsvUrl) {
+      apiUrl = `/api/registrations?source=google-sheets&eventUrl=${encodeURIComponent(event.googleSheetsCsvUrl)}`;
+    } else if (p === 'generic-html' && event.registrationUrl) {
+      apiUrl = `/api/registrations?source=generic-html&eventUrl=${encodeURIComponent(event.registrationUrl)}`;
+    } else if (p === 'motorsport-australia' && event.motorsportAuEventId) {
+      apiUrl = `/api/registrations?source=motorsport-australia&eventId=${encodeURIComponent(event.motorsportAuEventId)}`;
     } else {
-      container.innerHTML = '<p class="reg-error">No API source configured for this event. Add <code>motorsportregEventId</code> or <code>raceSelectUrl</code> to the event in event-schedule.json.</p>';
+      const fieldMap = {
+        'motorsportreg': 'motorsportregEventId', 'raceselect': 'raceSelectUrl',
+        'mylaps': 'mylapsEventId', 'raceentry': 'raceEntryUrl',
+        'racemonitor': 'raceMonitorEventId', 'google-sheets': 'googleSheetsCsvUrl',
+        'generic-html': 'registrationUrl', 'motorsport-australia': 'motorsportAuEventId'
+      };
+      const field = fieldMap[p] || 'source ID or URL field';
+      container.innerHTML = `<p class="reg-error">No pull source configured. Add <code>${escHtml(field)}</code> to this event in event-schedule.json.</p>`;
       if (btn) { btn.disabled = false; btn.textContent = '⬇ Pull Entries'; }
       return;
     }

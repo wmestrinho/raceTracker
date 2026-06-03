@@ -20,16 +20,16 @@
       <div class="nav-group">
         <p class="nav-group-title">Core</p>
         <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
-        <a class="nav-link" data-page="telemetry" href="/telemetry.html">Telemetry</a>
-        <a class="nav-link" data-page="workshop" href="/workshop.html">Workshop</a>
-        <a class="nav-link" data-page="inventory" href="/inventory.html">Inventory</a>
+        <a class="nav-link" data-page="telemetry" href="/telemetry.html" data-min-clearance="staff">Telemetry</a>
+        <a class="nav-link" data-page="workshop" href="/workshop.html" data-min-clearance="staff">Workshop</a>
+        <a class="nav-link" data-page="inventory" href="/inventory.html" data-min-clearance="staff">Inventory</a>
       </div>
       <div class="nav-group">
         <p class="nav-group-title">Ops</p>
         <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
         <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
-        <a class="nav-link" data-page="team" href="/team.html">Team</a>
-        <a class="nav-link" data-page="settings" href="/settings.html">Settings</a>
+        <a class="nav-link" data-page="team" href="/team.html" data-min-clearance="staff">Team</a>
+        <a class="nav-link" data-page="settings" href="/settings.html" data-min-clearance="admin">Settings</a>
       </div>
     </aside>
     <div class="main">
@@ -45,19 +45,52 @@
         
 <section class="page-grid">
   <div class="card full">
-    <h3>Team Roster</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Name</th><th>Role</th><th>Shift</th><th>Current focus</th></tr></thead>
-      <tbody>
-        <tr><td>Leo</td><td>Lead mechanic</td><td>08:00-18:00</td><td>Axle alignment</td></tr>
-        <tr><td>Nico</td><td>Telemetry</td><td>09:00-17:00</td><td>Live feed QA</td></tr>
-        <tr><td>Paula</td><td>Ops coordinator</td><td>07:00-16:00</td><td>Session logistics</td></tr>
-      </tbody>
-    </table>
+    <h2>Team Roster</h2>
+    <p style="color:var(--muted);margin-top:.35rem;">Core operations team for race-day execution. Clearance controls data access — full auth requires Supabase backend (planned).</p>
+  </div>
+
+  <div class="card full" data-team-roster-panel>
+    <div class="section-headline">
+      <div>
+        <h3>Operations Staff</h3>
+        <p class="muted-copy">Admin and staff — full operational access.</p>
+      </div>
+      <span class="badge ok">6 members</span>
+    </div>
+    <div class="team-roster-grid" data-team-staff-grid style="margin-top:.85rem;">
+      <p class="muted-copy">Loading roster…</p>
+    </div>
+  </div>
+
+  <div class="card split-2">
+    <h3>Driver Roster</h3>
+    <p class="muted-copy" style="margin:.45rem 0 .85rem;">Drivers — access to own telemetry, lap times, schedule, and registration status.</p>
+    <div data-team-driver-grid>
+      <p class="muted-copy">Loading driver roster…</p>
+    </div>
+  </div>
+
+  <div class="card split-2">
+    <h3>Parent / Guardian Access</h3>
+    <p class="muted-copy" style="margin:.45rem 0 .85rem;">View-only — schedule, registration lists, and linked driver status.</p>
+    <div data-team-parent-grid>
+      <p class="muted-copy">Loading guardian roster…</p>
+    </div>
+  </div>
+
+  <div class="card full">
+    <h3>Clearance Levels</h3>
+    <div class="clearance-legend">
+      <div><span class="badge clearance-admin">Admin</span><p>Nuno, Seth — full access, all pages, team management and settings.</p></div>
+      <div><span class="badge clearance-staff">Staff</span><p>Enzo, Tyler, Jason, Luiz — all operational pages: workshop, telemetry, inventory, schedule, registrations.</p></div>
+      <div><span class="badge clearance-driver">Driver</span><p>Overview, telemetry (own data), schedule, and registrations. No workshop or settings.</p></div>
+      <div><span class="badge clearance-parent">Parent</span><p>Overview, schedule, and registrations only. Read-only view.</p></div>
+    </div>
+    <p class="muted-copy" style="margin-top:.75rem;font-size:.8rem;">Full auth enforcement requires the Supabase backend. Current clearance filters the sidebar nav for selected profiles.</p>
   </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.8.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.9.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>
