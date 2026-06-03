@@ -1,8 +1,18 @@
 {
-  "updatedAt": "2026-05-24T12:00:00-04:00",
+  "updatedAt": "2026-06-02T00:00:00-04:00",
   "tasks": [
     {
       "id": "tsk-001",
+      "owner": "Nuno",
+      "kart": "Race kart",
+      "task": "Pre-session driver debrief",
+      "due": "Now",
+      "dueState": "now",
+      "status": "Due now",
+      "priority": "alert"
+    },
+    {
+      "id": "tsk-002",
       "owner": "Luiz",
       "kart": "Kart #3",
       "task": "Rear axle alignment",
@@ -12,7 +22,7 @@
       "priority": "alert"
     },
     {
-      "id": "tsk-002",
+      "id": "tsk-003",
       "owner": "Luiz",
       "kart": "Kart #1",
       "task": "Fuel line inspection",
@@ -22,7 +32,7 @@
       "priority": "warn"
     },
     {
-      "id": "tsk-003",
+      "id": "tsk-004",
       "owner": "Leo",
       "kart": "Kart #2",
       "task": "Brake pad check",
@@ -32,7 +42,7 @@
       "priority": "warn"
     },
     {
-      "id": "tsk-004",
+      "id": "tsk-005",
       "owner": "Leo",
       "kart": "Kart #4",
       "task": "Front-end toe reset",
@@ -42,7 +52,7 @@
       "priority": "warn"
     },
     {
-      "id": "tsk-005",
+      "id": "tsk-006",
       "owner": "Nico",
       "kart": "Kart #1",
       "task": "Telemetry sensor QA",
@@ -52,7 +62,7 @@
       "priority": "ok"
     },
     {
-      "id": "tsk-006",
+      "id": "tsk-007",
       "owner": "Paula",
       "kart": "Team",
       "task": "Session staging checklist",

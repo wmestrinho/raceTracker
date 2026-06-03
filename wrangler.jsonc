@@ -1,14 +1,14 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "racetracker",
+  "account_id": "0b09c8ae82faf3599688c835251cb1aa",
+  "main": "worker.js",
   "compatibility_date": "2026-05-23",
+  "assets": {
+    "directory": "raceTracker"
+  },
   "observability": {
     "enabled": true
   },
-  "pages_build_output_dir": "raceTracker",
-  "custom_domain": [
-    "tracker.absolutelyplausible.com"
-  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

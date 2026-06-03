@@ -1,103 +1,79 @@
 {
-  "updatedAt": "2026-05-27T00:00:00-04:00",
-  "sourceStatus": "candidate-sources-found",
-  "notes": "Likely event/registration sources have been identified. Next step is confirming which provider Sergio/Nuno actually uses for each event, then wiring ingestion to Google Sheets bridge or Supabase.",
-  "sourceCandidates": [
-    {
-      "id": "ncmp-official-schedule",
-      "trackId": "new-castle-motorsports-park",
-      "name": "NCMP Official Schedule",
-      "providerType": "official-site",
-      "url": "https://newcastlemotorsportspark.com/schedule",
-      "confidence": "high",
-      "notes": "Official schedule page exposes a 2026 NCMP schedule PDF plus KRA race-day schedule PDFs."
-    },
-    {
-      "id": "route66-raceselect",
-      "trackId": "new-castle-motorsports-park",
-      "name": "Route 66 Sprint Series Race Select",
-      "providerType": "raceselect",
-      "url": "https://raceselect.com/route66/2026",
-      "confidence": "medium",
-      "notes": "Route 66 schedule links online registration through Race Select; validate whether the active NCMP event is on this series calendar."
-    },
-    {
-      "id": "uspks-raceselect",
-      "trackId": "new-castle-motorsports-park",
-      "name": "USPKS Race Select",
-      "providerType": "raceselect",
-      "url": "https://raceselect.com/uspks/2026",
-      "confidence": "medium",
-      "notes": "USPKS schedule links online registration through Race Select; validate track/event match per round."
-    },
-    {
-      "id": "trackhouse-official-events",
-      "trackId": "trackhouse-motorplex",
-      "name": "Trackhouse Official Events",
-      "providerType": "official-site",
-      "url": "https://trackhousemotorplex.com/events/",
-      "confidence": "high",
-      "notes": "Official Trackhouse event listings include Karting Challenge pages."
-    },
-    {
-      "id": "trackhouse-motorsportreg",
-      "trackId": "trackhouse-motorplex",
-      "name": "Trackhouse MotorsportReg Venue",
-      "providerType": "motorsportreg",
-      "url": "https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc",
-      "confidence": "high",
-      "notes": "MotorsportReg has a venue page for Trackhouse Motorplex and is a likely registration source for at least some events."
-    },
-    {
-      "id": "trackhouse-clubspeed",
-      "trackId": "trackhouse-motorplex",
-      "name": "Trackhouse Clubspeed Booking/Timing",
-      "providerType": "clubspeed",
-      "url": "https://bookings.clubspeed.com/MM/MMMooresville",
-      "confidence": "medium",
-      "notes": "Trackhouse links Clubspeed for booking/timing; useful for rentals/timing context, likely not the main competitive registration source."
-    }
-  ],
+  "updatedAt": "2026-05-31",
+  "sourceStatus": "infrastructure-ready",
+  "notes": "Add real motorsportregEventId values from MotorsportReg event URLs once Nuno confirms which rounds he is entering. Format: the UID in the URL https://www.motorsportreg.com/events/event-name-XXXXXX — XXXXXX is the eventId.",
   "events": [
     {
-      "id": "ncmp-official-schedule-review",
-      "trackId": "new-castle-motorsports-park",
-      "track": "New Castle Motorsports Park",
-      "name": "Review official NCMP schedule + KRA race-day PDFs",
-      "date": "Source candidate found",
-      "registrationStatus": "Confirm provider",
-      "registrationUrl": "https://newcastlemotorsportspark.com/schedule",
-      "source": "NCMP official schedule"
+      "id":                   "ncmp-rok-cup-r1-2026",
+      "trackId":              "new-castle-motorsports-park",
+      "track":                "New Castle Motorsports Park",
+      "name":                 "ROK Cup USA — Round 1",
+      "date":                 "TBD — confirm with Nuno",
+      "class":                "ROK Senior",
+      "registrationProvider": "motorsportreg",
+      "motorsportregEventId": "REPLACE_WITH_REAL_EVENT_ID",
+      "registrationUrl":      "https://www.motorsportreg.com/events/",
+      "registrationStatus":   "Pending confirmation",
+      "source":               "MotorsportReg"
     },
     {
-      "id": "ncmp-raceselect-review",
-      "trackId": "new-castle-motorsports-park",
-      "track": "New Castle Motorsports Park",
-      "name": "Validate Race Select series registration for NCMP events",
-      "date": "Source candidate found",
-      "registrationStatus": "Candidate",
-      "registrationUrl": "https://raceselect.com/route66/2026",
-      "source": "Race Select / Route 66"
+      "id":                   "ncmp-route66-r1-2026",
+      "trackId":              "new-castle-motorsports-park",
+      "track":                "New Castle Motorsports Park",
+      "name":                 "Route 66 Sprint Series — Round 1",
+      "date":                 "TBD — confirm with Nuno",
+      "class":                "ROK Senior",
+      "registrationProvider": "raceselect",
+      "raceSelectUrl":        "https://raceselect.com/route66/2026",
+      "registrationUrl":      "https://raceselect.com/route66/2026",
+      "registrationStatus":   "Pending confirmation",
+      "source":               "RaceSelect / Route 66"
     },
     {
-      "id": "trackhouse-official-events-review",
-      "trackId": "trackhouse-motorplex",
-      "track": "Trackhouse Motorplex",
-      "name": "Review official Trackhouse events and Karting Challenge pages",
-      "date": "Source candidate found",
-      "registrationStatus": "Confirm provider",
-      "registrationUrl": "https://trackhousemotorplex.com/events/",
-      "source": "Trackhouse official events"
+      "id":                   "trackhouse-challenge-r1-2026",
+      "trackId":              "trackhouse-motorplex",
+      "track":                "Trackhouse Motorplex",
+      "name":                 "Trackhouse Karting Challenge — Round 1",
+      "date":                 "TBD — confirm with Nuno",
+      "class":                "ROK Senior",
+      "registrationProvider": "motorsportreg",
+      "motorsportregEventId": "REPLACE_WITH_REAL_EVENT_ID",
+      "registrationUrl":      "https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc",
+      "registrationStatus":   "Pending confirmation",
+      "source":               "MotorsportReg / Trackhouse"
     },
     {
-      "id": "trackhouse-motorsportreg-review",
-      "trackId": "trackhouse-motorplex",
-      "track": "Trackhouse Motorplex",
-      "name": "Validate MotorsportReg venue feed for registration lists",
-      "date": "Source candidate found",
-      "registrationStatus": "Candidate",
-      "registrationUrl": "https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc",
-      "source": "MotorsportReg"
+      "id":                   "uspks-ncmp-r1-2026",
+      "trackId":              "new-castle-motorsports-park",
+      "track":                "New Castle Motorsports Park",
+      "name":                 "USPKS — Round 1",
+      "date":                 "TBD — confirm with Nuno",
+      "class":                "X30 Senior",
+      "registrationProvider": "raceselect",
+      "raceSelectUrl":        "https://raceselect.com/uspks/2026",
+      "registrationUrl":      "https://raceselect.com/uspks/2026",
+      "registrationStatus":   "Pending confirmation",
+      "source":               "RaceSelect / USPKS"
+    }
+  ],
+  "sourceCandidates": [
+    {
+      "id":           "ncmp-official-schedule",
+      "trackId":      "new-castle-motorsports-park",
+      "name":         "NCMP Official Schedule",
+      "providerType": "official-site",
+      "url":          "https://newcastlemotorsportspark.com/schedule",
+      "confidence":   "high",
+      "notes":        "Official schedule page. Cross-reference to find MotorsportReg event IDs."
+    },
+    {
+      "id":           "trackhouse-motorsportreg",
+      "trackId":      "trackhouse-motorplex",
+      "name":         "Trackhouse MotorsportReg Venue",
+      "providerType": "motorsportreg",
+      "url":          "https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc",
+      "confidence":   "high",
+      "notes":        "Active MotorsportReg venue page. Event IDs are in the event URLs."
     }
   ]
 }

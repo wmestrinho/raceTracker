@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory | raceTracker</title>
-  <meta name="description" content="raceTracker karting operations dashboard">
+  <title>Registrations | raceTracker</title>
+  <meta name="description" content="raceTracker event registration lists">
   <meta name="theme-color" content="#bfff00">
   <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="inventory">
+<body data-page="registrations">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <aside id="primary-sidebar" class="sidebar" aria-label="Primary">
@@ -35,26 +35,52 @@
     <div class="main">
       <header class="topbar" role="banner">
         <div>
-          <h1>Inventory</h1>
-          <p>Parts stock, reorder points, shortages</p>
+          <h1>Registrations</h1>
+          <p>Official entry lists for every event</p>
         </div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </header>
-      <main id="main-content" class="content" role="main">
-        
+      <main id="main-content" class="content" role="main" data-registrations-page>
+
 <section class="page-grid">
   <div class="card full">
-    <h3>Parts Inventory</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Part</th><th>In stock</th><th>Reorder point</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>Rear Tires (sets)</td><td>12</td><td>8</td><td><span class="badge ok">Healthy</span></td></tr>
-        <tr><td>Brake Pads</td><td>24</td><td>20</td><td><span class="badge warn">Watch</span></td></tr>
-        <tr><td>Engine Oil (liters)</td><td>8</td><td>10</td><td><span class="badge alert">Low</span></td></tr>
-        <tr><td>Spark Plugs</td><td>30</td><td>18</td><td><span class="badge ok">Healthy</span></td></tr>
-      </tbody>
-    </table>
+    <h2>Event Registration Lists</h2>
+    <p style="color:var(--muted);margin-top:.35rem;">Pull the official driver entry list for any event directly from MotorsportReg or RaceSelect. Data is cached locally and refreshes on demand. Real event IDs must be confirmed with Nuno before live pulls.</p>
+  </div>
+
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Upcoming Events</h3>
+        <p class="muted-copy">Click "Pull Entries" on any event to fetch the full registered driver list, grouped by class.</p>
+      </div>
+      <span class="badge warn">Live pull</span>
+    </div>
+    <div data-reg-events style="margin-top:1rem;">
+      <p class="muted-copy">Loading events…</p>
+    </div>
+  </div>
+
+  <div class="card full">
+    <h3>How This Works</h3>
+    <div class="integration-path">
+      <div>
+        <span>MotorsportReg</span>
+        <strong>REST API</strong>
+        <small>Entry lists via <code>/rest/events/{id}/entries.json</code>. Public events may work without a key; private events need <code>MOTORSPORTREG_APIKEY</code> set as a Worker secret.</small>
+      </div>
+      <div>
+        <span>RaceSelect</span>
+        <strong>HTML parse</strong>
+        <small>No public API — the Worker fetches the event page and parses the registration table. Works for any RaceSelect event URL.</small>
+      </div>
+      <div>
+        <span>Setup</span>
+        <strong>Add real event IDs</strong>
+        <small>Update <code>event-schedule.json</code> with the real MotorsportReg event UID (from the event URL) once Nuno confirms which rounds he's entering.</small>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -63,5 +89,9 @@
     </div>
   </div>
   <script src="/assets/js/main.js"></script>
+  <script type="module">
+    import { initRegistrations } from '/assets/js/registrations.js';
+    initRegistrations();
+  </script>
 </body>
 </html>

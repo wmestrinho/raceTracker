@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initMechanicContext();
   initTelemetryUpdates();
   initWeatherContext();
+  initAddTaskForm();
+  initSetupSheet();
 });
 
 function initSidebarToggle() {
@@ -222,6 +224,29 @@ async function initWeatherContext() {
   });
   await updateWeatherForTrack(getTrack());
   initEventSchedule(context);
+  startWeatherRefreshCountdown(getTrack);
+}
+
+const WEATHER_REFRESH_MS = 5 * 60 * 1000;
+
+function startWeatherRefreshCountdown(getTrack) {
+  let nextRefresh = Date.now() + WEATHER_REFRESH_MS;
+
+  const tick = () => {
+    const remaining = Math.max(0, nextRefresh - Date.now());
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const label = remaining > 0 ? `Refresh in ${mins}:${String(secs).padStart(2, '0')}` : 'Refreshing…';
+    setText('[data-weather-countdown]', label);
+  };
+
+  setInterval(async () => {
+    nextRefresh = Date.now() + WEATHER_REFRESH_MS;
+    await updateWeatherForTrack(getTrack());
+  }, WEATHER_REFRESH_MS);
+
+  setInterval(tick, 1000);
+  tick();
 }
 
 async function updateWeatherForTrack(track) {
@@ -431,5 +456,93 @@ function formatWeatherTime(value, timezone) {
     timeZone: timezone || undefined,
     hour: 'numeric',
     minute: '2-digit'
+  });
+}
+
+// ── Add-task form ─────────────────────────────────────────────
+
+const TASKS_LOCAL_KEY = 'raceTracker.localTasks';
+
+function initAddTaskForm() {
+  const form = document.querySelector('[data-add-task-form]');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const task = {
+      id: `tsk-local-${Date.now()}`,
+      owner: data.get('owner') || 'Team',
+      kart: data.get('kart') || 'Team',
+      task: data.get('task') || '',
+      due: data.get('due') || 'Now',
+      dueState: (data.get('due') || 'Now').toLowerCase() === 'now' ? 'now' : 'next',
+      status: 'Pending',
+      priority: 'warn'
+    };
+    if (!task.task.trim()) return;
+    saveLocalTask(task);
+    appendTaskRow(task);
+    form.reset();
+  });
+
+  renderLocalTasks();
+}
+
+function getLocalTasks() {
+  try { return JSON.parse(localStorage.getItem(TASKS_LOCAL_KEY) || '[]'); } catch { return []; }
+}
+
+function saveLocalTask(task) {
+  const tasks = getLocalTasks();
+  tasks.push(task);
+  try { localStorage.setItem(TASKS_LOCAL_KEY, JSON.stringify(tasks)); } catch {}
+}
+
+function renderLocalTasks() {
+  const tasks = getLocalTasks();
+  tasks.forEach(task => appendTaskRow(task));
+}
+
+function appendTaskRow(task) {
+  const body = document.querySelector('[data-workshop-task-body]');
+  if (!body) return;
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-owner', escapeHtml(task.owner));
+  tr.setAttribute('data-due', escapeHtml(task.dueState || 'next'));
+  tr.setAttribute('data-local-task', task.id);
+  tr.innerHTML = `
+    <td>${escapeHtml(task.owner)}</td>
+    <td>${escapeHtml(task.kart)}</td>
+    <td>${escapeHtml(task.task)}</td>
+    <td>${escapeHtml(task.due)}</td>
+    <td><span class="badge ${escapeHtml(task.priority || 'warn')}">${escapeHtml(task.status)}</span></td>
+  `;
+  body.appendChild(tr);
+}
+
+// ── Setup sheet ───────────────────────────────────────────────
+
+const SETUP_LOCAL_KEY = 'raceTracker.setupSheet';
+
+function initSetupSheet() {
+  const cards = document.querySelectorAll('[data-setup-kart]');
+  if (!cards.length) return;
+
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(SETUP_LOCAL_KEY) || '{}'); } catch { return {}; } })();
+
+  cards.forEach(card => {
+    const kartId = card.getAttribute('data-setup-kart');
+    const kartData = saved[kartId] || {};
+    card.querySelectorAll('[data-setup-field]').forEach(input => {
+      const field = input.getAttribute('data-setup-field');
+      if (kartData[field] !== undefined) input.value = kartData[field];
+      input.addEventListener('input', () => {
+        const all = (() => { try { return JSON.parse(localStorage.getItem(SETUP_LOCAL_KEY) || '{}'); } catch { return {}; } })();
+        if (!all[kartId]) all[kartId] = {};
+        all[kartId][field] = input.value;
+        try { localStorage.setItem(SETUP_LOCAL_KEY, JSON.stringify(all)); } catch {}
+      });
+    });
   });
 }

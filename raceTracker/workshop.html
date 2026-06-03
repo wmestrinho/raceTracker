@@ -27,6 +27,7 @@
       <div class="nav-group">
         <p class="nav-group-title">Ops</p>
         <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
+        <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
         <a class="nav-link" data-page="team" href="/team.html">Team</a>
         <a class="nav-link" data-page="settings" href="/settings.html">Settings</a>
       </div>
@@ -72,9 +73,61 @@
     <h3>Handoff rule</h3>
     <p class="muted-copy">No anonymous tasks: every workshop item must have one owner, one kart or team target, one due window, and one visible status.</p>
   </div>
+
+  <div class="card full">
+    <h3>Add Task</h3>
+    <p class="muted-copy" style="margin-bottom:.85rem;">Quick-add a task to the session queue. Tasks added here are saved locally and visible to the whole crew.</p>
+    <form class="task-add-form" data-add-task-form>
+      <div class="task-add-row">
+        <label class="task-field-label">
+          Owner
+          <select name="owner" class="task-field-input" required data-task-owner-select>
+            <option value="">— pick mechanic —</option>
+            <option>Nuno</option>
+            <option>Luiz</option>
+            <option>Leo</option>
+            <option>Nico</option>
+            <option>Paula</option>
+          </select>
+        </label>
+        <label class="task-field-label">
+          Kart / Target
+          <input type="text" name="kart" class="task-field-input" placeholder="Kart #1 or Team" required>
+        </label>
+        <label class="task-field-label">
+          Task
+          <input type="text" name="task" class="task-field-input" placeholder="Describe the task…" required>
+        </label>
+        <label class="task-field-label">
+          Due
+          <input type="text" name="due" class="task-field-input" placeholder="Now · 14:00 · EOD" value="Now">
+        </label>
+        <button type="submit" class="timer-btn timer-btn-start" style="align-self:flex-end;">+ Add</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card full">
+    <h3>Chassis Setup Sheet</h3>
+    <p class="muted-copy" style="margin-bottom:.85rem;">Record setup notes per kart for the current event. Changes persist locally for the session.</p>
+    <div class="setup-sheet-grid">
+      <div class="setup-kart-card" data-setup-kart="Race kart">
+        <div class="setup-kart-label">Race Kart <span class="badge warn">Nuno</span></div>
+        <div class="setup-fields">
+          <label class="setup-field"><span>Front tire psi</span><input type="number" step="0.1" class="setup-input" data-setup-field="frontPsi" placeholder="--"></label>
+          <label class="setup-field"><span>Rear tire psi</span><input type="number" step="0.1" class="setup-input" data-setup-field="rearPsi" placeholder="--"></label>
+          <label class="setup-field"><span>Caster (°)</span><input type="number" step="0.5" class="setup-input" data-setup-field="caster" placeholder="--"></label>
+          <label class="setup-field"><span>Camber (°)</span><input type="number" step="0.5" class="setup-input" data-setup-field="camber" placeholder="--"></label>
+          <label class="setup-field"><span>Rear width (mm)</span><input type="number" step="5" class="setup-input" data-setup-field="rearWidth" placeholder="--"></label>
+          <label class="setup-field"><span>Sprocket (teeth)</span><input type="number" step="1" class="setup-input" data-setup-field="sprocket" placeholder="--"></label>
+        </div>
+        <label class="setup-notes-label">Notes<textarea class="setup-notes" data-setup-field="notes" rows="2" placeholder="Handling observations…"></textarea></label>
+      </div>
+    </div>
+  </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.7.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.8.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

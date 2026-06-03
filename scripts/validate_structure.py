@@ -26,6 +26,7 @@ required_files = [
     CANON / "schedule.html",
     CANON / "team.html",
     CANON / "settings.html",
+    CANON / "registrations.html",
     CANON / "assets/css/style.css",
     CANON / "assets/js/main.js",
     CANON / "assets/data/telemetry.json",
@@ -77,10 +78,14 @@ if README.exists() and version:
 if WRANGLER.exists():
     try:
         cfg = json.loads(WRANGLER.read_text(errors="replace"))
-        if cfg.get("pages_build_output_dir") != "raceTracker":
-            errors.append("wrangler.jsonc pages_build_output_dir must be raceTracker")
+        # Accept either Pages pattern (pages_build_output_dir) or Worker+Assets pattern (assets.directory)
+        pages_dir = cfg.get("pages_build_output_dir")
+        assets_dir = (cfg.get("assets") or {}).get("directory")
+        if pages_dir != "raceTracker" and assets_dir != "raceTracker":
+            errors.append("wrangler.jsonc must set pages_build_output_dir or assets.directory to raceTracker")
+        # custom_domain is optional in Worker+Assets mode (managed via dashboard)
         domains = cfg.get("custom_domain", [])
-        if CANONICAL_DOMAIN not in domains:
+        if domains and CANONICAL_DOMAIN not in domains:
             errors.append(f"wrangler.jsonc custom_domain must include {CANONICAL_DOMAIN}")
     except json.JSONDecodeError as exc:
         errors.append(f"wrangler.jsonc is not valid JSON/JSONC subset: {exc}")

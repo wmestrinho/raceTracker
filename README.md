@@ -39,7 +39,7 @@ Canonical project structure (single source of truth)
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.7.0`
+- Current version: `v1.8.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -101,7 +101,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.7.0`
+- Current baseline version: `v1.8.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 
