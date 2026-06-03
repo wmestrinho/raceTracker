@@ -1,0 +1,56 @@
+{
+  "updatedAt": "2026-06-02",
+  "notes": "Per-driver, per-event expense log. Staff logs expenses; admin (Seth) approves; parents see their driver's full ledger with reasons. New entries are added via the billing page UI and stored in localStorage (raceTracker.billing). This file is the seed/fallback.",
+  "categories": [
+    { "id": "entry-fee",    "label": "Entry Fee",        "color": "accent-blue" },
+    { "id": "tires",        "label": "Tires",            "color": "warn" },
+    { "id": "parts",        "label": "Parts",            "color": "warn" },
+    { "id": "consumables",  "label": "Consumables",      "color": "ok" },
+    { "id": "labor",        "label": "Labor / Service",  "color": "ok" },
+    { "id": "travel",       "label": "Travel",           "color": "muted" },
+    { "id": "other",        "label": "Other",            "color": "muted" }
+  ],
+  "approvalStatuses": {
+    "pending":  "Logged by staff — awaiting Seth approval",
+    "approved": "Approved by Seth — visible to parents",
+    "void":     "Voided — not billed"
+  },
+  "expenses": [
+    {
+      "id":             "exp-seed-001",
+      "driverId":       "driver-1",
+      "driverName":     "Driver",
+      "eventId":        "ncmp-rok-cup-r1-2026",
+      "eventName":      "ROK Cup USA — Round 1",
+      "eventType":      "own-kart",
+      "date":           "TBD",
+      "category":       "entry-fee",
+      "item":           "ROK Cup USA entry fee",
+      "amount":         350.00,
+      "currency":       "USD",
+      "reason":         "Season registration fee for ROK Senior class — required to compete.",
+      "loggedBy":       "Seth",
+      "approvedBy":     "Seth",
+      "approvalStatus": "approved",
+      "visibleToParent": true
+    },
+    {
+      "id":             "exp-seed-002",
+      "driverId":       "driver-1",
+      "driverName":     "Driver",
+      "eventId":        "ncmp-rok-cup-r1-2026",
+      "eventName":      "ROK Cup USA — Round 1",
+      "eventType":      "own-kart",
+      "date":           "TBD",
+      "category":       "tires",
+      "item":           "MG Yellow (set of 4)",
+      "amount":         280.00,
+      "currency":       "USD",
+      "reason":         "Pre-event tire replacement — previous set had more than 3 race sessions and showed cracking on rear right.",
+      "loggedBy":       "Enzo",
+      "approvedBy":     null,
+      "approvalStatus": "pending",
+      "visibleToParent": true
+    }
+  ]
+}

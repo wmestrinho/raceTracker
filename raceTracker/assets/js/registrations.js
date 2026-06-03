@@ -56,6 +56,11 @@ function renderEventCard(event) {
         <div>
           <div class="reg-event-name">${escHtml(event.name)}</div>
           <div class="reg-event-meta">${escHtml(event.date || 'Date TBD')} · ${escHtml(event.track || event.trackId || '')} · <span class="reg-provider-badge">${escHtml(event.registrationProvider)}</span></div>
+          ${event.eventType === 'arrive-and-drive'
+            ? '<div style="margin-top:.25rem;"><span class="badge event-type-arrive-drive">Arrive &amp; Drive</span> <small style="color:var(--muted);font-size:.73rem;">Rental fleet — no personal setup data</small></div>'
+            : event.eventType === 'own-kart'
+            ? '<div style="margin-top:.25rem;"><span class="badge event-type-own-kart">Own Kart</span> <small style="color:var(--muted);font-size:.73rem;">Pro competition</small></div>'
+            : ''}
           ${event.class ? `<div class="reg-event-class">Class: <strong>${escHtml(event.class)}</strong></div>` : ''}
         </div>
         <div class="reg-event-actions">

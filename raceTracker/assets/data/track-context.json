@@ -70,6 +70,18 @@
       "weatherProvider": "Open-Meteo"
     },
     {
+      "id": "quaker-city-motorsports-park",
+      "name": "Quaker City Motorsports Park",
+      "shortName": "QCMP — Quaker City, OH",
+      "category": "karting",
+      "priority": "primary",
+      "latitude": 39.9752,
+      "longitude": -81.3029,
+      "timezone": "America/New_York",
+      "weatherProvider": "Open-Meteo",
+      "note": "Hosts ProCup arrive-and-drive endurance events (e.g. 6 Hours of Ohio) as well as own-kart regional races."
+    },
+    {
       "id": "daytona-international-speedway",
       "name": "Daytona International Speedway",
       "shortName": "Daytona — Daytona Beach, FL",

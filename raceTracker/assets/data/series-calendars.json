@@ -1,0 +1,96 @@
+{
+  "updatedAt": "2026-06-02",
+  "notes": "All 2026 series calendars. Dates/rounds are TBD placeholders — fill in real event IDs once Luiz confirms which rounds the team is entering. All events in these series are own-kart (professional own-equipment). eventType: 'own-kart' for all entries here.",
+  "series": [
+    {
+      "id":                  "ckna",
+      "name":                "CKNA — Cobra Kart National Alliance",
+      "website":             "https://www.cobrakart.com",
+      "registrationPlatform":"raceselect",
+      "registrationBaseUrl": "https://raceselect.com/ckna",
+      "classes":             ["CKNA Cadet", "CKNA Junior", "CKNA Senior", "CKNA Masters", "CKNA Shifter"],
+      "eventType":           "own-kart",
+      "rounds": [
+        { "round": 1, "name": "CKNA Round 1", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 2, "name": "CKNA Round 2", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 3, "name": "CKNA Round 3", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 4, "name": "CKNA Grand Nationals", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "raceSelectUrl": null, "status": "pending-confirmation" }
+      ]
+    },
+    {
+      "id":                  "rok-cup-usa",
+      "name":                "ROK Cup USA",
+      "website":             "https://www.rokcupusa.com",
+      "registrationPlatform":"motorsportreg",
+      "registrationBaseUrl": "https://www.motorsportreg.com/series/rok-cup-usa",
+      "classes":             ["ROK Micro", "ROK Mini", "ROK Junior", "ROK Senior", "ROK Masters", "ROK Shifter"],
+      "eventType":           "own-kart",
+      "rounds": [
+        { "round": 1, "name": "ROK Cup USA — Round 1", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 2, "name": "ROK Cup USA — Round 2", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 3, "name": "ROK Cup USA — Round 3", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 4, "name": "ROK Cup International Trophy (Italy)", "track": "South Garda Karting", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation", "note": "International event — own registration platform" }
+      ]
+    },
+    {
+      "id":                  "skusa",
+      "name":                "SKUSA — Superkarts! USA",
+      "website":             "https://www.skusastore.com",
+      "registrationPlatform":"motorsportreg",
+      "registrationBaseUrl": "https://www.motorsportreg.com/series/skusa",
+      "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift", "Shifter Pro"],
+      "eventType":           "own-kart",
+      "rounds": [
+        { "round": 1, "name": "SKUSA Pro Tour — SpringNationals", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 2, "name": "SKUSA Pro Tour — SummerNationals", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 3, "name": "SKUSA SuperNationals XXVIII", "track": "Rio All-Suite Hotel & Casino, Las Vegas NV", "date": "Nov 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation", "note": "Largest indoor karting race in North America — Las Vegas" }
+      ]
+    },
+    {
+      "id":                  "stars",
+      "name":                "STARS — Stars of Karting",
+      "website":             "https://www.starsofkarting.com",
+      "registrationPlatform":"motorsportreg",
+      "registrationBaseUrl": "https://www.motorsportreg.com",
+      "classes":             ["TBD — confirm class structure with Luiz"],
+      "eventType":           "own-kart",
+      "rounds": [
+        { "round": 1, "name": "STARS Round 1", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 2, "name": "STARS Round 2", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 3, "name": "STARS Round 3", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 4, "name": "STARS Championship", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" }
+      ]
+    },
+    {
+      "id":                  "uspks",
+      "name":                "USPKS — United States Pro Kart Series",
+      "website":             "https://www.uspks.com",
+      "registrationPlatform":"raceselect",
+      "registrationBaseUrl": "https://raceselect.com/uspks",
+      "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift"],
+      "eventType":           "own-kart",
+      "rounds": [
+        { "round": 1, "name": "USPKS Round 1", "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "date": "TBD 2026", "raceSelectUrl": "https://raceselect.com/uspks/2026", "status": "pending-confirmation" },
+        { "round": 2, "name": "USPKS Round 2", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 3, "name": "USPKS Round 3", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 4, "name": "USPKS Grand Nationals", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" }
+      ]
+    },
+    {
+      "id":                  "tsrs",
+      "name":                "TSRS — Texas Sprint Racing Series",
+      "website":             "https://www.tsrskarts.com",
+      "registrationPlatform":"motorsportreg",
+      "registrationBaseUrl": "https://www.motorsportreg.com",
+      "classes":             ["206 Senior", "206 Junior", "206 Masters", "KA100 Senior", "X30 Senior"],
+      "eventType":           "own-kart",
+      "region":              "Texas / South-Central USA",
+      "rounds": [
+        { "round": 1, "name": "TSRS Round 1", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 2, "name": "TSRS Round 2", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 3, "name": "TSRS Round 3", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" },
+        { "round": 4, "name": "TSRS Championship", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": "REPLACE", "status": "pending-confirmation" }
+      ]
+    }
+  ]
+}

@@ -1,59 +1,82 @@
 {
-  "updatedAt": "2026-05-31",
+  "updatedAt": "2026-06-02",
   "sourceStatus": "infrastructure-ready",
-  "notes": "Add real motorsportregEventId values from MotorsportReg event URLs once Nuno confirms which rounds he is entering. Format: the UID in the URL https://www.motorsportreg.com/events/event-name-XXXXXX — XXXXXX is the eventId.",
+  "notes": "eventType values: 'own-kart' = professional/own-equipment races (the only category Seth's team competes in); 'arrive-and-drive' = rental-fleet races open to general public. Real motorsportregEventId format: the numeric UID at the end of the event URL, e.g. https://www.motorsportreg.com/events/event-name-XXXXXX → XXXXXX.",
+  "eventTypes": {
+    "own-kart":        "Pro / competition event — drivers arrive with their own prepared karts. Setup sheets, tire decisions, and registration intel all apply.",
+    "arrive-and-drive":"Rental-fleet event — track provides karts. No personal setup data. Scheduling and timing only."
+  },
   "events": [
     {
       "id":                   "ncmp-rok-cup-r1-2026",
+      "eventType":            "own-kart",
+      "series":               "ROK Cup USA",
       "trackId":              "new-castle-motorsports-park",
       "track":                "New Castle Motorsports Park",
       "name":                 "ROK Cup USA — Round 1",
-      "date":                 "TBD — confirm with Nuno",
+      "date":                 "TBD — confirm with Luiz",
       "class":                "ROK Senior",
       "registrationProvider": "motorsportreg",
       "motorsportregEventId": "REPLACE_WITH_REAL_EVENT_ID",
       "registrationUrl":      "https://www.motorsportreg.com/events/",
-      "registrationStatus":   "Pending confirmation",
-      "source":               "MotorsportReg"
+      "registrationStatus":   "Pending confirmation"
     },
     {
       "id":                   "ncmp-route66-r1-2026",
+      "eventType":            "own-kart",
+      "series":               "Route 66 Sprint Series",
       "trackId":              "new-castle-motorsports-park",
       "track":                "New Castle Motorsports Park",
       "name":                 "Route 66 Sprint Series — Round 1",
-      "date":                 "TBD — confirm with Nuno",
+      "date":                 "TBD — confirm with Luiz",
       "class":                "ROK Senior",
       "registrationProvider": "raceselect",
       "raceSelectUrl":        "https://raceselect.com/route66/2026",
       "registrationUrl":      "https://raceselect.com/route66/2026",
-      "registrationStatus":   "Pending confirmation",
-      "source":               "RaceSelect / Route 66"
+      "registrationStatus":   "Pending confirmation"
     },
     {
       "id":                   "trackhouse-challenge-r1-2026",
+      "eventType":            "own-kart",
+      "series":               "Trackhouse Karting Challenge",
       "trackId":              "trackhouse-motorplex",
       "track":                "Trackhouse Motorplex",
       "name":                 "Trackhouse Karting Challenge — Round 1",
-      "date":                 "TBD — confirm with Nuno",
+      "date":                 "TBD — confirm with Luiz",
       "class":                "ROK Senior",
       "registrationProvider": "motorsportreg",
       "motorsportregEventId": "REPLACE_WITH_REAL_EVENT_ID",
       "registrationUrl":      "https://www.motorsportreg.com/venues/trackhouse-motorplex-mooresville-nc",
-      "registrationStatus":   "Pending confirmation",
-      "source":               "MotorsportReg / Trackhouse"
+      "registrationStatus":   "Pending confirmation"
     },
     {
       "id":                   "uspks-ncmp-r1-2026",
+      "eventType":            "own-kart",
+      "series":               "USPKS",
       "trackId":              "new-castle-motorsports-park",
       "track":                "New Castle Motorsports Park",
       "name":                 "USPKS — Round 1",
-      "date":                 "TBD — confirm with Nuno",
+      "date":                 "TBD — confirm with Luiz",
       "class":                "X30 Senior",
       "registrationProvider": "raceselect",
       "raceSelectUrl":        "https://raceselect.com/uspks/2026",
       "registrationUrl":      "https://raceselect.com/uspks/2026",
-      "registrationStatus":   "Pending confirmation",
-      "source":               "RaceSelect / USPKS"
+      "registrationStatus":   "Pending confirmation"
+    },
+    {
+      "id":                   "qcmp-6hours-ohio-2026",
+      "eventType":            "arrive-and-drive",
+      "series":               "ProCup Karting",
+      "trackId":              "quaker-city-motorsports-park",
+      "track":                "Quaker City Motorsports Park",
+      "name":                 "2026 6 Hours of Ohio",
+      "date":                 "TBD 2026",
+      "class":                "Arrive & Drive — rental fleet",
+      "registrationProvider": "motorsportreg",
+      "motorsportregEventId": "563342",
+      "registrationUrl":      "https://www.motorsportreg.com/events/2026-6-hours-of-ohio-quaker-city-motorsports-park-procup-karting-563342",
+      "registrationStatus":   "Open",
+      "note":                 "Reference example of arrive-and-drive event. Track provides rental karts — no personal setup data applies. Different product from Seth's team's pro-level engagements."
     }
   ],
   "sourceCandidates": [

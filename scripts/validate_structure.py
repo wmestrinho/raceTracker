@@ -27,6 +27,7 @@ required_files = [
     CANON / "team.html",
     CANON / "settings.html",
     CANON / "registrations.html",
+    CANON / "billing.html",
     CANON / "assets/css/style.css",
     CANON / "assets/js/main.js",
     CANON / "assets/data/telemetry.json",
@@ -34,6 +35,8 @@ required_files = [
     CANON / "assets/data/workshop-tasks.json",
     CANON / "assets/data/track-context.json",
     CANON / "assets/data/event-schedule.json",
+    CANON / "assets/data/billing.json",
+    CANON / "assets/data/series-calendars.json",
     CANONICAL_LOGO,
 ]
 for f in required_files:

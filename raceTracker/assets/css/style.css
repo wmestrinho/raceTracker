@@ -418,6 +418,27 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.5;
 }
 
+/* ── Event type badges ───────────────────────────────────────── */
+.event-type-own-kart     { background:#050607; color:var(--primary); border-color:var(--primary); }
+.event-type-arrive-drive { background:#f4f5f7; color:#5f6872; border-color:#aeb8ad; }
+
+/* ── Billing ─────────────────────────────────────────────────── */
+.billing-event-card { border:1px solid var(--border); }
+.billing-event-header {
+  display:flex; align-items:center; gap:.65rem; flex-wrap:wrap;
+  padding:.65rem .9rem; background:var(--surface-track);
+  font-weight:900; font-size:.88rem; border-bottom:1px solid var(--border);
+}
+.billing-event-total { margin-left:auto; font-variant-numeric:tabular-nums; color:var(--primary-dark); font-size:.88rem; }
+.billing-table { font-size:.85rem; }
+.billing-table td:nth-child(4) { color:var(--muted); font-size:.8rem; max-width:280px; line-height:1.4; font-weight:400; }
+.billing-table td:nth-child(5) { font-variant-numeric:tabular-nums; font-weight:900; }
+.billing-category { font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); }
+.billing-amount { white-space:nowrap; }
+.billing-reason { font-style:italic; }
+.billing-filter-label { display:flex; flex-direction:column; gap:.25rem; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+.billing-form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:.65rem; }
+
 /* ── Clearance badges ────────────────────────────────────────── */
 .clearance-admin  { background:#dff3ff; color:#0d6fa8; border-color:#129df0; }
 .clearance-staff  { background:var(--primary-soft); color:var(--primary-dark); border-color:var(--primary-dark); }

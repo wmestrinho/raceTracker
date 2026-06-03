@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing | raceTracker</title>
+  <meta name="description" content="raceTracker driver billing and expense log">
+  <meta name="theme-color" content="#bfff00">
+  <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body data-page="billing">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div class="app-shell">
+    <aside id="primary-sidebar" class="sidebar" aria-label="Primary">
+      <a href="/index.html" class="brand">
+        <img src="/assets/images/racetracker-logo.png" alt="raceTracker">
+        <span><strong>raceTracker</strong><small>Pit Wall Ops</small></span>
+      </a>
+      <div class="nav-group">
+        <p class="nav-group-title">Core</p>
+        <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
+        <a class="nav-link" data-page="telemetry" href="/telemetry.html" data-min-clearance="staff">Telemetry</a>
+        <a class="nav-link" data-page="workshop" href="/workshop.html" data-min-clearance="staff">Workshop</a>
+        <a class="nav-link" data-page="inventory" href="/inventory.html" data-min-clearance="staff">Inventory</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-group-title">Ops</p>
+        <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
+        <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
+        <a class="nav-link" data-page="billing" href="/billing.html">Billing</a>
+        <a class="nav-link" data-page="team" href="/team.html" data-min-clearance="staff">Team</a>
+        <a class="nav-link" data-page="settings" href="/settings.html" data-min-clearance="admin">Settings</a>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar" role="banner">
+        <div>
+          <h1>Billing</h1>
+          <p>Driver expense log — transparent, accountable, event-by-event</p>
+        </div>
+        <div class="mechanic-slot" data-mechanic-slot></div>
+        <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
+      </header>
+      <main id="main-content" class="content" role="main" data-billing-page>
+
+<section class="page-grid">
+  <div class="card full">
+    <h2>Driver Expense Log</h2>
+    <p style="color:var(--muted);margin-top:.35rem;">Every part, tire, service, or entry fee logged here is tied to a driver, an event, and a reason. Seth approves before it reaches the parent view. Parents see the full ledger for their driver — no surprises at the end of a race weekend.</p>
+  </div>
+
+  <div class="kpi-grid full" data-billing-kpis>
+    <div class="card kpi"><p class="label">Total billed</p><p class="value" data-billing-total>$0</p><p class="delta up">All drivers</p></div>
+    <div class="card kpi"><p class="label">Pending approval</p><p class="value" data-billing-pending>0</p><p class="delta warn">Awaiting Seth</p></div>
+    <div class="card kpi"><p class="label">Events tracked</p><p class="value" data-billing-events>0</p><p class="delta up">This season</p></div>
+    <div class="card kpi"><p class="label">Active drivers</p><p class="value" data-billing-drivers>0</p><p class="delta up">In system</p></div>
+  </div>
+
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Expense Ledger</h3>
+        <p class="muted-copy">Grouped by event. Parents see their driver only. Staff and admin see all.</p>
+      </div>
+      <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;">
+        <label class="billing-filter-label">Driver
+          <select class="task-field-input" data-billing-driver-filter style="min-width:140px;">
+            <option value="all">All Drivers</option>
+          </select>
+        </label>
+        <label class="billing-filter-label">Event
+          <select class="task-field-input" data-billing-event-filter style="min-width:160px;">
+            <option value="all">All Events</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div data-billing-ledger style="margin-top:1rem;">
+      <p class="muted-copy">Loading expense ledger…</p>
+    </div>
+  </div>
+
+  <div class="card full" data-billing-add-section>
+    <h3>Log Expense</h3>
+    <p class="muted-copy" style="margin-bottom:.85rem;">Every item needs a reason — this is what parents see. Be specific: "MG Yellow set replaced — old set had 4+ sessions and showed heat cracking" is better than "tires".</p>
+    <form class="task-add-form" data-add-expense-form>
+      <div class="billing-form-grid">
+        <label class="task-field-label">Driver
+          <select name="driverId" class="task-field-input" required data-expense-driver-select>
+            <option value="">— select driver —</option>
+          </select>
+        </label>
+        <label class="task-field-label">Event
+          <select name="eventId" class="task-field-input" required data-expense-event-select>
+            <option value="">— select event —</option>
+          </select>
+        </label>
+        <label class="task-field-label">Date
+          <input type="date" name="date" class="task-field-input" required>
+        </label>
+        <label class="task-field-label">Category
+          <select name="category" class="task-field-input" required>
+            <option value="entry-fee">Entry Fee</option>
+            <option value="tires">Tires</option>
+            <option value="parts">Parts</option>
+            <option value="consumables">Consumables</option>
+            <option value="labor">Labor / Service</option>
+            <option value="travel">Travel</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label class="task-field-label">Item Description
+          <input type="text" name="item" class="task-field-input" placeholder="e.g. MG Yellow tires (set of 4)" required>
+        </label>
+        <label class="task-field-label">Amount (USD)
+          <input type="number" name="amount" class="task-field-input" step="0.01" min="0" placeholder="0.00" required>
+        </label>
+      </div>
+      <label class="task-field-label" style="margin-top:.65rem;">
+        Reason — explain WHY this was needed
+        <textarea name="reason" class="setup-notes" rows="2" placeholder="e.g. Pre-event inspection found cracking on rear right — replaced before qualifying to avoid failure mid-session." required style="margin-top:.3rem;"></textarea>
+      </label>
+      <div style="margin-top:.75rem;display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;">
+        <button type="submit" class="timer-btn timer-btn-start">+ Log Expense</button>
+        <span class="muted-copy" style="font-size:.78rem;">Logged by: <strong data-billing-logged-by>—</strong> · Status: <span class="badge warn">Pending Seth approval</span></span>
+      </div>
+    </form>
+  </div>
+</section>
+
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.10.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+      </main>
+    </div>
+  </div>
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

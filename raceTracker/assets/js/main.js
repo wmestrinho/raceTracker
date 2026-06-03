@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAddTaskForm();
   initSetupSheet();
   initTeamRoster();
+  initBillingModule();
 });
 
 function initSidebarToggle() {
@@ -612,4 +613,215 @@ function initSetupSheet() {
       });
     });
   });
+}
+
+// ── Billing module ────────────────────────────────────────────
+
+const BILLING_KEY = 'raceTracker.billing';
+
+const EXPENSE_CATEGORIES = {
+  'entry-fee':   'Entry Fee',
+  'tires':       'Tires',
+  'parts':       'Parts',
+  'consumables': 'Consumables',
+  'labor':       'Labor / Service',
+  'travel':      'Travel',
+  'other':       'Other'
+};
+
+async function initBillingModule() {
+  if (!document.querySelector('[data-billing-page]')) return;
+
+  const [billingData, scheduleData, mechanicsData] = await Promise.all([
+    fetchJson('/assets/data/billing.json'),
+    fetchJson('/assets/data/event-schedule.json'),
+    fetchJson('/assets/data/mechanics.json')
+  ]);
+
+  const seedExpenses = billingData?.expenses || [];
+  const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
+  const storedIds = new Set(stored.map(e => e.id));
+  const allExpenses = [...stored, ...seedExpenses.filter(e => !storedIds.has(e.id))];
+
+  const events   = scheduleData?.events || [];
+  const drivers  = (mechanicsData?.driverRoster || [{ id: 'driver-1', name: 'Driver' }]);
+  const profile  = localStorage.getItem('raceTracker.mechanicProfile') || 'Luiz';
+  const allPeople = mechanicsData?.mechanics || [];
+  const personData = allPeople.find(m => m.name === profile) || { clearance: 'staff' };
+  const clearance = personData.clearance || 'staff';
+
+  populateBillingFilters(drivers, events);
+  populateExpenseForm(drivers, events, profile);
+  renderBillingLedger(allExpenses, drivers, events, clearance, profile);
+  updateBillingKpis(allExpenses);
+  wireBillingForm(drivers, events, profile, allExpenses);
+  showAddFormByRole(clearance);
+}
+
+async function fetchJson(url) {
+  try { const r = await fetch(url, { cache: 'no-store' }); return r.ok ? r.json() : null; } catch { return null; }
+}
+
+function populateBillingFilters(drivers, events) {
+  const driverFilter = document.querySelector('[data-billing-driver-filter]');
+  const eventFilter  = document.querySelector('[data-billing-event-filter]');
+  if (driverFilter) {
+    drivers.forEach(d => {
+      const o = document.createElement('option'); o.value = d.id; o.textContent = d.name; driverFilter.appendChild(o);
+    });
+    driverFilter.addEventListener('change', () => triggerBillingRerender());
+  }
+  if (eventFilter) {
+    events.forEach(ev => {
+      const o = document.createElement('option'); o.value = ev.id; o.textContent = ev.name; eventFilter.appendChild(o);
+    });
+    eventFilter.addEventListener('change', () => triggerBillingRerender());
+  }
+}
+
+function triggerBillingRerender() {
+  const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
+  const profile  = localStorage.getItem('raceTracker.mechanicProfile') || 'Luiz';
+  renderBillingLedger(stored, [], [], 'staff', profile);
+}
+
+function populateExpenseForm(drivers, events, profile) {
+  const dSel = document.querySelector('[data-expense-driver-select]');
+  const eSel = document.querySelector('[data-expense-event-select]');
+  const loggedBy = document.querySelector('[data-billing-logged-by]');
+  if (loggedBy) loggedBy.textContent = profile;
+  if (dSel) drivers.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.textContent = d.name; dSel.appendChild(o); });
+  if (eSel) events.forEach(ev => {
+    const o = document.createElement('option');
+    o.value = ev.id;
+    o.textContent = `${ev.name}${ev.eventType === 'arrive-and-drive' ? ' [A&D]' : ''}`;
+    eSel.appendChild(o);
+  });
+}
+
+function renderBillingLedger(expenses, drivers, events, clearance, profile) {
+  const ledger = document.querySelector('[data-billing-ledger]');
+  if (!ledger) return;
+
+  const driverFilter = document.querySelector('[data-billing-driver-filter]')?.value || 'all';
+  const eventFilter  = document.querySelector('[data-billing-event-filter]')?.value  || 'all';
+
+  let filtered = expenses;
+  if (clearance === 'parent' || clearance === 'driver') {
+    filtered = filtered.filter(e => e.approvalStatus === 'approved');
+  }
+  if (driverFilter !== 'all') filtered = filtered.filter(e => e.driverId === driverFilter);
+  if (eventFilter  !== 'all') filtered = filtered.filter(e => e.eventId  === eventFilter);
+
+  if (!filtered.length) {
+    ledger.innerHTML = '<p class="muted-copy">No expenses match the current filter. Add the first expense using the form below.</p>';
+    return;
+  }
+
+  const byEvent = {};
+  filtered.forEach(e => {
+    const key = e.eventId || 'unassigned';
+    if (!byEvent[key]) byEvent[key] = { name: e.eventName || key, eventType: e.eventType, items: [] };
+    byEvent[key].items.push(e);
+  });
+
+  ledger.innerHTML = Object.entries(byEvent).map(([eventId, group]) => {
+    const total = group.items.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const typeBadge = group.eventType === 'arrive-and-drive'
+      ? '<span class="badge event-type-arrive-drive">Arrive &amp; Drive</span>'
+      : '<span class="badge event-type-own-kart">Own Kart</span>';
+    const rows = group.items.map(e => {
+      const approvalBadge = e.approvalStatus === 'approved'
+        ? '<span class="badge ok">Approved</span>'
+        : e.approvalStatus === 'void'
+        ? '<span class="badge">Void</span>'
+        : `<span class="badge warn">Pending</span>`;
+      const approveBtn = clearance === 'admin' && e.approvalStatus === 'pending'
+        ? `<button class="timer-btn" style="padding:.22rem .55rem;font-size:.72rem;" onclick="approveBillingExpense('${escapeHtml(e.id)}')">Approve</button>`
+        : '';
+      return `<tr>
+        <td>${escapeHtml(e.driverName || e.driverId || '—')}</td>
+        <td><span class="billing-category">${escapeHtml(EXPENSE_CATEGORIES[e.category] || e.category)}</span></td>
+        <td>${escapeHtml(e.item || '—')}</td>
+        <td class="billing-reason">${escapeHtml(e.reason || '—')}</td>
+        <td class="billing-amount">$${Number(e.amount || 0).toFixed(2)}</td>
+        <td>${approvalBadge}${approveBtn}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <div class="billing-event-card" style="margin-bottom:1.25rem;">
+        <div class="billing-event-header">${escapeHtml(group.name)} ${typeBadge} <span class="billing-event-total">Total: $${total.toFixed(2)}</span></div>
+        <table class="table billing-table">
+          <thead><tr><th>Driver</th><th>Category</th><th>Item</th><th>Reason</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }).join('');
+}
+
+function updateBillingKpis(expenses) {
+  const total   = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const pending = expenses.filter(e => e.approvalStatus === 'pending').length;
+  const events  = new Set(expenses.map(e => e.eventId)).size;
+  const drivers = new Set(expenses.map(e => e.driverId)).size;
+  setText('[data-billing-total]',   `$${total.toFixed(2)}`);
+  setText('[data-billing-pending]', String(pending));
+  setText('[data-billing-events]',  String(events));
+  setText('[data-billing-drivers]', String(drivers));
+}
+
+function wireBillingForm(drivers, events, profile, allExpenses) {
+  const form = document.querySelector('[data-add-expense-form]');
+  if (!form) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const driverSel = fd.get('driverId');
+    const eventSel  = fd.get('eventId');
+    const driverName = drivers.find(d => d.id === driverSel)?.name || driverSel;
+    const ev = events.find(ev => ev.id === eventSel);
+    const expense = {
+      id:             `exp-${Date.now()}`,
+      driverId:       driverSel,
+      driverName,
+      eventId:        eventSel,
+      eventName:      ev?.name || eventSel,
+      eventType:      ev?.eventType || 'own-kart',
+      date:           fd.get('date') || new Date().toISOString().slice(0,10),
+      category:       fd.get('category'),
+      item:           fd.get('item'),
+      amount:         parseFloat(fd.get('amount')) || 0,
+      currency:       'USD',
+      reason:         fd.get('reason'),
+      loggedBy:       profile,
+      approvedBy:     null,
+      approvalStatus: 'pending',
+      visibleToParent: true
+    };
+    const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
+    stored.push(expense);
+    try { localStorage.setItem(BILLING_KEY, JSON.stringify(stored)); } catch {}
+    allExpenses.push(expense);
+    renderBillingLedger(allExpenses, drivers, events, 'staff', profile);
+    updateBillingKpis(allExpenses);
+    form.reset();
+    document.querySelector('[data-billing-logged-by]').textContent = profile;
+  });
+}
+
+window.approveBillingExpense = function(id) {
+  const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
+  const exp = stored.find(e => e.id === id);
+  if (!exp) return;
+  const profile = localStorage.getItem('raceTracker.mechanicProfile') || 'Seth';
+  exp.approvalStatus = 'approved';
+  exp.approvedBy = profile;
+  try { localStorage.setItem(BILLING_KEY, JSON.stringify(stored)); } catch {}
+  initBillingModule();
+};
+
+function showAddFormByRole(clearance) {
+  const section = document.querySelector('[data-billing-add-section]');
+  if (!section) return;
+  section.style.display = (clearance === 'admin' || clearance === 'staff') ? '' : 'none';
 }
