@@ -133,10 +133,11 @@
       "eventType":           "own-kart",
       "region":              "Texas / South-Central USA",
       "rounds": [
-        { "round": 1, "name": "TSRS Round 1",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 2, "name": "TSRS Round 2",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "TSRS Round 3",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 4, "name": "TSRS Championship","track": "TBD — Texas region","date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" }
+        { "round": 1, "name": "TSRS Winter Warm-Up",    "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-03-13", "dateEnd": "2026-03-15", "status": "confirmed" },
+        { "round": 2, "name": "TSRS Round 2",           "track": "NOLA Motorsports Park",   "trackCity": "Avondale, LA",   "dateStart": "2026-05-01", "dateEnd": "2026-05-03", "status": "confirmed" },
+        { "round": 3, "name": "TSRS Summer Shootout",   "track": "Amarillo Motorsports Park","trackCity": "Amarillo, TX",   "dateStart": "2026-06-19", "dateEnd": "2026-06-21", "status": "confirmed" },
+        { "round": 4, "name": "TSRS Mid-Summer Mashup", "track": "KartMoto",                "trackCity": "Cresson, TX",    "dateStart": "2026-08-28", "dateEnd": "2026-08-30", "status": "confirmed" },
+        { "round": 5, "name": "TSRS Fall Finale",       "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-09-25", "dateEnd": "2026-09-27", "status": "confirmed" }
       ]
     }
   ]
