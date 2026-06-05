@@ -33,7 +33,7 @@
     },
     {
       "id": "tsk-004",
-      "owner": "Leo",
+      "owner": "Tyler",
       "kart": "Kart #2",
       "task": "Brake pad check",
       "due": "Now",
@@ -43,7 +43,7 @@
     },
     {
       "id": "tsk-005",
-      "owner": "Leo",
+      "owner": "Tyler",
       "kart": "Kart #4",
       "task": "Front-end toe reset",
       "due": "15:30",
@@ -53,7 +53,7 @@
     },
     {
       "id": "tsk-006",
-      "owner": "Nico",
+      "owner": "Enzo",
       "kart": "Kart #1",
       "task": "Telemetry sensor QA",
       "due": "16:30",
@@ -63,7 +63,7 @@
     },
     {
       "id": "tsk-007",
-      "owner": "Paula",
+      "owner": "Jason",
       "kart": "Team",
       "task": "Session staging checklist",
       "due": "17:00",
