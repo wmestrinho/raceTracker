@@ -593,3 +593,74 @@ a { color: inherit; text-decoration: none; }
   .track-switcher { align-items: flex-start; flex-direction: column; }
   .card.full:first-child { background: linear-gradient(180deg, var(--carbon), #07131b); }
 }
+
+/* ── Series Calendars ────────────────────────────────────────── */
+
+/* Series filter pills */
+.series-filter-row { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.1rem; margin-top:.15rem; }
+.series-pill { appearance:none; border:1px solid var(--border-strong); background:var(--surface); color:var(--muted); font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; padding:.32rem .75rem; cursor:pointer; border-radius:0; transition:background .12s,color .12s,border-color .12s; }
+.series-pill:hover { background:var(--surface-track); color:var(--ink); }
+.series-pill.active { background:var(--carbon); color:var(--primary); border-color:var(--carbon); }
+
+/* Series block */
+.cal-series { border:1px solid var(--border); margin-bottom:1.4rem; }
+.cal-series-header { display:flex; align-items:center; justify-content:space-between; gap:.75rem; background:var(--surface-soft); padding:.7rem 1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.cal-series-title { display:flex; align-items:center; gap:.55rem; font-size:.9rem; }
+.cal-series-meta { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:var(--muted); }
+.cal-meta-sep { color:var(--border-strong); }
+.cal-series-link { font-size:.72rem; font-weight:800; color:var(--primary-dark); text-decoration:underline; margin-left:.3rem; }
+
+/* Division sub-block */
+.cal-division { border-top:1px solid var(--border); }
+.cal-division:first-child { border-top:none; }
+.cal-division-label { font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); padding:.5rem 1rem .3rem; background:var(--bg); border-bottom:1px solid var(--border); }
+
+/* Calendar table */
+.cal-table { font-size:.86rem; }
+.cal-table thead th { font-size:.67rem; }
+.cal-round-row td { padding:.45rem .75rem; vertical-align:middle; }
+.cal-date-cell { font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:800; font-size:.82rem; color:var(--muted); min-width:80px; }
+.cal-city-cell { color:var(--muted); font-size:.82rem; }
+
+/* Row states */
+.cal-row-past td { opacity:.42; }
+.cal-row-next { background:linear-gradient(90deg,rgba(191,255,0,.07) 0%,transparent 100%); }
+.cal-row-next .cal-date-cell { color:var(--primary-dark); }
+
+/* Venue TBA */
+.cal-tba { font-style:italic; color:var(--muted); }
+
+/* Next Up list */
+.cal-nextup-list { display:flex; flex-direction:column; gap:.5rem; }
+.cal-nextup-item { display:grid; grid-template-columns:auto auto 1fr auto auto; align-items:center; gap:.55rem .75rem; padding:.55rem .75rem; border:1px solid var(--border); background:var(--surface-soft); flex-wrap:wrap; }
+.cal-nextup-item--next { border-color:var(--primary-dark); background:linear-gradient(90deg,rgba(191,255,0,.06) 0%,transparent 100%); }
+.cal-nextup-date { font-size:.8rem; font-weight:900; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--muted); }
+.cal-nextup-item--next .cal-nextup-date { color:var(--primary-dark); }
+.cal-nextup-name { font-size:.88rem; font-weight:800; }
+.cal-nextup-track { font-size:.8rem; color:var(--muted); }
+.cal-city { color:var(--border-strong); }
+.cal-nextup-flags { display:flex; gap:.35rem; flex-shrink:0; }
+
+/* Series color badges */
+.cal-sbadge { display:inline-block; font-size:.65rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; padding:.18rem .45rem; white-space:nowrap; }
+.cal-sbadge--ckna             { background:#1a1a2e; color:#e94560; }
+.cal-sbadge--cup-karts-canada { background:#d80027; color:#fff; }
+.cal-sbadge--rok-cup-usa      { background:#003087; color:#fff; }
+.cal-sbadge--skusa            { background:#050607; color:var(--primary); }
+.cal-sbadge--stars            { background:#7a5000; color:#ffd966; }
+.cal-sbadge--uspks            { background:#1a3a5c; color:#b8d4f0; }
+.cal-sbadge--tsrs             { background:#8b1a00; color:#ffddd5; }
+
+@media (max-width: 980px) {
+  .cal-nextup-item { grid-template-columns: auto auto 1fr; }
+  .cal-nextup-flags { grid-column: 1 / -1; }
+  .cal-city-cell { display:none; }
+}
+@media (max-width: 620px) {
+  .cal-nextup-item { grid-template-columns: auto 1fr; }
+  .cal-nextup-date { grid-column: 1; }
+  .cal-nextup-name { grid-column: 2; }
+  .cal-nextup-track { grid-column: 1 / -1; }
+  .cal-nextup-flags { grid-column: 1 / -1; }
+  .series-filter-row { gap:.3rem; }
+}

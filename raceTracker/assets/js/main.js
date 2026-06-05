@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSetupSheet();
   initTeamRoster();
   initBillingModule();
+  initSeriesCalendars();
 });
 
 function initSidebarToggle() {
@@ -824,4 +825,236 @@ function showAddFormByRole(clearance) {
   const section = document.querySelector('[data-billing-add-section]');
   if (!section) return;
   section.style.display = (clearance === 'admin' || clearance === 'staff') ? '' : 'none';
+}
+
+// ── Series Calendars ──────────────────────────────────────────
+
+const DIVISION_LABELS = {
+  'national':            'National Events',
+  'south':               'South Division',
+  'east':                'East Division',
+  'north':               'North Division',
+  'florida-winter-tour': 'Florida Winter Tour',
+  'rok-sonoma-tc1':      'ROK Sonoma — Triple Crown 1',
+  'rok-sonoma-tc2':      'ROK Sonoma — Triple Crown 2',
+  'international':       'International',
+  'winter-series':       'Winter Series',
+  'pro-tour':            'Pro Tour',
+  'pkc':                 'California ProKart Challenge (PKC)',
+  'supernats':           'SuperNationals'
+};
+
+const SERIES_SHORT = {
+  'ckna':             'CKNA',
+  'cup-karts-canada': 'CKC',
+  'rok-cup-usa':      'ROK Cup',
+  'skusa':            'SKUSA',
+  'stars':            'STARS',
+  'uspks':            'USPKS',
+  'tsrs':             'TSRS'
+};
+
+async function initSeriesCalendars() {
+  const calBody   = document.querySelector('[data-series-calendar-body]');
+  const nextUpEl  = document.querySelector('[data-next-up-list]');
+  if (!calBody && !nextUpEl) return;
+
+  let data;
+  try {
+    const res = await fetch('/assets/data/series-calendars.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    data = await res.json();
+  } catch {
+    if (calBody)  calBody.innerHTML  = '<p class="reg-error">Could not load series calendars.</p>';
+    if (nextUpEl) nextUpEl.innerHTML = '<p class="reg-error">Calendar unavailable.</p>';
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const allRounds = [];
+  data.series.forEach(series => {
+    series.rounds.forEach(round => {
+      allRounds.push({
+        ...round,
+        _seriesId:    series.id,
+        _seriesName:  series.name,
+        _seriesShort: SERIES_SHORT[series.id] || series.id.toUpperCase(),
+        _website:     series.website || null,
+        _timeStatus:  calRoundTimeStatus(round, today)
+      });
+    });
+  });
+
+  // Find nearest upcoming date and tag those as 'next'
+  const upcoming = allRounds
+    .filter(r => r._timeStatus === 'upcoming' && r.dateStart)
+    .sort((a, b) => a.dateStart.localeCompare(b.dateStart));
+  const nextDate = upcoming.length ? upcoming[0].dateStart : null;
+  if (nextDate) allRounds.forEach(r => {
+    if (r._timeStatus === 'upcoming' && r.dateStart === nextDate) r._timeStatus = 'next';
+  });
+
+  const nearSorted = allRounds
+    .filter(r => r._timeStatus === 'next' || r._timeStatus === 'upcoming')
+    .sort((a, b) => (a.dateStart || '').localeCompare(b.dateStart || ''));
+  const conflictIds = detectCalConflicts(nearSorted.slice(0, 20));
+
+  if (nextUpEl) renderCalNextUp(upcoming.slice(0, 8), conflictIds, nextUpEl);
+  if (calBody)  renderCalBody(data.series, allRounds, conflictIds, calBody);
+}
+
+function calRoundTimeStatus(round, today) {
+  if (!round.dateStart) return 'tbd';
+  const end = new Date((round.dateEnd || round.dateStart) + 'T23:59:59');
+  return end < today ? 'past' : 'upcoming';
+}
+
+function detectCalConflicts(rounds) {
+  const conflicts = new Set();
+  for (let i = 0; i < rounds.length; i++) {
+    for (let j = i + 1; j < rounds.length; j++) {
+      const a = rounds[i], b = rounds[j];
+      if (!a.dateStart || !b.dateStart) continue;
+      if (a._seriesId === b._seriesId) continue;
+      const aS = new Date(a.dateStart), aE = new Date(a.dateEnd || a.dateStart);
+      const bS = new Date(b.dateStart), bE = new Date(b.dateEnd || b.dateStart);
+      if (aS <= bE && bS <= aE) {
+        conflicts.add(calRoundKey(a));
+        conflicts.add(calRoundKey(b));
+      }
+    }
+  }
+  return conflicts;
+}
+
+function calRoundKey(round) {
+  return `${round._seriesId}:${round.round}`;
+}
+
+function formatCalDate(round) {
+  if (!round.dateStart) return round.date || 'TBD';
+  const s = new Date(round.dateStart + 'T12:00:00');
+  const e = round.dateEnd ? new Date(round.dateEnd + 'T12:00:00') : null;
+  const mo = d => d.toLocaleDateString('en-US', { month: 'short' });
+  const dy = d => d.getDate();
+  if (!e || round.dateStart === round.dateEnd) return `${mo(s)} ${dy(s)}`;
+  if (s.getMonth() === e.getMonth())           return `${mo(s)} ${dy(s)}–${dy(e)}`;
+  return `${mo(s)} ${dy(s)}–${mo(e)} ${dy(e)}`;
+}
+
+function renderCalNextUp(upcoming, conflictIds, container) {
+  if (!upcoming.length) {
+    container.innerHTML = '<p class="muted-copy">No upcoming rounds found.</p>';
+    setText('[data-nextup-badge]', '0 upcoming');
+    return;
+  }
+  setText('[data-nextup-badge]', `${upcoming.length} upcoming`);
+
+  container.innerHTML = upcoming.map(r => {
+    const isNext     = r._timeStatus === 'next';
+    const isConflict = conflictIds.has(calRoundKey(r));
+    const track = r.track === 'TBD' ? '<em class="cal-tba">Venue TBA</em>' : escapeHtml(r.track);
+    return `
+      <div class="cal-nextup-item${isNext ? ' cal-nextup-item--next' : ''}">
+        <span class="cal-sbadge cal-sbadge--${escapeHtml(r._seriesId)}">${escapeHtml(r._seriesShort)}</span>
+        <span class="cal-nextup-date">${escapeHtml(formatCalDate(r))}</span>
+        <span class="cal-nextup-name">${escapeHtml(r.name)}</span>
+        <span class="cal-nextup-track">${track}${r.trackCity ? ` · <span class="cal-city">${escapeHtml(r.trackCity)}</span>` : ''}</span>
+        <span class="cal-nextup-flags">
+          ${isNext     ? '<span class="badge ok">Next</span>' : ''}
+          ${isConflict ? '<span class="badge warn">⚡ Conflict</span>' : ''}
+        </span>
+      </div>`;
+  }).join('');
+}
+
+function renderCalBody(seriesList, allRounds, conflictIds, calBody) {
+  const filterRow = document.querySelector('[data-series-filter]');
+  if (filterRow) {
+    const pills = [{ id: 'all', label: 'All Series' }, ...seriesList.map(s => ({
+      id: s.id, label: SERIES_SHORT[s.id] || s.id
+    }))];
+    filterRow.innerHTML = pills.map(p =>
+      `<button class="series-pill${p.id === 'all' ? ' active' : ''}" data-filter="${escapeHtml(p.id)}">${escapeHtml(p.label)}</button>`
+    ).join('');
+    filterRow.querySelectorAll('.series-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterRow.querySelectorAll('.series-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const id = btn.getAttribute('data-filter');
+        calBody.querySelectorAll('.cal-series').forEach(block => {
+          block.style.display = (id === 'all' || block.getAttribute('data-series-id') === id) ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  calBody.innerHTML = seriesList.map(series => {
+    const rounds       = allRounds.filter(r => r._seriesId === series.id);
+    const totalConfirmed = rounds.filter(r => r.status === 'confirmed' || r.status === 'venue-tba').length;
+    const remaining    = rounds.filter(r => r._timeStatus !== 'past').length;
+
+    const divisions = {};
+    rounds.forEach(r => {
+      const key = r.division || 'main';
+      if (!divisions[key]) divisions[key] = [];
+      divisions[key].push(r);
+    });
+    const multiDiv = Object.keys(divisions).length > 1;
+
+    const divBlocks = Object.entries(divisions).map(([divId, divRounds]) => `
+      <div class="cal-division">
+        ${multiDiv ? `<div class="cal-division-label">${escapeHtml(DIVISION_LABELS[divId] || divId)}</div>` : ''}
+        <table class="table cal-table">
+          <thead><tr><th>Date</th><th>Event</th><th>Track</th><th>Location</th></tr></thead>
+          <tbody>${divRounds.map(r => renderCalRow(r, conflictIds)).join('')}</tbody>
+        </table>
+      </div>
+    `).join('');
+
+    return `
+      <div class="cal-series" data-series-id="${escapeHtml(series.id)}">
+        <div class="cal-series-header">
+          <div class="cal-series-title">
+            <span class="cal-sbadge cal-sbadge--${escapeHtml(series.id)}">${escapeHtml(SERIES_SHORT[series.id] || series.id)}</span>
+            <strong>${escapeHtml(series.name)}</strong>
+          </div>
+          <div class="cal-series-meta">
+            <span>${totalConfirmed} rounds</span>
+            <span class="cal-meta-sep">·</span>
+            <span>${remaining} remaining</span>
+            ${series.website ? `<a href="${escapeHtml(series.website)}" target="_blank" rel="noopener" class="cal-series-link">Website ↗</a>` : ''}
+          </div>
+        </div>
+        ${divBlocks}
+      </div>`;
+  }).join('');
+}
+
+function renderCalRow(round, conflictIds) {
+  const isPast     = round._timeStatus === 'past';
+  const isNext     = round._timeStatus === 'next';
+  const isVenueTba = round.status === 'venue-tba';
+  const isConflict = conflictIds.has(calRoundKey(round));
+  const isDouble   = (round.note || '').toLowerCase().includes('double');
+
+  const rowClass = isPast ? ' cal-row-past' : isNext ? ' cal-row-next' : '';
+  const trackCell = isVenueTba
+    ? `${escapeHtml(round.track)} <span class="badge warn" style="font-size:.62rem;vertical-align:middle;">TBA</span>`
+    : escapeHtml(round.track || 'TBD');
+
+  const flags = [
+    isNext     ? `<span class="badge ok"     style="font-size:.62rem;">Next</span>` : '',
+    isConflict ? `<span class="badge warn"   style="font-size:.62rem;">⚡ Conflict</span>` : '',
+    isDouble   ? `<span class="badge"        style="font-size:.62rem;background:var(--accent-blue);color:#fff;">2×pts</span>` : ''
+  ].filter(Boolean).join(' ');
+
+  return `<tr class="cal-round-row${rowClass}">
+    <td class="cal-date-cell">${escapeHtml(formatCalDate(round))}</td>
+    <td>${escapeHtml(round.name)}${flags ? ' ' + flags : ''}</td>
+    <td>${trackCell}</td>
+    <td class="cal-city-cell">${escapeHtml(round.trackCity || '—')}</td>
+  </tr>`;
 }
