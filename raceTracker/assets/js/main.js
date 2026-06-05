@@ -887,18 +887,24 @@ async function initSeriesCalendars() {
     });
   });
 
+  const todayStr = today.toISOString().slice(0, 10);
+
   // Find nearest upcoming date and tag those as 'next'
+  // Use future-starting rounds only (avoids multi-month events like ROK Cup Italia stealing the badge)
   const upcoming = allRounds
     .filter(r => r._timeStatus === 'upcoming' && r.dateStart)
     .sort((a, b) => a.dateStart.localeCompare(b.dateStart));
-  const nextDate = upcoming.length ? upcoming[0].dateStart : null;
+  const futureStarts = upcoming.filter(r => r.dateStart >= todayStr);
+  const nextDate = futureStarts.length ? futureStarts[0].dateStart : null;
   if (nextDate) allRounds.forEach(r => {
     if (r._timeStatus === 'upcoming' && r.dateStart === nextDate) r._timeStatus = 'next';
   });
 
+  // Detect conflicts only among weekend-scale rounds (<=14 days span) to avoid
+  // multi-month entries like ROK Cup Italia flooding every nearby round as a conflict
   const nearSorted = allRounds
-    .filter(r => r._timeStatus === 'next' || r._timeStatus === 'upcoming')
-    .sort((a, b) => (a.dateStart || '').localeCompare(b.dateStart || ''));
+    .filter(r => (r._timeStatus === 'next' || r._timeStatus === 'upcoming') && r.dateStart >= todayStr)
+    .sort((a, b) => a.dateStart.localeCompare(b.dateStart));
   const conflictIds = detectCalConflicts(nearSorted.slice(0, 20));
 
   if (nextUpEl) renderCalNextUp(upcoming.slice(0, 8), conflictIds, nextUpEl);
@@ -911,6 +917,8 @@ function calRoundTimeStatus(round, today) {
   return end < today ? 'past' : 'upcoming';
 }
 
+const CONFLICT_MAX_SPAN_DAYS = 14;
+
 function detectCalConflicts(rounds) {
   const conflicts = new Set();
   for (let i = 0; i < rounds.length; i++) {
@@ -920,6 +928,9 @@ function detectCalConflicts(rounds) {
       if (a._seriesId === b._seriesId) continue;
       const aS = new Date(a.dateStart), aE = new Date(a.dateEnd || a.dateStart);
       const bS = new Date(b.dateStart), bE = new Date(b.dateEnd || b.dateStart);
+      const aSpan = (aE - aS) / 86400000;
+      const bSpan = (bE - bS) / 86400000;
+      if (aSpan > CONFLICT_MAX_SPAN_DAYS || bSpan > CONFLICT_MAX_SPAN_DAYS) continue;
       if (aS <= bE && bS <= aE) {
         conflicts.add(calRoundKey(a));
         conflicts.add(calRoundKey(b));
