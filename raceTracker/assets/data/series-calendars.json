@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-06-05",
-  "notes": "2026 series calendars. All events are own-kart (professional own-equipment) unless noted. CKNA rounds are organized by division field. Cup Karts Canada is a separate series.",
+  "notes": "2026 series calendars. All events are own-kart (professional own-equipment) unless noted. Rounds include division field for grouping. International events marked region: international.",
   "series": [
     {
       "id":                  "ckna",
@@ -11,181 +11,20 @@
       "classes":             ["CKNA Cadet", "CKNA Junior", "CKNA Senior", "CKNA Masters", "CKNA Shifter"],
       "eventType":           "own-kart",
       "rounds": [
-        {
-          "round": "nat-1",
-          "division": "national",
-          "name": "CKNA Winter Nationals",
-          "track": "103rd Street Sports Complex",
-          "trackCity": "Jacksonville, FL",
-          "dateStart": "2026-01-01",
-          "dateEnd": "2026-01-03",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": "nat-2",
-          "division": "national",
-          "name": "CKNA Spring Nationals",
-          "track": "Charlotte Motor Speedway",
-          "trackId": "charlotte-motor-speedway",
-          "trackCity": "Concord, NC",
-          "dateStart": "2026-03-06",
-          "dateEnd": "2026-03-08",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": "nat-3",
-          "division": "national",
-          "name": "CKNA Summer Nationals",
-          "track": "Motorsports Country Club of Cincinnati",
-          "trackId": "mcc",
-          "trackCity": "Batavia, OH",
-          "dateStart": "2026-07-31",
-          "dateEnd": "2026-08-02",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": "nat-4",
-          "division": "national",
-          "name": "CKNA Grand Nationals 10",
-          "track": "New Castle Motorsports Park",
-          "trackId": "new-castle-motorsports-park",
-          "trackCity": "New Castle, IN",
-          "dateStart": "2026-10-08",
-          "dateEnd": "2026-10-11",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 1,
-          "division": "south",
-          "name": "CKNA South — Round 1",
-          "track": "Finishline Performance Karting",
-          "trackCity": "Biloxi, MS",
-          "dateStart": "2026-02-20",
-          "dateEnd": "2026-02-22",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 2,
-          "division": "south",
-          "name": "CKNA South — Round 2",
-          "track": "Daytona International Speedway",
-          "trackId": "daytona-international-speedway",
-          "trackCity": "Daytona Beach, FL",
-          "dateStart": "2026-03-20",
-          "dateEnd": "2026-03-22",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 3,
-          "division": "south",
-          "name": "CKNA South — Round 3",
-          "track": "Music City Kartplex",
-          "trackCity": "Shelbyville, TN",
-          "dateStart": "2026-04-24",
-          "dateEnd": "2026-04-26",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 4,
-          "division": "south",
-          "name": "CKNA South — Round 4",
-          "track": "Bushnell Motorsports Park",
-          "trackCity": "Bushnell, FL",
-          "dateStart": "2026-05-29",
-          "dateEnd": "2026-05-31",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 1,
-          "division": "east",
-          "name": "CKNA East — Round 1",
-          "track": "United Karting",
-          "trackCity": "Hanover, MD",
-          "dateStart": "2026-05-16",
-          "dateEnd": "2026-05-18",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 2,
-          "division": "east",
-          "name": "CKNA East — Round 2",
-          "track": "Kelly's Motorsports Park",
-          "trackCity": "Batavia, NY",
-          "dateStart": "2026-07-03",
-          "dateEnd": "2026-07-05",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 3,
-          "division": "east",
-          "name": "CKNA East — Round 3",
-          "track": "Quaker City Motorsports Park",
-          "trackId": "quaker-city-motorsports-park",
-          "trackCity": "Salem, OH",
-          "dateStart": "2026-08-08",
-          "dateEnd": "2026-08-10",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 1,
-          "division": "north",
-          "name": "CKNA North — Round 1",
-          "track": "G&J Kartways",
-          "trackCity": "Camden, OH",
-          "dateStart": "2026-05-01",
-          "dateEnd": "2026-05-03",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 2,
-          "division": "north",
-          "name": "CKNA North — Round 2",
-          "track": "Road America (Briggs & Stratton Motorplex)",
-          "trackId": "road-america",
-          "trackCity": "Plymouth, WI",
-          "dateStart": "2026-06-13",
-          "dateEnd": "2026-06-15",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 3,
-          "division": "north",
-          "name": "CKNA North — Round 3",
-          "track": "G&J Kartways",
-          "trackCity": "Camden, OH",
-          "dateStart": "2026-08-15",
-          "dateEnd": "2026-08-17",
-          "motorsportregEventId": null,
-          "raceSelectUrl": null,
-          "note": "Double points",
-          "status": "confirmed"
-        }
+        { "round": "nat-1", "division": "national", "name": "CKNA Winter Nationals",      "track": "103rd Street Sports Complex",          "trackCity": "Jacksonville, FL",  "dateStart": "2026-01-01", "dateEnd": "2026-01-03", "status": "confirmed" },
+        { "round": "nat-2", "division": "national", "name": "CKNA Spring Nationals",      "track": "Charlotte Motor Speedway",              "trackId": "charlotte-motor-speedway", "trackCity": "Concord, NC",  "dateStart": "2026-03-06", "dateEnd": "2026-03-08", "status": "confirmed" },
+        { "round": "nat-3", "division": "national", "name": "CKNA Summer Nationals",      "track": "Motorsports Country Club of Cincinnati","trackId": "mcc",               "trackCity": "Batavia, OH",  "dateStart": "2026-07-31", "dateEnd": "2026-08-02", "status": "confirmed" },
+        { "round": "nat-4", "division": "national", "name": "CKNA Grand Nationals 10",    "track": "New Castle Motorsports Park",           "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN", "dateStart": "2026-10-08", "dateEnd": "2026-10-11", "status": "confirmed" },
+        { "round": 1, "division": "south", "name": "CKNA South — Round 1", "track": "Finishline Performance Karting", "trackCity": "Biloxi, MS",        "dateStart": "2026-02-20", "dateEnd": "2026-02-22", "status": "confirmed" },
+        { "round": 2, "division": "south", "name": "CKNA South — Round 2", "track": "Daytona International Speedway", "trackId": "daytona-international-speedway", "trackCity": "Daytona Beach, FL", "dateStart": "2026-03-20", "dateEnd": "2026-03-22", "status": "confirmed" },
+        { "round": 3, "division": "south", "name": "CKNA South — Round 3", "track": "Music City Kartplex",           "trackCity": "Shelbyville, TN",   "dateStart": "2026-04-24", "dateEnd": "2026-04-26", "status": "confirmed" },
+        { "round": 4, "division": "south", "name": "CKNA South — Round 4", "track": "Bushnell Motorsports Park",     "trackCity": "Bushnell, FL",      "dateStart": "2026-05-29", "dateEnd": "2026-05-31", "status": "confirmed" },
+        { "round": 1, "division": "east",  "name": "CKNA East — Round 1",  "track": "United Karting",               "trackCity": "Hanover, MD",       "dateStart": "2026-05-16", "dateEnd": "2026-05-18", "status": "confirmed" },
+        { "round": 2, "division": "east",  "name": "CKNA East — Round 2",  "track": "Kelly's Motorsports Park",     "trackCity": "Batavia, NY",       "dateStart": "2026-07-03", "dateEnd": "2026-07-05", "status": "confirmed" },
+        { "round": 3, "division": "east",  "name": "CKNA East — Round 3",  "track": "Quaker City Motorsports Park", "trackId": "quaker-city-motorsports-park", "trackCity": "Salem, OH",  "dateStart": "2026-08-08", "dateEnd": "2026-08-10", "status": "confirmed" },
+        { "round": 1, "division": "north", "name": "CKNA North — Round 1", "track": "G&J Kartways",                 "trackCity": "Camden, OH",        "dateStart": "2026-05-01", "dateEnd": "2026-05-03", "status": "confirmed" },
+        { "round": 2, "division": "north", "name": "CKNA North — Round 2", "track": "Road America (Briggs & Stratton Motorplex)", "trackId": "road-america", "trackCity": "Plymouth, WI", "dateStart": "2026-06-13", "dateEnd": "2026-06-15", "status": "confirmed" },
+        { "round": 3, "division": "north", "name": "CKNA North — Round 3 (Double Points)", "track": "G&J Kartways", "trackCity": "Camden, OH",        "dateStart": "2026-08-15", "dateEnd": "2026-08-17", "note": "Double points", "status": "confirmed" }
       ]
     },
     {
@@ -198,39 +37,9 @@
       "eventType":           "own-kart",
       "region":              "Canada",
       "rounds": [
-        {
-          "round": 1,
-          "division": "national",
-          "name": "Canadian 4-Cycle Nationals",
-          "track": "Académie Tag Karting",
-          "trackCity": "Mont-Tremblant, QC",
-          "dateStart": "2026-05-14",
-          "dateEnd": "2026-05-17",
-          "motorsportregEventId": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 2,
-          "division": "national",
-          "name": "Cup Karts Canada — Round 2",
-          "track": "Lombardy Raceway Motorsports Park",
-          "trackCity": "Lombardy, ON",
-          "dateStart": "2026-07-24",
-          "dateEnd": "2026-07-26",
-          "motorsportregEventId": null,
-          "status": "confirmed"
-        },
-        {
-          "round": 3,
-          "division": "national",
-          "name": "Cup Karts Canada — Round 3",
-          "track": "Karting Trois-Rivières",
-          "trackCity": "Trois-Rivières, QC",
-          "dateStart": "2026-08-21",
-          "dateEnd": "2026-08-23",
-          "motorsportregEventId": null,
-          "status": "confirmed"
-        }
+        { "round": 1, "division": "national", "name": "Canadian 4-Cycle Nationals",   "track": "Académie Tag Karting",                "trackCity": "Mont-Tremblant, QC",   "dateStart": "2026-05-14", "dateEnd": "2026-05-17", "status": "confirmed" },
+        { "round": 2, "division": "national", "name": "Cup Karts Canada — Round 2",   "track": "Lombardy Raceway Motorsports Park",   "trackCity": "Lombardy, ON",         "dateStart": "2026-07-24", "dateEnd": "2026-07-26", "status": "confirmed" },
+        { "round": 3, "division": "national", "name": "Cup Karts Canada — Round 3",   "track": "Karting Trois-Rivières",              "trackCity": "Trois-Rivières, QC",   "dateStart": "2026-08-21", "dateEnd": "2026-08-23", "status": "confirmed" }
       ]
     },
     {
@@ -242,10 +51,21 @@
       "classes":             ["ROK Micro", "ROK Mini", "ROK Junior", "ROK Senior", "ROK Masters", "ROK Shifter"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": 1, "name": "ROK Cup USA — Round 1", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 2, "name": "ROK Cup USA — Round 2", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "ROK Cup USA — Round 3", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 4, "name": "ROK Cup International Trophy (Italy)", "track": "South Garda Karting", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation", "note": "International event — own registration platform" }
+        { "round": 1, "division": "florida-winter-tour", "name": "FWT — Round 1", "track": "Orlando Kart Center", "trackId": "okc", "trackCity": "Orlando, FL",   "dateStart": "2026-01-16", "dateEnd": "2026-01-18", "status": "confirmed" },
+        { "round": 2, "division": "florida-winter-tour", "name": "FWT — Round 2", "track": "Orlando Kart Center", "trackId": "okc", "trackCity": "Orlando, FL",   "dateStart": "2026-02-06", "dateEnd": "2026-02-08", "status": "confirmed" },
+        { "round": 3, "division": "florida-winter-tour", "name": "FWT — Round 3", "track": "T4 Kartplex",         "trackCity": "Palmetto, FL",                   "dateStart": "2026-03-06", "dateEnd": "2026-03-08", "status": "confirmed" },
+        { "round": "tc1-1", "division": "rok-sonoma-tc1", "name": "ROK Sonoma TC1 — Round 1", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-03-14", "dateEnd": "2026-03-15", "status": "confirmed" },
+        { "round": "tc1-2", "division": "rok-sonoma-tc1", "name": "ROK Sonoma TC1 — Round 2", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-04-11", "dateEnd": "2026-04-12", "status": "confirmed" },
+        { "round": "tc1-3", "division": "rok-sonoma-tc1", "name": "ROK Sonoma TC1 — Round 3", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-05-02", "dateEnd": "2026-05-03", "status": "confirmed" },
+        { "round": "tc2-1", "division": "rok-sonoma-tc2", "name": "ROK Sonoma TC2 — Round 1", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-06-20", "dateEnd": "2026-06-21", "status": "confirmed" },
+        { "round": "tc2-2", "division": "rok-sonoma-tc2", "name": "ROK Sonoma TC2 — Round 2", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-08-08", "dateEnd": "2026-08-09", "status": "confirmed" },
+        { "round": "tc2-3", "division": "rok-sonoma-tc2", "name": "ROK Sonoma TC2 — Round 3", "track": "Sonoma Raceway", "trackId": "sonoma-raceway", "trackCity": "Sonoma, CA", "dateStart": "2026-09-26", "dateEnd": "2026-09-27", "status": "confirmed" },
+        { "round": "fest-west", "division": "national", "name": "ROK Fest West",    "track": "TBD",                                     "trackCity": "TBD",                "dateStart": "2026-07-10", "dateEnd": "2026-07-12", "status": "confirmed" },
+        { "round": "vegas",     "division": "national", "name": "ROK Vegas",         "track": "Rio All-Suite Hotel & Casino",             "trackCity": "Las Vegas, NV",      "dateStart": "2026-10-28", "dateEnd": "2026-11-01", "status": "confirmed" },
+        { "round": "int-1", "division": "international", "name": "ROK Cup Winter Trophy",  "track": "South Garda Karting", "trackCity": "Lonato, Italy",        "dateStart": "2026-02-21", "dateEnd": "2026-02-22", "status": "confirmed" },
+        { "round": "int-2", "division": "international", "name": "ROK Cup Italia",         "track": "Multiple (Cremona, Leopard Viterbo, Franciacorta)", "trackCity": "Italy", "dateStart": "2026-03-01", "dateEnd": "2026-09-30", "note": "Multiple rounds March–September across Cremona Circuit, Leopard Circuit Viterbo, Franciacorta", "status": "confirmed" },
+        { "round": "int-3", "division": "international", "name": "ROK Cup Superfinal",     "track": "South Garda Karting", "trackCity": "Lonato, Italy",        "dateStart": "2026-10-13", "dateEnd": "2026-10-17", "status": "confirmed" },
+        { "round": "int-4", "division": "international", "name": "ROK Cup Festival",       "track": "Franciacorta Karting Track", "trackCity": "Castrezzato, Italy", "dateStart": "2026-11-28", "dateEnd": "2026-11-29", "status": "confirmed" }
       ]
     },
     {
@@ -257,9 +77,17 @@
       "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift", "Shifter Pro"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": 1, "name": "SKUSA Pro Tour — SpringNationals", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 2, "name": "SKUSA Pro Tour — SummerNationals", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "SKUSA SuperNationals XXVIII", "track": "Rio All-Suite Hotel & Casino, Las Vegas NV", "date": "Nov 2026", "motorsportregEventId": null, "status": "pending-confirmation", "note": "Largest indoor karting race in North America — Las Vegas" }
+        { "round": "ws-1-2", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 1 & 2", "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-01-09", "dateEnd": "2026-01-11", "status": "confirmed" },
+        { "round": "ws-3-4", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 3 & 4", "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-02-13", "dateEnd": "2026-02-15", "status": "confirmed" },
+        { "round": "pt-1",   "division": "pro-tour",      "name": "SKUSA Pro Tour — WinterNationals",   "track": "Musselman Honda Circuit",  "trackCity": "Tucson, AZ",    "dateStart": "2026-03-27", "dateEnd": "2026-03-29", "status": "confirmed" },
+        { "round": "pt-2",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SpringNationals",   "track": "Motorsports Country Club of Cincinnati", "trackId": "mcc", "trackCity": "Batavia, OH", "dateStart": "2026-06-12", "dateEnd": "2026-06-14", "status": "confirmed" },
+        { "round": "pt-3",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SummerNationals",   "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN", "dateStart": "2026-07-24", "dateEnd": "2026-07-26", "status": "confirmed" },
+        { "round": "pkc-1-2","division": "pkc",           "name": "PKC — Rounds 1 & 2", "track": "K1 Circuit", "trackId": "k1speed-winchester", "trackCity": "Winchester, CA","dateStart": "2026-04-24", "dateEnd": "2026-04-26", "status": "confirmed" },
+        { "round": "pkc-3",  "division": "pkc",           "name": "PKC — Round 3",      "track": "Sonoma Raceway", "trackId": "sonoma-raceway",  "trackCity": "Sonoma, CA",    "dateStart": "2026-05-23", "dateEnd": "2026-05-24", "status": "confirmed" },
+        { "round": "pkc-4",  "division": "pkc",           "name": "PKC — Round 4",      "track": "Sonoma Raceway", "trackId": "sonoma-raceway",  "trackCity": "Sonoma, CA",    "dateStart": "2026-08-15", "dateEnd": "2026-08-16", "status": "confirmed" },
+        { "round": "pkc-5",  "division": "pkc",           "name": "PKC — Round 5",      "track": "Spring Mountain Karting", "trackCity": "Pahrump, NV",                        "dateStart": "2026-09-12", "dateEnd": "2026-09-13", "status": "confirmed" },
+        { "round": "pkc-6",  "division": "pkc",           "name": "PKC — Round 6",      "track": "K1 Circuit", "trackId": "k1speed-winchester", "trackCity": "Winchester, CA","dateStart": "2026-10-03", "dateEnd": "2026-10-04", "status": "confirmed" },
+        { "round": "supernats", "division": "supernats",  "name": "SKUSA SuperNationals 29", "track": "Las Vegas Motor Speedway", "trackId": "las-vegas-motor-speedway", "trackCity": "Las Vegas, NV", "dateStart": "2026-11-11", "dateEnd": "2026-11-15", "status": "confirmed", "note": "Largest karting event in North America" }
       ]
     },
     {
@@ -271,10 +99,10 @@
       "classes":             ["TBD — confirm class structure with Luiz"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": 1, "name": "STARS Round 1", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 2, "name": "STARS Round 2", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "STARS Round 3", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 4, "name": "STARS Championship", "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" }
+        { "round": 1, "name": "STARS Round 1",    "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 2, "name": "STARS Round 2",    "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 3, "name": "STARS Round 3",    "track": "TBD", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 4, "name": "STARS Championship","track": "TBD","date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" }
       ]
     },
     {
@@ -286,10 +114,10 @@
       "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": 1, "name": "USPKS Round 1", "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "date": "TBD 2026", "raceSelectUrl": "https://raceselect.com/uspks/2026", "status": "pending-confirmation" },
-        { "round": 2, "name": "USPKS Round 2", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "USPKS Round 3", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
-        { "round": 4, "name": "USPKS Grand Nationals", "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" }
+        { "round": 1, "name": "USPKS Round 1",        "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "date": "TBD 2026", "raceSelectUrl": "https://raceselect.com/uspks/2026", "status": "pending-confirmation" },
+        { "round": 2, "name": "USPKS Round 2",        "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 3, "name": "USPKS Round 3",        "track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" },
+        { "round": 4, "name": "USPKS Grand Nationals","track": "TBD", "date": "TBD 2026", "raceSelectUrl": null, "status": "pending-confirmation" }
       ]
     },
     {
@@ -302,10 +130,10 @@
       "eventType":           "own-kart",
       "region":              "Texas / South-Central USA",
       "rounds": [
-        { "round": 1, "name": "TSRS Round 1", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 2, "name": "TSRS Round 2", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 3, "name": "TSRS Round 3", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
-        { "round": 4, "name": "TSRS Championship", "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" }
+        { "round": 1, "name": "TSRS Round 1",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 2, "name": "TSRS Round 2",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 3, "name": "TSRS Round 3",    "track": "TBD — Texas region", "date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" },
+        { "round": 4, "name": "TSRS Championship","track": "TBD — Texas region","date": "TBD 2026", "motorsportregEventId": null, "status": "pending-confirmation" }
       ]
     }
   ]
