@@ -1036,7 +1036,7 @@ function renderCalBody(seriesList, allRounds, conflictIds, calBody) {
             <span>${totalConfirmed} rounds</span>
             <span class="cal-meta-sep">·</span>
             <span>${remaining} remaining</span>
-            ${series.website ? `<a href="${escapeHtml(series.website)}" target="_blank" rel="noopener" class="cal-series-link">Website ↗</a>` : ''}
+            ${series.scheduleUrl ? `<a href="${escapeHtml(series.scheduleUrl)}" target="_blank" rel="noopener" class="cal-series-link">Official Schedule ↗</a>` : series.website ? `<a href="${escapeHtml(series.website)}" target="_blank" rel="noopener" class="cal-series-link">Website ↗</a>` : ''}
           </div>
         </div>
         ${divBlocks}
