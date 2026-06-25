@@ -11,3 +11,6 @@
 
 # Claude Code local settings
 .claude/
+
+# Editor artifacts
+.vscode/
