@@ -69,23 +69,23 @@
       <div>
         <span>MotorsportReg</span>
         <strong>REST API</strong>
-        <small>Entry lists via <code>/rest/events/{id}/entries.json</code>. Public events may work without a key; private events need <code>MOTORSPORTREG_APIKEY</code> set as a Worker secret.</small>
+        <small>Entry lists via <code>/rest/events/{id}/entrylist.json</code>. <code>{id}</code> is MotorsportReg's internal event ID — <strong>not</strong> the number in the public event URL — and isn't visible on the public event page; confirm it with MotorsportReg or the event organizer. Private events need <code>MOTORSPORTREG_APIKEY</code> set as a Worker secret.</small>
       </div>
       <div>
         <span>RaceSelect</span>
         <strong>HTML parse</strong>
-        <small>No public API — the Worker fetches the event page and parses the registration table. Works for any RaceSelect event URL.</small>
+        <small>No public API — the Worker fetches the event's own <code>/EventEntries</code> page (not the series season-index page) and parses its entry rows. Verified working against a real live event.</small>
       </div>
       <div>
         <span>Setup</span>
         <strong>Add real event IDs</strong>
-        <small>Update <code>event-schedule.json</code> with the real MotorsportReg event UID (from the event URL) once Nuno confirms which rounds he's entering.</small>
+        <small>Update <code>event-schedule.json</code> with the real MotorsportReg internal event ID or the RaceSelect <code>/EventEntries</code> URL once Nuno confirms which rounds he's entering.</small>
       </div>
     </div>
   </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.11.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.11.1</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
       </main>
     </div>
   </div>

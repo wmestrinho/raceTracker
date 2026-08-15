@@ -10,7 +10,7 @@ it can be adapted for other teams later. Deploys via Cloudflare Workers/Pages
 (`wrangler deploy`), static assets dir `raceTracker/`.
 
 ## Rules that matter
-- **Version:** `VERSION` file is the single source of truth (`v1.11.0`), shown in
+- **Version:** `VERSION` file is the single source of truth (`v1.11.1`), shown in
   the footer of `raceTracker/index.html`. Bump PATCH/MINOR/MAJOR; include the
   version in commit subjects (e.g. `feat: add lap timer — v1.8.0`).
 - **Canonical root is exactly `raceTracker/`** (capital T). Do **not** create

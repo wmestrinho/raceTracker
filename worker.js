@@ -1,5 +1,5 @@
 /**
- * raceTracker Worker — v1.9.0
+ * raceTracker Worker — v1.11.1
  * GET /api/registrations?source=X&...  Registration entry list proxy
  *   sources: motorsportreg, raceselect, mylaps, raceentry, racemonitor,
  *            google-sheets, generic-html, motorsport-australia
@@ -49,7 +49,17 @@ async function handleRegistrations(url, env) {
 async function fetchMotorsportReg(eventId, env) {
   if (!eventId) return json({ ok: false, error: 'Missing eventId for MotorsportReg' }, 400);
 
-  const apiUrl = `https://api.motorsportreg.com/rest/events/${eventId}/entries.json`;
+  // Per api.motorsportreg.com's own REST docs, the unauthenticated public
+  // entry list lives at /rest/events/{event_id}/entrylist (".json" suffix
+  // for JSON instead of the default XML) — NOT "/entries.json", which
+  // doesn't exist on their API and previously made every call 404 no
+  // matter the ID. {event_id} is MotorsportReg's internal numeric event
+  // ID — it is NOT the number in the public event URL slug; that slug ID
+  // reliably returns {"error":"Invalid ID"} against this endpoint. The
+  // internal ID isn't exposed anywhere on the public event page either; it
+  // has to come from MotorsportReg's own org calendar/dashboard or from
+  // asking MotorsportReg support for the event's REST ID directly.
+  const apiUrl = `https://api.motorsportreg.com/rest/events/${eventId}/entrylist.json`;
   const headers = { 'User-Agent': 'raceTracker/1.9.0', Accept: 'application/json' };
   if (env.MOTORSPORTREG_APIKEY) headers['X-APIKEY'] = env.MOTORSPORTREG_APIKEY;
 
@@ -63,6 +73,17 @@ async function fetchMotorsportReg(eventId, env) {
       eventId
     }, 401);
   }
+  if (res.status === 400) {
+    const body = await res.json().catch(() => ({}));
+    if (body.error === 'Invalid ID') {
+      return json({
+        ok: false, eventId,
+        error: `"${eventId}" isn't a valid MotorsportReg REST event ID.`,
+        hint: 'MotorsportReg\'s REST event_id is an internal ID, not the number in the public event URL. Confirm the real event_id with MotorsportReg or the event organizer before retrying.'
+      }, 400);
+    }
+    return json({ ok: false, error: `MotorsportReg HTTP 400: ${body.error || 'bad request'}`, eventId }, 400);
+  }
   if (!res.ok) return json({ ok: false, error: `MotorsportReg HTTP ${res.status}`, eventId }, 502);
 
   const data = await res.json();
@@ -71,7 +92,14 @@ async function fetchMotorsportReg(eventId, env) {
 }
 
 function parseMotorsportRegEntries(data) {
-  const raw = data.response?.entries?.entry || data.entries?.entry || data.entries || [];
+  // Response shape for a successful /entrylist.json call isn't documented
+  // beyond "same data as the public entry list" and hasn't been verified
+  // against a real event yet (no confirmed working event_id as of this
+  // writing) — kept flexible across the same key variants the old
+  // /entries.json code expected, plus an entrylist-named variant, so a
+  // real successful response doesn't silently fall through empty.
+  const raw = data.response?.entrylist?.entry || data.entrylist?.entry
+    || data.response?.entries?.entry || data.entries?.entry || data.entries || [];
   const list = Array.isArray(raw) ? raw : (raw ? [raw] : []);
   return list.filter(Boolean).map(e => ({
     firstName: e.firstname  || e.first_name  || e.firstName  || '',
@@ -86,6 +114,11 @@ function parseMotorsportRegEntries(data) {
 async function fetchRaceSelect(eventUrl, env) {
   if (!eventUrl) return json({ ok: false, error: 'Missing eventUrl for RaceSelect' }, 400);
 
+  // Must be a specific event's entries page (…/{event-slug}/EventEntries),
+  // not a series season-index page (…/{series}/{year}) — the season index
+  // only lists rounds with links to each one's own EventEntries page and
+  // has no entry data itself, which previously made this silently return
+  // zero entries against a season URL instead of a real per-event one.
   const url = eventUrl.startsWith('http') ? eventUrl : `https://raceselect.com/${eventUrl}`;
   const res = await fetch(url, { headers: { 'User-Agent': 'raceTracker/1.9.0' } });
   if (!res.ok) return json({ ok: false, error: `RaceSelect HTTP ${res.status}` }, 502);
@@ -95,12 +128,45 @@ async function fetchRaceSelect(eventUrl, env) {
   return json({
     ok: true, source: 'raceselect', eventUrl: url,
     fetchedAt: new Date().toISOString(), count: entries.length, entries,
-    note: entries.length === 0 ? 'No structured entry data found — page may require manual review or a different URL.' : undefined
+    note: entries.length === 0 ? 'No structured entry data found — confirm this is a specific event\'s /EventEntries page, not a series season-index page.' : undefined
   });
 }
 
 function parseRaceSelectHtml(html) {
+  // RaceSelect's current EventEntries page server-renders each driver as
+  // <div class="entries-row" data-driver-name="…" data-class-name="…">
+  // with the kart/vehicle number in a nested span (title="Event number")
+  // — there is no <table> markup on this page at all, which is why the
+  // previous table-cell scraper always returned zero entries against it.
+  // Verified against a real live event page (206/206 entries parsed
+  // correctly, matching the page's own reported vehicle count).
   const entries = [];
+  const parts = html.split('<div class="entries-row');
+  for (let i = 1; i < parts.length; i++) {
+    const chunk = parts[i];
+    const tagEnd = chunk.indexOf('>');
+    if (tagEnd === -1) continue;
+    const openTag = chunk.slice(0, tagEnd);
+    const nameM = openTag.match(/data-driver-name="([^"]*)"/);
+    if (!nameM) continue;
+    const classM = openTag.match(/data-class-name="([^"]*)"/);
+    const body = chunk.slice(tagEnd, tagEnd + 1500);
+    const numM = body.match(/title="Event number"[^>]*>\s*(\d+)/);
+    const nameParts = decodeHtmlEntities(nameM[1]).trim().split(/\s+/);
+    entries.push({
+      firstName: nameParts[0] || '',
+      lastName:  nameParts.slice(1).join(' ') || '',
+      number:    numM ? numM[1] : '',
+      class:     classM ? decodeHtmlEntities(classM[1]) : '',
+      team:      '',
+      paid:      true
+    });
+  }
+  if (entries.length) return entries;
+
+  // Fallback for older/other RaceSelect-family pages still using plain
+  // HTML tables, kept for resilience across providers/events not verified
+  // against the current div-based markup.
   const rowRx  = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
   const cellRx = /<td[^>]*>([\s\S]*?)<\/td>/gi;
   let rowM;
@@ -115,6 +181,12 @@ function parseRaceSelectHtml(html) {
     }
   }
   return entries.filter(e => e.firstName || e.number);
+}
+
+function decodeHtmlEntities(value) {
+  return String(value)
+    .replaceAll('&amp;', '&').replaceAll('&lt;', '<').replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"').replaceAll('&#039;', "'").replaceAll('&apos;', "'");
 }
 
 // ── MyLaps ───────────────────────────────────────────────────────
