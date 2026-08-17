@@ -12,18 +12,6 @@ Keep external app naming as `raceTracker` so it can be adapted for other teams, 
 
 ## Architecture
 
-| Path | Purpose |
-|------|---------|
-| `raceTracker/index.html` | Static entrypoint — canonical frontend root |
-| `raceTracker/assets/css/style.css` | All styles |
-| `raceTracker/assets/js/main.js` | All client-side logic |
-| `raceTracker/assets/images/racetracker-logo.png` | Canonical logo |
-| `raceTracker/assets/data/track-context.json` | Track/weather defaults |
-| `supabase/` | Supabase planning and migrations |
-| `scripts/` | Validation and data ingestion scripts |
-| `wrangler.jsonc` | Cloudflare Workers/Pages deployment config |
-| `VERSION` | Single source of truth for version |
-
 **Do not** create parallel site roots (`docs/`, root `assets/`, `site/`, etc.).
 
 ## Deployment
