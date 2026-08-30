@@ -22,7 +22,28 @@ jobs:
         run: python3 scripts/validate_structure.py
 
       - name: Validate JavaScript syntax
-        run: node --check raceTracker/assets/js/main.js
+        run: |
+          set -euo pipefail
+          for f in raceTracker/assets/js/*.js worker.js; do
+            node --check "$f"
+          done
 
-      - name: Validate telemetry JSON
-        run: python3 -m json.tool raceTracker/assets/data/telemetry.json > /dev/null
+      - name: Validate all data JSON
+        run: |
+          set -euo pipefail
+          for f in raceTracker/assets/data/*.json; do
+            python3 -m json.tool "$f" > /dev/null
+          done
+
+      - name: Compile Python scripts
+        run: python3 -m py_compile scripts/*.py
+
+      - name: Race weather unit tests
+        run: python3 scripts/test_race_weather.py
+
+      # Offline: exercises the calendar/venue join, key generation and schema
+      # build with no network, so a PR never fails on an Open-Meteo blip.
+      - name: Race weather pipeline offline check
+        env:
+          RACETRACKER_WEATHER_OFFLINE: '1'
+        run: python3 scripts/refresh_race_weather.py

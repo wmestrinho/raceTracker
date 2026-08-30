@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.11.1`
+- Current version: `v1.12.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -41,9 +41,24 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 - Supabase secrets belong only in `.env.local` (gitignored) — never in Git, static JS, markdown, or memory
 - Telemetry is integration/export-only for now
 
+## Race Weekend Weather
+
+- `raceTracker/assets/data/race-weather.json` is **generated** — edit
+  `scripts/refresh_race_weather.py`, never the JSON by hand
+- Weekend keys are `seriesId:division:round`. That formula is duplicated in three
+  places (`calRoundKey` in `main.js`, `weekend_key` in the refresh script, and
+  `validate_structure.py`) and all three must stay in step
+- Risk thresholds live in `WEATHER_THRESHOLDS` (`main.js`) and `RISK_THRESHOLDS`
+  (refresh script); `validate_structure.py` fails the build if they drift
+- Series carry `engineType` (`2-stroke` / `4-stroke` / `mixed`) and `country`; the
+  schedule page defaults to 2-stroke US
+- Calendar rounds sourced from a single reference are marked
+  `"sourceConfidence": "unverified"` — do not silently promote them to confirmed
+
 ## Before Committing
 
 - Run: `python3 scripts/validate_structure.py`
+- Run: `python3 scripts/test_race_weather.py`
 - Run: `git status --short --branch`
 - Confirm changes are only in this repo
 

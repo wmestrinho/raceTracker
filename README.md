@@ -35,13 +35,42 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/data/telemetry.json`
 - `raceTracker/assets/data/track-context.json`
 - `raceTracker/assets/data/event-schedule.json`
+- `raceTracker/assets/data/series-calendars.json`
+- `raceTracker/assets/data/race-weather.json` (generated — see Race weekend weather)
 - `raceTracker/assets/images/racetracker-logo.png`
+- `scripts/refresh_race_weather.py`
+- `.github/workflows/refresh-race-weather.yml`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.11.1`
+- Current version: `v1.12.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
+
+Race weekend weather
+- Every round in `series-calendars.json` gets a weather outlook in the generated
+  `raceTracker/assets/data/race-weather.json`, keyed `seriesId:division:round`.
+- Open-Meteo's forecast reaches only 16 days, so each weekend lands in one of four modes:
+  `actual` (already run — ERA5 archive), `forecast` (within 16 days), `climate`
+  (further out — normals averaged over past seasons, +/-3 calendar days per year),
+  and `unavailable` (venue TBA, multi-month event, non-race, or a failed fetch).
+- Regenerate with `python3 scripts/refresh_race_weather.py`. It reuses recorded past
+  weather and climate normals under 30 days old, so a normal run makes ~2 API calls.
+  The file is left untouched when the content hash is unchanged.
+- `.github/workflows/refresh-race-weather.yml` runs it daily and commits only real
+  changes. Note that GitHub disables scheduled workflows after 60 days of repository
+  inactivity, and that the commit publishes only if `CLOUDFLARE_API_TOKEN` is set as a
+  repository secret — otherwise the live site waits for a manual `wrangler deploy`.
+- The schedule page degrades to an em dash in the weather column when the file is
+  absent, and flags data older than 3 days rather than hiding it.
+- Series are tagged `engineType` (`2-stroke` / `4-stroke` / `mixed`) and `country`;
+  the schedule page defaults to 2-stroke US racing.
+- Rounds marked `"sourceConfidence": "unverified"` came from a single source. Verify
+  them against the series' own `scheduleUrl` before relying on them for travel.
+- Add missing venue coordinates with
+  `RACETRACKER_WEATHER_GEOCODE=1 python3 scripts/refresh_race_weather.py`, which prints
+  paste-ready entries; `track-context.json` stays hand-curated.
+- Tests: `python3 scripts/test_race_weather.py` (no network required).
 
 Live data
 - Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
@@ -101,7 +130,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.11.1`
+- Current baseline version: `v1.12.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

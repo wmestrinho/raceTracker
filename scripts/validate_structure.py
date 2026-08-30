@@ -117,6 +117,159 @@ for html_file in html_files:
     if missing:
         errors.append(f"{html_file.relative_to(ROOT)} missing anchor targets: " + ", ".join(missing))
 
+# ── Series calendar completeness ──────────────────────────────────────────
+CAL_PATH = CANON / "assets/data/series-calendars.json"
+TRACKS_PATH = CANON / "assets/data/track-context.json"
+WEATHER_PATH = CANON / "assets/data/race-weather.json"
+
+VALID_ENGINE_TYPES = {"2-stroke", "4-stroke", "mixed"}
+VALID_WEATHER_MODES = {"actual", "forecast", "climate", "unavailable"}
+
+
+def weekend_key(series_id, division, round_id):
+    """Must match calRoundKey() in main.js and weekend_key() in the refresh script."""
+    return f"{series_id}:{division or 'main'}:{round_id}"
+
+
+calendar = tracks = None
+calendar_keys = set()
+
+try:
+    calendar = json.loads(CAL_PATH.read_text())
+    tracks = json.loads(TRACKS_PATH.read_text())
+except (OSError, json.JSONDecodeError) as exc:
+    errors.append(f"Could not parse calendar/track data: {exc}")
+
+if calendar and tracks:
+    track_ids = {t.get("id") for t in tracks.get("tracks", [])}
+    geo_ok = {
+        t["id"] for t in tracks.get("tracks", [])
+        if t.get("latitude") is not None and t.get("longitude") is not None
+    }
+
+    for series in calendar.get("series", []):
+        sid = series.get("id", "?")
+        if series.get("engineType") not in VALID_ENGINE_TYPES:
+            errors.append(f"series {sid}: engineType must be one of {sorted(VALID_ENGINE_TYPES)}")
+        if not series.get("country"):
+            errors.append(f"series {sid}: missing country")
+
+        for rnd in series.get("rounds", []):
+            key = weekend_key(sid, rnd.get("division"), rnd.get("round"))
+            if key in calendar_keys:
+                errors.append(f"duplicate round key: {key}")
+            calendar_keys.add(key)
+
+            if rnd.get("status") == "confirmed" and rnd.get("track") not in (None, "TBD"):
+                tid = rnd.get("trackId")
+                # Multi-venue entries legitimately have no single track.
+                multi = str(rnd.get("track", "")).lower().startswith("multiple")
+                if not tid and not multi:
+                    errors.append(f"round {key}: confirmed but has no trackId")
+                elif tid and tid not in track_ids:
+                    errors.append(f"round {key}: trackId '{tid}' not in track-context.json")
+                elif tid and tid not in geo_ok:
+                    errors.append(f"round {key}: track '{tid}' has no coordinates")
+
+# ── Generated race weather (optional until the refresh job first runs) ─────
+if WEATHER_PATH.exists():
+    try:
+        weather = json.loads(WEATHER_PATH.read_text())
+    except json.JSONDecodeError as exc:
+        errors.append(f"race-weather.json is not valid JSON: {exc}")
+        weather = None
+
+    if weather is not None:
+        if weather.get("schemaVersion") != 1:
+            errors.append(f"race-weather.json schemaVersion must be 1, got {weather.get('schemaVersion')}")
+        weekends = weather.get("weekends")
+        if not isinstance(weekends, list):
+            errors.append("race-weather.json weekends must be a list")
+            weekends = []
+
+        seen = set()
+        for entry in weekends:
+            key = entry.get("key", "?")
+            if key in seen:
+                errors.append(f"race-weather.json duplicate key: {key}")
+            seen.add(key)
+
+            mode = entry.get("mode")
+            if mode not in VALID_WEATHER_MODES:
+                errors.append(f"race-weather.json {key}: invalid mode '{mode}'")
+            elif mode == "unavailable":
+                if not entry.get("unavailableReason"):
+                    errors.append(f"race-weather.json {key}: unavailable with no reason")
+            else:
+                days = entry.get("days")
+                if not days:
+                    errors.append(f"race-weather.json {key}: mode '{mode}' with no days")
+                    days = []
+                if not entry.get("summary"):
+                    errors.append(f"race-weather.json {key}: mode '{mode}' with no summary")
+                start, end = entry.get("dateStart"), entry.get("dateEnd") or entry.get("dateStart")
+                dates = [d.get("date") for d in days]
+                if dates != sorted(dates):
+                    errors.append(f"race-weather.json {key}: days are not sorted")
+                if len(set(dates)) != len(dates):
+                    errors.append(f"race-weather.json {key}: duplicate day dates")
+                for day_date in dates:
+                    if start and day_date and not (start <= day_date <= end):
+                        errors.append(f"race-weather.json {key}: day {day_date} outside {start}..{end}")
+
+        # A stale generated file after a calendar edit is the likeliest breakage.
+        if calendar_keys and seen:
+            orphaned = sorted(seen - calendar_keys)
+            missing = sorted(calendar_keys - seen)
+            if orphaned:
+                errors.append(f"race-weather.json has {len(orphaned)} key(s) not on the calendar: {orphaned[:5]}")
+            if missing:
+                errors.append(f"race-weather.json is missing {len(missing)} calendar round(s): {missing[:5]}")
+
+# ── Risk thresholds must agree between the browser and the generator ───────
+JS_PATH = CANON / "assets/js/main.js"
+PY_PATH = ROOT / "scripts/refresh_race_weather.py"
+
+
+def parse_threshold_block(text, marker, terminator):
+    """Pull `name: value` pairs out of a threshold literal. Returns None if unparseable."""
+    start = text.find(marker)
+    if start == -1:
+        return None
+    end = text.find(terminator, start)
+    if end == -1:
+        return None
+    block = text[start:end]
+    found = {}
+    for name, raw in re.findall(r'["\']?([A-Za-z]+)["\']?\s*:\s*(\[[^\]]*\]|[0-9.]+)', block):
+        if name == marker.split()[-1]:
+            continue
+        if raw.startswith("["):
+            found[name] = [int(v) for v in re.findall(r"\d+", raw)]
+        else:
+            found[name] = float(raw)
+    return found or None
+
+
+try:
+    js_thresholds = parse_threshold_block(JS_PATH.read_text(), "const WEATHER_THRESHOLDS", "};")
+    py_thresholds = parse_threshold_block(PY_PATH.read_text(), "RISK_THRESHOLDS = {", "\n}")
+except OSError as exc:
+    errors.append(f"Could not read threshold sources: {exc}")
+    js_thresholds = py_thresholds = None
+
+if js_thresholds is None:
+    errors.append("Could not parse WEATHER_THRESHOLDS from main.js — the drift guard is not running")
+elif py_thresholds is None:
+    errors.append("Could not parse RISK_THRESHOLDS from refresh_race_weather.py — the drift guard is not running")
+else:
+    for name in sorted(set(js_thresholds) | set(py_thresholds)):
+        js_value, py_value = js_thresholds.get(name), py_thresholds.get(name)
+        if js_value != py_value:
+            errors.append(
+                f"risk threshold '{name}' differs: main.js={js_value} vs refresh_race_weather.py={py_value}"
+            )
+
 if errors:
     print("VALIDATION FAILED")
     for e in errors:

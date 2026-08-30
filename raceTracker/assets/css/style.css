@@ -632,7 +632,7 @@ a { color: inherit; text-decoration: none; }
 
 /* Next Up list */
 .cal-nextup-list { display:flex; flex-direction:column; gap:.5rem; }
-.cal-nextup-item { display:grid; grid-template-columns:auto auto 1fr auto auto; align-items:center; gap:.55rem .75rem; padding:.55rem .75rem; border:1px solid var(--border); background:var(--surface-soft); flex-wrap:wrap; }
+.cal-nextup-item { display:grid; grid-template-columns:auto auto 1fr auto auto auto; align-items:center; gap:.55rem .75rem; padding:.55rem .75rem; border:1px solid var(--border); background:var(--surface-soft); flex-wrap:wrap; }
 .cal-nextup-item--next { border-color:var(--primary-dark); background:linear-gradient(90deg,rgba(191,255,0,.06) 0%,transparent 100%); }
 .cal-nextup-date { font-size:.8rem; font-weight:900; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--muted); }
 .cal-nextup-item--next .cal-nextup-date { color:var(--primary-dark); }
@@ -650,10 +650,46 @@ a { color: inherit; text-decoration: none; }
 .cal-sbadge--stars            { background:#7a5000; color:#ffd966; }
 .cal-sbadge--uspks            { background:#1a3a5c; color:#b8d4f0; }
 .cal-sbadge--tsrs             { background:#8b1a00; color:#ffddd5; }
+.cal-sbadge--route66          { background:#5c3a00; color:#ffcc80; }
+.cal-sbadge--challenge-americas { background:#2d004d; color:#d9b3ff; }
+.cal-sbadge--us-rotax         { background:#00504d; color:#7fe6df; }
+.cal-sbadge--wka-mancup       { background:#3a3a3a; color:#e0e0e0; }
+
+/* Race weekend weather */
+.cal-wx-cell { white-space:nowrap; font-variant-numeric:tabular-nums; min-width:118px; }
+.cal-wx-empty { color:var(--border-strong); }
+.cal-wx-toggle { appearance:none; border:0; background:none; padding:0; margin:0; cursor:pointer; text-align:left; font:inherit; color:inherit; }
+.cal-wx-toggle:hover .wx-badge { filter:brightness(1.12); }
+.cal-wx-toggle:focus-visible { outline:2px solid var(--primary-dark); outline-offset:2px; }
+.wx-badge { font-size:.66rem; padding:.16rem .4rem; vertical-align:middle; }
+.wx-mode-tag { display:inline-block; margin-left:.3rem; font-size:.58rem; font-weight:900; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); vertical-align:middle; }
+.wx-mode-tag--forecast { color:var(--accent-blue); }
+.wx-mode-tag--climate  { color:var(--border-strong); }
+.wx-mode-tag--actual   { color:var(--muted); }
+.wx-mode-tag--live     { color:var(--primary-dark); }
+
+.cal-wx-detail-row { display:none; }
+.cal-wx-detail-row.is-open { display:table-row; }
+.cal-wx-detail-row td { padding:0; }
+.cal-wx-detail { padding:.75rem 1rem; background:var(--bg); border-top:1px solid var(--border); }
+.cal-wx-days { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.5rem; }
+.cal-wx-day { border:1px solid var(--border); background:var(--surface); padding:.5rem .6rem; }
+.cal-wx-day-label { display:flex; align-items:center; justify-content:space-between; gap:.4rem; font-size:.66rem; font-weight:900; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.3rem; }
+.cal-wx-day-label .wx-badge { min-width:.7rem; padding:.16rem .3rem; }
+.cal-wx-day-metrics { font-size:.8rem; font-variant-numeric:tabular-nums; line-height:1.5; }
+.cal-wx-prep { list-style:none; padding:0; margin:.6rem 0 0; font-size:.79rem; }
+.cal-wx-prep li { border-left:2px solid var(--primary); padding-left:.5rem; margin-bottom:.3rem; }
+.cal-wx-source { font-size:.68rem; color:var(--muted); margin:.5rem 0 0; }
+.cal-nextup-wx { font-size:.78rem; white-space:nowrap; }
+.wx-stale-note { font-size:.62rem; }
+.cal-row-cancelled td { opacity:.5; text-decoration:line-through; }
+.cal-row-cancelled .badge { text-decoration:none; }
+.series-filter-row + .series-filter-row { margin-top:-.75rem; }
 
 @media (max-width: 980px) {
   .cal-nextup-item { grid-template-columns: auto auto 1fr; }
   .cal-nextup-flags { grid-column: 1 / -1; }
+  .cal-nextup-wx { grid-column: 1 / -1; }
   .cal-city-cell { display:none; }
 }
 @media (max-width: 620px) {
@@ -661,6 +697,8 @@ a { color: inherit; text-decoration: none; }
   .cal-nextup-date { grid-column: 1; }
   .cal-nextup-name { grid-column: 2; }
   .cal-nextup-track { grid-column: 1 / -1; }
+  .cal-nextup-wx { grid-column: 1 / -1; }
   .cal-nextup-flags { grid-column: 1 / -1; }
   .series-filter-row { gap:.3rem; }
+  .cal-wx-cell { min-width:0; }
 }

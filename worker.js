@@ -1,5 +1,5 @@
 /**
- * raceTracker Worker — v1.11.1
+ * raceTracker Worker — v1.12.0
  * GET /api/registrations?source=X&...  Registration entry list proxy
  *   sources: motorsportreg, raceselect, mylaps, raceentry, racemonitor,
  *            google-sheets, generic-html, motorsport-australia
