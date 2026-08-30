@@ -14,3 +14,7 @@
 
 # Editor artifacts
 .vscode/
+
+# Python bytecode (scripts/ imports build_weather_forecast during tests)
+__pycache__/
+*.pyc

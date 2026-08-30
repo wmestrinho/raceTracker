@@ -24,6 +24,7 @@ required_files = [
     CANON / "workshop.html",
     CANON / "inventory.html",
     CANON / "schedule.html",
+    CANON / "weather.html",
     CANON / "team.html",
     CANON / "settings.html",
     CANON / "registrations.html",
@@ -37,6 +38,9 @@ required_files = [
     CANON / "assets/data/event-schedule.json",
     CANON / "assets/data/billing.json",
     CANON / "assets/data/series-calendars.json",
+    CANON / "assets/data/weather-alert-rules.json",
+    CANON / "assets/data/race-weather.json",
+    ROOT / "scripts/build_weather_forecast.py",
     CANONICAL_LOGO,
 ]
 for f in required_files:
@@ -92,6 +96,31 @@ if WRANGLER.exists():
             errors.append(f"wrangler.jsonc custom_domain must include {CANONICAL_DOMAIN}")
     except json.JSONDecodeError as exc:
         errors.append(f"wrangler.jsonc is not valid JSON/JSONC subset: {exc}")
+
+# Every data file must parse, and every calendar round that names a track must
+# resolve to coordinates the weather pipeline can actually forecast against.
+parsed = {}
+for data_file in sorted((CANON / "assets/data").glob("*.json")):
+    try:
+        parsed[data_file.name] = json.loads(data_file.read_text(errors="replace"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"{data_file.relative_to(ROOT)} is not valid JSON: {exc}")
+
+calendars = parsed.get("series-calendars.json")
+tracks = parsed.get("track-context.json")
+if isinstance(tracks, dict):
+    for track in tracks.get("tracks", []):
+        if not isinstance(track.get("latitude"), (int, float)) or not isinstance(track.get("longitude"), (int, float)):
+            errors.append(f"track-context.json track '{track.get('id')}' is missing usable coordinates")
+if isinstance(calendars, dict) and isinstance(tracks, dict):
+    track_ids = {track.get("id") for track in tracks.get("tracks", [])}
+    for series in calendars.get("series", []):
+        for rnd in series.get("rounds", []):
+            track_id = rnd.get("trackId")
+            if track_id and track_id not in track_ids:
+                errors.append(f"series-calendars.json round '{rnd.get('name')}' references unknown trackId: {track_id}")
+            if rnd.get("nationalTier") == "pro-2stroke" and not track_id:
+                errors.append(f"National pro 2-stroke round '{rnd.get('name')}' has no trackId; the weather pipeline cannot forecast it")
 
 html_files = sorted(CANON.glob("*.html")) if CANON.exists() else []
 for html_file in html_files:

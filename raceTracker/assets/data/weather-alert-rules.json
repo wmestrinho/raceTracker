@@ -1,0 +1,188 @@
+{
+  "updatedAt": "2026-08-30",
+  "schemaVersion": 1,
+  "notes": "Trigger ruleset shared by the Python pipeline (scripts/build_weather_forecast.py) and the browser sandbox (raceTracker/weather.html). Both evaluate the same grammar, so a threshold tuned in the sandbox can be pasted straight back into this file and the automation will behave identically. Setup guidance is a starting point for Nuno/Enzo to tune per chassis and per engine package — it is not a substitute for the team's own setup sheet.",
+  "windows": {
+    "forecastDays": 16,
+    "notifyWindowDays": 7,
+    "raceHoursLocal": { "start": 9, "end": 17 }
+  },
+  "severityOrder": ["ok", "warn", "alert"],
+  "metrics": [
+    { "id": "tempMaxF",          "label": "Air temp max",        "unit": "°F",    "help": "Daily maximum 2 m air temperature." },
+    { "id": "tempMinF",          "label": "Air temp min",        "unit": "°F",    "help": "Daily minimum 2 m air temperature." },
+    { "id": "feelsMaxF",         "label": "Apparent temp max",   "unit": "°F",    "help": "Heat-index style apparent maximum — drives crew and driver load." },
+    { "id": "tempSwingF",        "label": "Day temp swing",      "unit": "°F",    "help": "tempMaxF − tempMinF. Large swings mean the track moves between morning practice and the final." },
+    { "id": "tempDropF",         "label": "Day-over-day drop",   "unit": "°F",    "help": "Previous day's max minus this day's max, floored at 0. This is the 'severe track temperature drop' trigger." },
+    { "id": "precipSumIn",       "label": "Precipitation total", "unit": "in",    "help": "Daily precipitation total." },
+    { "id": "precipProbMaxPct",  "label": "Rain probability",    "unit": "%",     "help": "Daily maximum probability of precipitation." },
+    { "id": "windMaxMph",        "label": "Wind max",            "unit": "mph",   "help": "Daily maximum sustained 10 m wind." },
+    { "id": "gustMaxMph",        "label": "Gust max",            "unit": "mph",   "help": "Daily maximum wind gust." },
+    { "id": "humidityMeanPct",   "label": "Humidity (race hrs)", "unit": "%",     "help": "Mean relative humidity across the local race-hours window." },
+    { "id": "airDensityKgM3",    "label": "Air density",         "unit": "kg/m³", "help": "Computed from temp, pressure and humidity over race hours. Denser air wants more fuel." },
+    { "id": "densityAltitudeFt", "label": "Density altitude",    "unit": "ft",    "help": "Air density expressed as an altitude. The single best jetting proxy across venues." }
+  ],
+  "rules": [
+    {
+      "id": "wet-race-day",
+      "label": "Wet race day",
+      "severity": "alert",
+      "priority": 100,
+      "notify": true,
+      "when": {
+        "any": [
+          { "metric": "precipProbMaxPct", "op": ">=", "value": 55 },
+          { "metric": "precipSumIn",      "op": ">=", "value": 0.10 }
+        ]
+      },
+      "actions": {
+        "tire":    "Mount the wet set and pull rain pressures from the book, not from dry cold pressures — start low and let heat build. Keep one scrubbed dry set aside for a drying line.",
+        "engine":  "Go richer on the main than the dry baseline and fit the airbox rain lid. Protect the carb intake and check the plug after every wet run.",
+        "chassis": "Raise ride height, widen front and rear track, take the rear torsion bar out and pull the seat struts. Free the kart up so it rotates on a low-grip surface.",
+        "crew":    "Rain light charged and mounted, tear-offs and anti-fog in the box, spare visor, covered grid staging, and a dry-kart plan between sessions."
+      }
+    },
+    {
+      "id": "severe-temp-drop",
+      "label": "Severe temperature drop",
+      "severity": "alert",
+      "priority": 90,
+      "notify": true,
+      "when": {
+        "all": [
+          { "metric": "tempDropF", "op": ">=", "value": 15 }
+        ]
+      },
+      "actions": {
+        "tire":    "The track will be well below yesterday's window. Add roughly 0.5 psi cold to reach operating pressure and expect a longer warm-up lap count.",
+        "engine":  "Colder air is denser — richen the main a step from yesterday's setting and re-check clutch engagement, which will come in differently.",
+        "chassis": "More grip is coming back with the cooler surface. Be ready to narrow track and stiffen the rear to stop the kart hooking up and bogging.",
+        "crew":    "Re-baseline the setup sheet against today's numbers before first practice; yesterday's sheet is stale."
+      }
+    },
+    {
+      "id": "damp-risk",
+      "label": "Damp / split-condition risk",
+      "severity": "warn",
+      "priority": 80,
+      "notify": false,
+      "when": {
+        "all": [
+          { "metric": "precipProbMaxPct", "op": ">=", "value": 25 },
+          { "metric": "precipProbMaxPct", "op": "<",  "value": 55 }
+        ]
+      },
+      "actions": {
+        "tire":    "Have both sets ready to bolt on. A scrubbed dry set is usually the right call for a drying line.",
+        "engine":  "Carry the wet jet in the toolbox and note the swap point so it can be done inside a grid window.",
+        "chassis": "Pre-mark the wet ride-height and track-width settings so the change is a wrench turn, not a decision.",
+        "crew":    "Assign one person to watch radar during qualifying and own the tire call."
+      }
+    },
+    {
+      "id": "cold-track",
+      "label": "Cold track window",
+      "severity": "warn",
+      "priority": 70,
+      "notify": false,
+      "when": {
+        "all": [
+          { "metric": "tempMaxF", "op": "<=", "value": 55 }
+        ]
+      },
+      "actions": {
+        "tire":    "Raise cold pressures to reach the operating window and plan extra warm-up. Tire blankets and covers on between sessions.",
+        "engine":  "Dense cold air wants more fuel — richen the main and expect stronger top end. Watch for over-cooling; tape the radiator.",
+        "chassis": "Low surface grip: soften the rear, narrow the rear track, and free the kart up so it does not push.",
+        "crew":    "Warm gear for the driver and hand warmers on the grid. Cold hands cost more lap time than setup."
+      }
+    },
+    {
+      "id": "heat-soak",
+      "label": "Heat-soak conditions",
+      "severity": "warn",
+      "priority": 70,
+      "notify": false,
+      "when": {
+        "all": [
+          { "metric": "tempMaxF", "op": ">=", "value": 92 }
+        ]
+      },
+      "actions": {
+        "tire":    "Drop cold pressures — the track will build pressure fast. Watch for greasy mid-session drop-off and shade the tires.",
+        "engine":  "Thin hot air runs lean: go a step leaner but watch head temp closely and keep the plug reading conservative.",
+        "chassis": "High grip early, falling away later. Widen the rear track to take grip out and stop the kart bogging on exit.",
+        "crew":    "Driver cooling, hydration schedule, and shade over the grid. Check pit-lane surface temp before the final."
+      }
+    },
+    {
+      "id": "thin-air",
+      "label": "High density altitude",
+      "severity": "warn",
+      "priority": 60,
+      "notify": false,
+      "when": {
+        "all": [
+          { "metric": "densityAltitudeFt", "op": ">=", "value": 3000 }
+        ]
+      },
+      "actions": {
+        "tire":    "Less power on tap means less tire heat. Expect a slower build and consider a touch more pressure to compensate.",
+        "engine":  "Lean the main to suit the thin air and re-check the gear — the engine will not pull the same ratio it does at sea level.",
+        "chassis": "Lower corner speeds are cheaper than lost drive. Bias setup toward exit traction rather than mid-corner grip.",
+        "crew":    "Bring the altitude jetting chart. This is a Tucson / Las Vegas / Pahrump condition, not an Ohio one."
+      }
+    },
+    {
+      "id": "dense-air",
+      "label": "Dense air (rich correction)",
+      "severity": "warn",
+      "priority": 55,
+      "notify": false,
+      "when": {
+        "all": [
+          { "metric": "densityAltitudeFt", "op": "<=", "value": -500 }
+        ]
+      },
+      "actions": {
+        "tire":    "More power reaching the ground — watch rear tire wear across a long final.",
+        "engine":  "Air is denser than standard: richen the main a step and re-check gearing, the engine will pull taller.",
+        "chassis": "Expect more drive off the corner; be ready to take rear grip out if the kart bogs.",
+        "crew":    "Log the density-altitude figure next to the jet size — this is the data that makes next season's calls faster."
+      }
+    },
+    {
+      "id": "wind-gusts",
+      "label": "High wind / gusts",
+      "severity": "warn",
+      "priority": 50,
+      "notify": false,
+      "when": {
+        "any": [
+          { "metric": "gustMaxMph", "op": ">=", "value": 28 },
+          { "metric": "windMaxMph", "op": ">=", "value": 20 }
+        ]
+      },
+      "actions": {
+        "tire":    "Debris on line is the real risk — inspect for cuts and pick-up after every session.",
+        "engine":  "Headwind and tailwind straights change the ratio call. Gear for the timed section, not the fastest straight.",
+        "chassis": "Expect the kart to move under the driver on exposed corners. Do not chase a setup change for a wind-induced complaint.",
+        "crew":    "Weigh down the tent, secure body panels and awnings, and check kart covers between sessions."
+      }
+    },
+    {
+      "id": "clear-window",
+      "label": "Good track window",
+      "severity": "ok",
+      "priority": 0,
+      "notify": false,
+      "when": {},
+      "actions": {
+        "tire":    "Run the dry baseline. Log cold and hot pressures against the day's air temp.",
+        "engine":  "Baseline jetting. Record the density-altitude figure so the number is reusable at this venue next year.",
+        "chassis": "No weather-driven change. Work the normal setup progression.",
+        "crew":    "Standard prep. Keep the weather stamp attached to each telemetry run for later comparison."
+      }
+    }
+  ]
+}

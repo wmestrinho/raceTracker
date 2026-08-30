@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-06-02T00:00:00-04:00",
+  "updatedAt": "2026-08-30T00:00:00-04:00",
   "activeTrackId": "new-castle-motorsports-park",
-  "notes": "Primary karting tracks are marked priority:primary and appear at the top of the weather selector. NASCAR/major venue tracks are priority:venue.",
+  "notes": "Primary karting tracks are marked priority:primary and appear at the top of the weather selector. NASCAR/major venue tracks are priority:venue. latitude/longitude are the forecast anchor for the automated weather pipeline (scripts/build_weather_forecast.py) — every trackId referenced by series-calendars.json should resolve to an entry here. coordinateConfidence:'approximate' means the point was set from the facility's mailing address rather than a surveyed paddock fix; it is accurate enough for a forecast grid cell but should be confirmed on-site.",
   "tracks": [
     {
       "id": "new-castle-motorsports-park",
@@ -80,6 +80,45 @@
       "timezone": "America/New_York",
       "weatherProvider": "Open-Meteo",
       "note": "Hosts ProCup arrive-and-drive endurance events (e.g. 6 Hours of Ohio) as well as own-kart regional races."
+    },
+    {
+      "id": "speedsportz-racing-park",
+      "name": "Speedsportz Racing Park",
+      "shortName": "Speedsportz — New Caney, TX",
+      "category": "karting",
+      "priority": "primary",
+      "latitude": 30.1560,
+      "longitude": -95.1490,
+      "timezone": "America/Chicago",
+      "weatherProvider": "Open-Meteo",
+      "coordinateConfidence": "approximate",
+      "note": "Host of the SKUSA Winter Series (Rounds 1–4) and TSRS rounds. Confirm paddock coordinates before relying on hyper-local precipitation calls."
+    },
+    {
+      "id": "musselman-honda-circuit",
+      "name": "Musselman Honda Circuit",
+      "shortName": "Musselman — Tucson, AZ",
+      "category": "karting",
+      "priority": "primary",
+      "latitude": 32.0447,
+      "longitude": -110.7392,
+      "timezone": "America/Phoenix",
+      "weatherProvider": "Open-Meteo",
+      "coordinateConfidence": "approximate",
+      "note": "Host of the SKUSA Pro Tour WinterNationals. Arizona does not observe DST — timezone America/Phoenix is deliberate."
+    },
+    {
+      "id": "lorain-ohio-kartplex",
+      "name": "Lorain Ohio Kartplex",
+      "shortName": "Lorain Kartplex — Lorain, OH",
+      "category": "karting",
+      "priority": "primary",
+      "latitude": 41.4118,
+      "longitude": -82.1550,
+      "timezone": "America/New_York",
+      "weatherProvider": "Open-Meteo",
+      "coordinateConfidence": "approximate",
+      "note": "Host of the USPKS Lake Erie Grand Prix finale. Lake Erie shoreline effects make short-range precipitation less predictable than the inland tracks."
     },
     {
       "id": "daytona-international-speedway",

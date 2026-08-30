@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overview | raceTracker</title>
+  <title>Race Weather | raceTracker</title>
   <meta name="description" content="raceTracker karting operations dashboard">
   <meta name="theme-color" content="#bfff00">
   <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="overview">
+<body data-page="weather">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <aside id="primary-sidebar" class="sidebar" aria-label="Primary">
@@ -37,30 +37,21 @@
     <div class="main">
       <header class="topbar" role="banner">
         <div>
-          <h1>Overview</h1>
-          <p>Trackside status and priorities</p>
+          <h1>Race Weather</h1>
+          <p>Automated race-weekend forecast and setup triggers</p>
         </div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </header>
       <main id="main-content" class="content" role="main">
-        
+
 <section class="page-grid">
-  <div class="card full">
-    <h2>Race-day Command Center</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Hybrid motorsport operations cockpit for live telemetry, pit-lane workshop execution, inventory readiness, crew coordination, and race-weekend schedule control.</p>
-  </div>
-  <div class="kpi-grid full">
-    <div class="card kpi"><p class="label">Karts online</p><p class="value">12</p><p class="delta up">+2 vs last event</p></div>
-    <div class="card kpi"><p class="label">Open workshop tasks</p><p class="value">7</p><p class="delta warn">3 due in 2h</p></div>
-    <div class="card kpi"><p class="label">Low stock items</p><p class="value">4</p><p class="delta down">Brake pads critical</p></div>
-    <div class="card kpi"><p class="label">Track weather</p><p class="value" data-weather-temp>--°</p><p class="delta warn" data-weather-risk>Loading live context</p></div>
-  </div>
+
   <div class="card full live-context-card" data-weather-panel>
     <div class="section-headline">
       <div>
-        <h3>Live Track Context</h3>
-        <p class="muted-copy">Real-world weather from Open-Meteo for <span data-track-name>Orlando, FL</span>. Built for race-day tire, jetting, and workshop readiness calls.</p>
+        <h3>Live Conditions</h3>
+        <p class="muted-copy">Current readings for <span data-track-name>the selected track</span>. The board below is the forward-looking view.</p>
       </div>
       <div class="track-selector" data-track-selector></div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;">
@@ -69,33 +60,67 @@
       </div>
     </div>
     <div class="weather-grid">
-      <div><span>Feels like</span><strong data-weather-feels>--°F</strong></div>
+      <div><span>Temp</span><strong data-weather-temp>--°F</strong></div>
       <div><span>Wind</span><strong data-weather-wind>-- mph</strong></div>
       <div><span>Gusts</span><strong data-weather-gust>-- mph</strong></div>
       <div><span>Rain now</span><strong data-weather-rain>-- in</strong></div>
     </div>
     <p class="mechanic-focus" data-weather-guidance>Loading live weather guidance...</p>
   </div>
-  <div class="card split-2">
-    <h3>Next Actions</h3>
+
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Race-Weekend Forecast Board</h3>
+        <p class="muted-copy">
+          Every 2026 round with coordinates inside the forecast window, scored against the trigger ruleset.
+          Rules marked <em>pages the crew</em> fire a Slack/Discord alert from the daily pipeline run.
+        </p>
+      </div>
+      <span class="badge warn" data-weather-feed-badge>Loading</span>
+    </div>
+    <p class="rw-feed-meta">
+      Source <strong data-weather-feed-provider>Open-Meteo</strong>
+      <span class="cal-meta-sep">·</span>
+      Feed refreshed <strong data-weather-feed-updated>Never</strong>
+      <span class="cal-meta-sep">·</span>
+      Built by <strong>scripts/build_weather_forecast.py</strong>
+    </p>
+    <div class="rw-board" data-race-weather-board>
+      <p class="muted-copy">Loading forecast board…</p>
+    </div>
+  </div>
+
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Trigger Sandbox</h3>
+        <p class="muted-copy">
+          Pick a scenario, tune the thresholds, and see exactly which tire and engine calls the automation would make.
+          The browser runs the same rule grammar as the Python pipeline, so what you tune here is what the crew gets paged with.
+        </p>
+      </div>
+    </div>
+    <div data-weather-sandbox>
+      <p class="muted-copy">Loading trigger ruleset…</p>
+    </div>
+  </div>
+
+  <div class="card full">
+    <h3>How the pipeline runs</h3>
     <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Task</th><th>Owner</th><th>Status</th></tr></thead>
+      <thead><tr><th>Stage</th><th>What happens</th><th>Where it lives</th></tr></thead>
       <tbody>
-        <tr><td>Rear axle alignment Kart #3</td><td>Leo</td><td><span class="badge warn">In progress</span></td></tr>
-        <tr><td>Fuel line inspection Kart #1</td><td>Nico</td><td><span class="badge ok">Ready</span></td></tr>
-        <tr><td>Tire pressure check all classes</td><td>Team</td><td><span class="badge alert">Due now</span></td></tr>
+        <tr><td>Schedule</td><td>2026 series calendars, each round carrying a trackId</td><td>assets/data/series-calendars.json</td></tr>
+        <tr><td>Coordinates</td><td>Latitude, longitude and timezone per track facility</td><td>assets/data/track-context.json</td></tr>
+        <tr><td>Forecast</td><td>Open-Meteo daily + hourly pull, no API key required</td><td>scripts/build_weather_forecast.py</td></tr>
+        <tr><td>Triggers</td><td>Thresholds mapped to tire, engine, chassis and crew actions</td><td>assets/data/weather-alert-rules.json</td></tr>
+        <tr><td>Feed</td><td>Generated output this page and any desk display reads</td><td>assets/data/race-weather.json</td></tr>
+        <tr><td>Automation</td><td>Daily cron at 11:00 UTC, commits the feed, posts alerts</td><td>.github/workflows/race-weather.yml</td></tr>
       </tbody>
     </table>
   </div>
-  <div class="card split-2">
-    <h3>Quick Access</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem;">
-      <a class="nav-link active" style="margin:0;" href="/telemetry.html">Open Telemetry</a>
-      <a class="nav-link active" style="margin:0;" href="/workshop.html">Open Workshop</a>
-      <a class="nav-link active" style="margin:0;" href="/inventory.html">Open Inventory</a>
-      <a class="nav-link active" style="margin:0;" href="/schedule.html">Open Schedule</a>
-    </div>
-  </div>
+
 </section>
 
         <p class="footer">© 2026 raceTracker · <span class="site-version">v1.12.0</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>

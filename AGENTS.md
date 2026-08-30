@@ -50,6 +50,7 @@ Version rule
 
 Before committing
 - Run: `python3 scripts/validate_structure.py`
+- Run: `python3 scripts/test_weather_pipeline.py`
 - Run: `git status --short --branch`
 - Confirm changes are only in this repo unless intentionally coordinating a wider workspace migration.
 
@@ -61,7 +62,10 @@ Deployment
 Live data guardrails
 - Browser-side live data must use public, credential-free APIs only.
 - Credentialed sources must go through a backend/Cloudflare Worker proxy; never put API keys in static JS or checked-in data files.
-- Track/weather defaults live in `raceTracker/assets/data/track-context.json`.
+- Track/weather defaults live in `raceTracker/assets/data/track-context.json`; every track entry needs latitude, longitude and timezone because the forecast pipeline keys off them.
+- Race-weekend forecasting runs through `scripts/build_weather_forecast.py` (Open-Meteo, no API key) and `.github/workflows/race-weather.yml`. Output `raceTracker/assets/data/race-weather.json` is generated — do not hand-edit.
+- Weather trigger thresholds live in `raceTracker/assets/data/weather-alert-rules.json` and are evaluated by both the Python pipeline and the browser sandbox on `weather.html`. Change the rule grammar in one and you must change it in the other.
+- Alert webhook URLs belong in GitHub Actions secrets (`RACETRACKER_WEATHER_WEBHOOK_URL`), never in the repo.
 - Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
 - Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
 - Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward Supabase/backend ownership for durable multi-client use.

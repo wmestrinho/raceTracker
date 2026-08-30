@@ -24,5 +24,13 @@ jobs:
       - name: Validate JavaScript syntax
         run: node --check raceTracker/assets/js/main.js
 
-      - name: Validate telemetry JSON
-        run: python3 -m json.tool raceTracker/assets/data/telemetry.json > /dev/null
+      - name: Validate data JSON
+        run: |
+          for file in raceTracker/assets/data/*.json; do
+            python3 -m json.tool "$file" > /dev/null || exit 1
+          done
+
+      - name: Validate weather pipeline
+        run: |
+          python3 scripts/test_weather_pipeline.py
+          python3 scripts/build_weather_forecast.py --check

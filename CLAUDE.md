@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.11.1`
+- Current version: `v1.12.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -40,6 +40,9 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 - Default tracks: New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC)
 - Supabase secrets belong only in `.env.local` (gitignored) — never in Git, static JS, markdown, or memory
 - Telemetry is integration/export-only for now
+- Race-weekend forecasts come from `scripts/build_weather_forecast.py` (Open-Meteo, credential-free) into `raceTracker/assets/data/race-weather.json` — that file is generated, do not hand-edit it
+- Any round in `series-calendars.json` needs a `trackId` resolving to `track-context.json` coordinates before the pipeline can forecast it; `validate_structure.py` enforces this for `nationalTier: "pro-2stroke"` rounds
+- Webhook URLs for weather alerts live in GitHub Actions secrets (`RACETRACKER_WEATHER_WEBHOOK_URL`), never in the repo
 
 ## Before Committing
 

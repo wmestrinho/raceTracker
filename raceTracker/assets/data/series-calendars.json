@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-06-05",
-  "notes": "2026 series calendars. All events are own-kart (professional own-equipment) unless noted. Rounds include division field for grouping. International events marked region: international.",
+  "updatedAt": "2026-08-30",
+  "notes": "2026 series calendars. All events are own-kart (professional own-equipment) unless noted. Rounds include division field for grouping. International events marked region: international. nationalTier:'pro-2stroke' marks the ten SKUSA/USPKS rounds on the definitive 2026 national professional 2-stroke calendar (X30 / Pro Shifter tiers) — the automated weather pipeline prioritises these. trackId must resolve to an entry in track-context.json for a round to receive an automated forecast.",
   "series": [
     {
       "id":                  "ckna",
@@ -81,17 +81,17 @@
       "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift", "Shifter Pro"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": "ws-1-2", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 1 & 2", "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-01-09", "dateEnd": "2026-01-11", "status": "confirmed" },
-        { "round": "ws-3-4", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 3 & 4", "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-02-13", "dateEnd": "2026-02-15", "status": "confirmed" },
-        { "round": "pt-1",   "division": "pro-tour",      "name": "SKUSA Pro Tour — WinterNationals",   "track": "Musselman Honda Circuit",  "trackCity": "Tucson, AZ",    "dateStart": "2026-03-27", "dateEnd": "2026-03-29", "status": "confirmed" },
-        { "round": "pt-2",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SpringNationals",   "track": "Motorsports Country Club of Cincinnati", "trackId": "mcc", "trackCity": "Batavia, OH", "dateStart": "2026-06-12", "dateEnd": "2026-06-14", "status": "confirmed" },
-        { "round": "pt-3",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SummerNationals",   "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN", "dateStart": "2026-07-24", "dateEnd": "2026-07-26", "status": "confirmed" },
+        { "round": "ws-1-2", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 1 & 2", "track": "Speedsportz Racing Park", "trackId": "speedsportz-racing-park", "trackCity": "New Caney, TX",  "dateStart": "2026-01-09", "dateEnd": "2026-01-11", "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": "ws-3-4", "division": "winter-series", "name": "SKUSA Winter Series — Rounds 3 & 4", "track": "Speedsportz Racing Park", "trackId": "speedsportz-racing-park", "trackCity": "New Caney, TX",  "dateStart": "2026-02-13", "dateEnd": "2026-02-15", "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": "pt-1",   "division": "pro-tour",      "name": "SKUSA Pro Tour — WinterNationals",   "track": "Musselman Honda Circuit",  "trackId": "musselman-honda-circuit", "trackCity": "Tucson, AZ",    "dateStart": "2026-03-27", "dateEnd": "2026-03-29", "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": "pt-2",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SpringNationals",   "track": "Motorsports Country Club of Cincinnati", "trackId": "mcc", "trackCity": "Batavia, OH", "dateStart": "2026-06-12", "dateEnd": "2026-06-14", "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": "pt-3",   "division": "pro-tour",      "name": "SKUSA Pro Tour — SummerNationals",   "track": "New Castle Motorsports Park", "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN", "dateStart": "2026-07-24", "dateEnd": "2026-07-26", "status": "confirmed", "nationalTier": "pro-2stroke" },
         { "round": "pkc-1-2","division": "pkc",           "name": "PKC — Rounds 1 & 2", "track": "K1 Circuit", "trackId": "k1speed-winchester", "trackCity": "Winchester, CA","dateStart": "2026-04-24", "dateEnd": "2026-04-26", "status": "confirmed" },
         { "round": "pkc-3",  "division": "pkc",           "name": "PKC — Round 3",      "track": "Sonoma Raceway", "trackId": "sonoma-raceway",  "trackCity": "Sonoma, CA",    "dateStart": "2026-05-23", "dateEnd": "2026-05-24", "status": "confirmed" },
         { "round": "pkc-4",  "division": "pkc",           "name": "PKC — Round 4",      "track": "Sonoma Raceway", "trackId": "sonoma-raceway",  "trackCity": "Sonoma, CA",    "dateStart": "2026-08-15", "dateEnd": "2026-08-16", "status": "confirmed" },
         { "round": "pkc-5",  "division": "pkc",           "name": "PKC — Round 5",      "track": "Spring Mountain Karting", "trackCity": "Pahrump, NV",                        "dateStart": "2026-09-12", "dateEnd": "2026-09-13", "status": "confirmed" },
         { "round": "pkc-6",  "division": "pkc",           "name": "PKC — Round 6",      "track": "K1 Circuit", "trackId": "k1speed-winchester", "trackCity": "Winchester, CA","dateStart": "2026-10-03", "dateEnd": "2026-10-04", "status": "confirmed" },
-        { "round": "supernats", "division": "supernats",  "name": "SKUSA SuperNationals 29", "track": "Las Vegas Motor Speedway", "trackId": "las-vegas-motor-speedway", "trackCity": "Las Vegas, NV", "dateStart": "2026-11-11", "dateEnd": "2026-11-15", "status": "confirmed", "note": "Largest karting event in North America" }
+        { "round": "supernats", "division": "supernats",  "name": "SKUSA SuperNationals 29", "track": "Las Vegas Motor Speedway", "trackId": "las-vegas-motor-speedway", "trackCity": "Las Vegas, NV", "dateStart": "2026-11-11", "dateEnd": "2026-11-15", "status": "confirmed", "nationalTier": "pro-2stroke", "note": "Largest karting event in North America. Temporary circuit in the LVMS lot — the forecast anchor is the speedway, not a permanent kart facility." }
       ]
     },
     {
@@ -123,10 +123,10 @@
       "classes":             ["X30 Senior", "X30 Junior", "KA100 Senior", "KA100 Junior", "KA100 Masters", "Micro Swift", "Mini Swift"],
       "eventType":           "own-kart",
       "rounds": [
-        { "round": 1, "name": "USPKS Carolina Grand Prix",          "track": "Trackhouse Motorplex",                    "trackId": "trackhouse-motorplex",        "trackCity": "Mooresville, NC",  "dateStart": "2026-04-10", "dateEnd": "2026-04-12", "raceSelectUrl": "https://raceselect.com/uspks/2026", "status": "confirmed" },
-        { "round": 2, "name": "USPKS Indiana Grand Prix",           "track": "New Castle Motorsports Park",             "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN",   "dateStart": "2026-06-26", "dateEnd": "2026-06-28", "raceSelectUrl": null, "status": "confirmed" },
-        { "round": 3, "name": "USPKS Cincinnati Grand Prix",        "track": "Motorsports Country Club of Cincinnati",  "trackId": "mcc",                         "trackCity": "Batavia, OH",      "dateStart": "2026-08-07", "dateEnd": "2026-08-09", "raceSelectUrl": null, "status": "confirmed" },
-        { "round": 4, "name": "USPKS Lake Erie Grand Prix (Finale)","track": "Lorain Ohio Kartplex",                    "trackCity": "Lorain, OH",                "dateStart": "2026-09-18", "dateEnd": "2026-09-20", "raceSelectUrl": null, "status": "confirmed" }
+        { "round": 1, "name": "USPKS Carolina Grand Prix",          "track": "Trackhouse Motorplex",                    "trackId": "trackhouse-motorplex",        "trackCity": "Mooresville, NC",  "dateStart": "2026-04-10", "dateEnd": "2026-04-12", "raceSelectUrl": "https://raceselect.com/uspks/2026", "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": 2, "name": "USPKS Indiana Grand Prix",           "track": "New Castle Motorsports Park",             "trackId": "new-castle-motorsports-park", "trackCity": "New Castle, IN",   "dateStart": "2026-06-26", "dateEnd": "2026-06-28", "raceSelectUrl": null, "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": 3, "name": "USPKS Cincinnati Grand Prix",        "track": "Motorsports Country Club of Cincinnati",  "trackId": "mcc",                         "trackCity": "Batavia, OH",      "dateStart": "2026-08-07", "dateEnd": "2026-08-09", "raceSelectUrl": null, "status": "confirmed", "nationalTier": "pro-2stroke" },
+        { "round": 4, "name": "USPKS Lake Erie Grand Prix (Finale)","track": "Lorain Ohio Kartplex",                    "trackId": "lorain-ohio-kartplex",        "trackCity": "Lorain, OH",                "dateStart": "2026-09-25", "dateEnd": "2026-09-27", "raceSelectUrl": null, "status": "confirmed", "nationalTier": "pro-2stroke", "note": "Date moved to Sep 25–27 on 2026-08-30 to match the team-supplied 2026 national calendar; the previous repo value was Sep 18–20. Confirm against uspks.com/schedule before booking travel — this weekend now overlaps TSRS Fall Finale." }
       ]
     },
     {
@@ -140,11 +140,11 @@
       "eventType":           "own-kart",
       "region":              "Texas / South-Central USA",
       "rounds": [
-        { "round": 1, "name": "TSRS Winter Warm-Up",    "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-03-13", "dateEnd": "2026-03-15", "status": "confirmed" },
+        { "round": 1, "name": "TSRS Winter Warm-Up",    "track": "Speedsportz Racing Park", "trackId": "speedsportz-racing-park", "trackCity": "New Caney, TX",  "dateStart": "2026-03-13", "dateEnd": "2026-03-15", "status": "confirmed" },
         { "round": 2, "name": "TSRS Round 2",           "track": "NOLA Motorsports Park",   "trackCity": "Avondale, LA",   "dateStart": "2026-05-01", "dateEnd": "2026-05-03", "status": "confirmed" },
         { "round": 3, "name": "TSRS Summer Shootout",   "track": "Amarillo Motorsports Park","trackCity": "Amarillo, TX",   "dateStart": "2026-06-19", "dateEnd": "2026-06-21", "status": "confirmed" },
         { "round": 4, "name": "TSRS Mid-Summer Mashup", "track": "KartMoto",                "trackCity": "Cresson, TX",    "dateStart": "2026-08-28", "dateEnd": "2026-08-30", "status": "confirmed" },
-        { "round": 5, "name": "TSRS Fall Finale",       "track": "Speedsportz Racing Park", "trackCity": "New Caney, TX",  "dateStart": "2026-09-25", "dateEnd": "2026-09-27", "status": "confirmed" }
+        { "round": 5, "name": "TSRS Fall Finale",       "track": "Speedsportz Racing Park", "trackId": "speedsportz-racing-park", "trackCity": "New Caney, TX",  "dateStart": "2026-09-25", "dateEnd": "2026-09-27", "status": "confirmed" }
       ]
     }
   ]

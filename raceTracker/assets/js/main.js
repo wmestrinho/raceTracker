@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTeamRoster();
   initBillingModule();
   initSeriesCalendars();
+  initRaceWeatherOps();
 });
 
 function initSidebarToggle() {
@@ -1068,4 +1069,436 @@ function renderCalRow(round, conflictIds) {
     <td>${trackCell}</td>
     <td class="cal-city-cell">${escapeHtml(round.trackCity || '—')}</td>
   </tr>`;
+}
+
+// ── Race weather ops ──────────────────────────────────────────
+// The board renders the feed produced by scripts/build_weather_forecast.py.
+// The sandbox evaluates the same ruleset in the browser so thresholds can be
+// tuned against a scenario before they are committed back to the pipeline.
+
+const WEATHER_RULES_URL = '/assets/data/weather-alert-rules.json';
+const RACE_WEATHER_URL  = '/assets/data/race-weather.json';
+const WEATHER_OVERRIDE_KEY = 'raceTracker.weatherRuleOverrides';
+
+const WEATHER_OPS = {
+  '>=': (a, b) => a >= b,
+  '<=': (a, b) => a <= b,
+  '>':  (a, b) => a >  b,
+  '<':  (a, b) => a <  b,
+  '==': (a, b) => a === b
+};
+
+const WEATHER_ACTION_SLOTS = [
+  ['tire',    'Tire'],
+  ['engine',  'Engine'],
+  ['chassis', 'Chassis'],
+  ['crew',    'Crew']
+];
+
+const SANDBOX_PRESETS = [
+  {
+    id: 'wet-finale',
+    label: 'Wet Lake Erie finale',
+    metrics: { tempMaxF: 64, tempMinF: 52, feelsMaxF: 63, tempSwingF: 12, tempDropF: 6,
+               precipSumIn: 0.42, precipProbMaxPct: 85, windMaxMph: 16, gustMaxMph: 26,
+               humidityMeanPct: 88, densityAltitudeFt: -400 }
+  },
+  {
+    id: 'cold-snap',
+    label: 'Cold snap (Speedsportz Jan)',
+    metrics: { tempMaxF: 52, tempMinF: 34, feelsMaxF: 47, tempSwingF: 18, tempDropF: 22,
+               precipSumIn: 0.0, precipProbMaxPct: 10, windMaxMph: 12, gustMaxMph: 19,
+               humidityMeanPct: 55, densityAltitudeFt: -1200 }
+  },
+  {
+    id: 'vegas-supernats',
+    label: 'SuperNats desert week',
+    metrics: { tempMaxF: 74, tempMinF: 49, feelsMaxF: 72, tempSwingF: 25, tempDropF: 4,
+               precipSumIn: 0.0, precipProbMaxPct: 5, windMaxMph: 18, gustMaxMph: 30,
+               humidityMeanPct: 20, densityAltitudeFt: 3400 }
+  },
+  {
+    id: 'summer-heat',
+    label: 'New Castle July heat',
+    metrics: { tempMaxF: 95, tempMinF: 74, feelsMaxF: 102, tempSwingF: 21, tempDropF: 0,
+               precipSumIn: 0.02, precipProbMaxPct: 20, windMaxMph: 8, gustMaxMph: 14,
+               humidityMeanPct: 68, densityAltitudeFt: 2100 }
+  },
+  {
+    id: 'clear-day',
+    label: 'Clear baseline day',
+    metrics: { tempMaxF: 76, tempMinF: 58, feelsMaxF: 76, tempSwingF: 18, tempDropF: 0,
+               precipSumIn: 0.0, precipProbMaxPct: 5, windMaxMph: 7, gustMaxMph: 12,
+               humidityMeanPct: 50, densityAltitudeFt: 600 }
+  }
+];
+
+function weatherConditionHolds(condition, metrics) {
+  const value = metrics[condition.metric];
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return false;
+  const op = WEATHER_OPS[condition.op];
+  return op ? op(Number(value), Number(condition.value)) : false;
+}
+
+function weatherRuleMatches(rule, metrics) {
+  const when = rule.when || {};
+  const all = when.all || [];
+  const any = when.any || [];
+  if (all.length && !all.every(c => weatherConditionHolds(c, metrics))) return false;
+  if (any.length && !any.some(c => weatherConditionHolds(c, metrics)))  return false;
+  return true;
+}
+
+// Mirrors evaluate_day() in scripts/build_weather_forecast.py: highest priority
+// first, and the catch-all "ok" rule only stands in when nothing real fires.
+function evaluateWeatherDay(metrics, ruleset) {
+  const matched = (ruleset.rules || [])
+    .filter(rule => weatherRuleMatches(rule, metrics))
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  const significant = matched.filter(rule => rule.severity !== 'ok');
+  return significant.length ? significant : matched.slice(0, 1);
+}
+
+function worstWeatherSeverity(severities, order) {
+  const ranked = severities.filter(s => order.includes(s));
+  if (!ranked.length) return 'ok';
+  return ranked.reduce((worst, s) => (order.indexOf(s) > order.indexOf(worst) ? s : worst), ranked[0]);
+}
+
+async function initRaceWeatherOps() {
+  const board   = document.querySelector('[data-race-weather-board]');
+  const sandbox = document.querySelector('[data-weather-sandbox]');
+  if (!board && !sandbox) return;
+
+  let ruleset;
+  try {
+    const res = await fetch(WEATHER_RULES_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    ruleset = await res.json();
+  } catch {
+    if (board)   board.innerHTML   = '<p class="reg-error">Could not load the weather trigger ruleset.</p>';
+    if (sandbox) sandbox.innerHTML = '<p class="reg-error">Could not load the weather trigger ruleset.</p>';
+    return;
+  }
+
+  if (board)   await renderRaceWeatherBoard(board, ruleset);
+  if (sandbox) renderWeatherSandbox(sandbox, ruleset);
+}
+
+async function renderRaceWeatherBoard(board, ruleset) {
+  let feed;
+  try {
+    const res = await fetch(RACE_WEATHER_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    feed = await res.json();
+  } catch {
+    board.innerHTML = '<p class="reg-error">Could not load the race-weather feed.</p>';
+    return;
+  }
+
+  const order = ruleset.severityOrder || ['ok', 'warn', 'alert'];
+  setText('[data-weather-feed-provider]', feed.provider || 'Open-Meteo');
+  setText('[data-weather-feed-updated]', feed.updatedAt
+    ? new Date(feed.updatedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+    : 'Never');
+
+  const events = Array.isArray(feed.events) ? feed.events : [];
+  if (!events.length) {
+    const reason = feed.status === 'awaiting-first-run'
+      ? 'The pipeline has not run yet. Trigger the “Race Weather Pipeline” workflow, or run <code>python3 scripts/build_weather_forecast.py</code> locally.'
+      : 'No race weekend falls inside the forecast window right now.';
+    board.innerHTML = `<p class="muted-copy">${reason}</p>`;
+    setText('[data-weather-feed-badge]', feed.status === 'awaiting-first-run' ? 'Awaiting first run' : 'Nothing in window');
+    return;
+  }
+
+  const alerting = events.filter(event => event.notify).length;
+  setText('[data-weather-feed-badge]', alerting ? `${alerting} alerting` : `${events.length} in window`);
+  setWeatherBoardBadge(alerting ? 'alert' : 'ok');
+
+  board.innerHTML = events.map(event => {
+    const days = (event.days || []).map(day => renderRaceWeatherDay(day)).join('');
+    const tier = event.nationalTier === 'pro-2stroke'
+      ? '<span class="badge rw-tier">Pro 2-stroke national</span>' : '';
+    const body = days || '<p class="muted-copy rw-empty">Outside the provider forecast horizon — no daily detail yet.</p>';
+    return `
+      <article class="rw-event rw-sev-${escapeHtml(event.severity || 'ok')}">
+        <header class="rw-event-head">
+          <span class="cal-sbadge cal-sbadge--${escapeHtml(event.seriesId || '')}">${escapeHtml(event.series || '')}</span>
+          <div class="rw-event-title">
+            <strong>${escapeHtml(event.name || 'Round')}</strong>
+            <span class="rw-event-track">${escapeHtml(event.track || '')}${event.trackCity ? ` · ${escapeHtml(event.trackCity)}` : ''}</span>
+          </div>
+          <div class="rw-event-flags">
+            ${tier}
+            <span class="badge ${escapeHtml(event.severity || 'ok')}">${escapeHtml(weatherSeverityLabel(event.severity, order))}</span>
+            <span class="rw-daysout">${formatDaysOut(event.daysOut)}</span>
+          </div>
+        </header>
+        ${event.coordinates && event.coordinates.confidence === 'approximate'
+          ? '<p class="rw-coord-note">Forecast point is an approximate facility fix — confirm paddock coordinates before relying on hyper-local calls.</p>'
+          : ''}
+        <div class="rw-days">${body}</div>
+      </article>`;
+  }).join('');
+}
+
+function renderRaceWeatherDay(day) {
+  const m = day.metrics || {};
+  const chips = [
+    ['Max', m.tempMaxF, '°F'],
+    ['Min', m.tempMinF, '°F'],
+    ['Rain', m.precipProbMaxPct, '%'],
+    ['Precip', m.precipSumIn, ' in'],
+    ['Gust', m.gustMaxMph, ' mph'],
+    ['Drop', m.tempDropF, '°F'],
+    ['DA', m.densityAltitudeFt, ' ft']
+  ].filter(([, value]) => value !== null && value !== undefined)
+   .map(([label, value, unit]) => `<span class="rw-chip"><span>${label}</span><strong>${escapeHtml(String(value))}${escapeHtml(unit)}</strong></span>`)
+   .join('');
+
+  const rules = (day.rules || []).map(rule => `
+    <div class="rw-rule rw-rule--${escapeHtml(rule.severity || 'ok')}">
+      <div class="rw-rule-head">
+        <span class="badge ${escapeHtml(rule.severity || 'ok')}">${escapeHtml(rule.label || rule.id)}</span>
+        ${rule.notify ? '<span class="rw-notify">pages the crew</span>' : ''}
+      </div>
+      <dl class="rw-actions">
+        ${WEATHER_ACTION_SLOTS
+          .filter(([key]) => (rule.actions || {})[key])
+          .map(([key, label]) => `<dt>${label}</dt><dd>${escapeHtml(rule.actions[key])}</dd>`).join('')}
+      </dl>
+    </div>`).join('');
+
+  return `
+    <section class="rw-day rw-sev-${escapeHtml(day.severity || 'ok')}">
+      <div class="rw-day-head">
+        <strong>${escapeHtml(formatWeatherDate(day.date))}</strong>
+        <div class="rw-chips">${chips}</div>
+      </div>
+      ${rules}
+    </section>`;
+}
+
+function weatherSeverityLabel(severity, order) {
+  const labels = { ok: 'Good window', warn: 'Watch', alert: 'Action needed' };
+  return labels[severity] || (order.includes(severity) ? severity : 'Unknown');
+}
+
+function formatDaysOut(days) {
+  if (days === null || days === undefined) return '';
+  if (days < 0)  return 'Running now';
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  return `In ${days} days`;
+}
+
+function formatWeatherDate(value) {
+  if (!value) return 'TBD';
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function setWeatherBoardBadge(state) {
+  document.querySelectorAll('[data-weather-feed-badge]').forEach(el => {
+    el.classList.remove('ok', 'warn', 'alert');
+    el.classList.add(state);
+  });
+}
+
+// ── Trigger sandbox ───────────────────────────────────────────
+
+function renderWeatherSandbox(root, baseRuleset) {
+  const ruleset = applyStoredRuleOverrides(baseRuleset);
+  const metrics = { ...SANDBOX_PRESETS[0].metrics };
+
+  root.innerHTML = `
+    <div class="sbx-presets" data-sbx-presets>
+      ${SANDBOX_PRESETS.map((preset, index) =>
+        `<button type="button" class="series-pill${index === 0 ? ' active' : ''}" data-sbx-preset="${escapeHtml(preset.id)}">${escapeHtml(preset.label)}</button>`
+      ).join('')}
+    </div>
+    <div class="sbx-grid">
+      <div class="sbx-col">
+        <h4 class="sbx-heading">Scenario</h4>
+        <div class="sbx-metrics" data-sbx-metrics></div>
+      </div>
+      <div class="sbx-col">
+        <h4 class="sbx-heading">Triggered response <span class="badge ok" data-sbx-severity>—</span></h4>
+        <div class="sbx-results" data-sbx-results></div>
+      </div>
+    </div>
+    <div class="sbx-thresholds">
+      <div class="section-headline">
+        <div>
+          <h4 class="sbx-heading">Thresholds</h4>
+          <p class="muted-copy">Edit a threshold to see the response change. Values are stored in this browser only — copy them out to make the pipeline use them.</p>
+        </div>
+        <div class="sbx-threshold-actions">
+          <button type="button" class="series-pill" data-sbx-copy>Copy tuned ruleset</button>
+          <button type="button" class="series-pill" data-sbx-reset>Reset to committed</button>
+        </div>
+      </div>
+      <div class="sbx-rules" data-sbx-rules></div>
+      <p class="sbx-copy-status" data-sbx-copy-status></p>
+    </div>
+  `;
+
+  const metricsEl   = root.querySelector('[data-sbx-metrics]');
+  const resultsEl   = root.querySelector('[data-sbx-results]');
+  const rulesEl     = root.querySelector('[data-sbx-rules]');
+  const severityEl  = root.querySelector('[data-sbx-severity]');
+  const statusEl    = root.querySelector('[data-sbx-copy-status]');
+  const order       = ruleset.severityOrder || ['ok', 'warn', 'alert'];
+
+  metricsEl.innerHTML = (ruleset.metrics || [])
+    .filter(metric => metric.id in metrics)
+    .map(metric => `
+      <label class="sbx-metric" title="${escapeHtml(metric.help || '')}">
+        <span>${escapeHtml(metric.label)} <em>${escapeHtml(metric.unit || '')}</em></span>
+        <input class="setup-input" type="number" step="any" data-sbx-metric="${escapeHtml(metric.id)}" value="${escapeHtml(String(metrics[metric.id]))}">
+      </label>`).join('');
+
+  rulesEl.innerHTML = (ruleset.rules || [])
+    .filter(rule => (rule.when || {}).all || (rule.when || {}).any)
+    .map(rule => `
+      <div class="sbx-rule">
+        <div class="sbx-rule-head">
+          <span class="badge ${escapeHtml(rule.severity)}">${escapeHtml(rule.label)}</span>
+          ${rule.notify ? '<span class="rw-notify">pages the crew</span>' : '<span class="muted-copy sbx-quiet">dashboard only</span>'}
+        </div>
+        <div class="sbx-conditions">
+          ${['all', 'any'].flatMap(group => ((rule.when || {})[group] || []).map((condition, index) => `
+            <label class="sbx-condition">
+              <span>${escapeHtml(metricLabel(ruleset, condition.metric))} ${escapeHtml(condition.op)}</span>
+              <input class="setup-input" type="number" step="any"
+                     data-sbx-threshold="${escapeHtml(rule.id)}" data-sbx-group="${group}" data-sbx-index="${index}"
+                     value="${escapeHtml(String(condition.value))}">
+              <em>${escapeHtml(metricUnit(ruleset, condition.metric))}</em>
+            </label>`)).join('')}
+        </div>
+      </div>`).join('');
+
+  const evaluate = () => {
+    const fired = evaluateWeatherDay(metrics, ruleset);
+    const severity = worstWeatherSeverity(fired.map(rule => rule.severity), order);
+    severityEl.textContent = weatherSeverityLabel(severity, order);
+    severityEl.classList.remove('ok', 'warn', 'alert');
+    severityEl.classList.add(severity);
+
+    resultsEl.innerHTML = fired.map(rule => `
+      <div class="rw-rule rw-rule--${escapeHtml(rule.severity)}">
+        <div class="rw-rule-head">
+          <span class="badge ${escapeHtml(rule.severity)}">${escapeHtml(rule.label)}</span>
+          ${rule.notify ? '<span class="rw-notify">pages the crew</span>' : ''}
+        </div>
+        <dl class="rw-actions">
+          ${WEATHER_ACTION_SLOTS
+            .filter(([key]) => (rule.actions || {})[key])
+            .map(([key, label]) => `<dt>${label}</dt><dd>${escapeHtml(rule.actions[key])}</dd>`).join('')}
+        </dl>
+      </div>`).join('');
+
+    rulesEl.querySelectorAll('.sbx-rule').forEach((el, index) => {
+      const rule = (ruleset.rules || []).filter(r => (r.when || {}).all || (r.when || {}).any)[index];
+      el.classList.toggle('sbx-rule--firing', fired.some(f => f.id === rule.id));
+    });
+  };
+
+  metricsEl.addEventListener('input', (event) => {
+    const key = event.target.getAttribute('data-sbx-metric');
+    if (!key) return;
+    metrics[key] = event.target.value === '' ? null : Number(event.target.value);
+    evaluate();
+  });
+
+  rulesEl.addEventListener('input', (event) => {
+    const ruleId = event.target.getAttribute('data-sbx-threshold');
+    if (!ruleId) return;
+    const group = event.target.getAttribute('data-sbx-group');
+    const index = Number(event.target.getAttribute('data-sbx-index'));
+    const rule = (ruleset.rules || []).find(r => r.id === ruleId);
+    if (!rule || !rule.when[group] || !rule.when[group][index]) return;
+    rule.when[group][index].value = Number(event.target.value);
+    storeRuleOverrides(ruleset);
+    statusEl.textContent = 'Thresholds changed in this browser. Copy them out to make the pipeline agree.';
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-presets]').addEventListener('click', (event) => {
+    const id = event.target.getAttribute('data-sbx-preset');
+    if (!id) return;
+    const preset = SANDBOX_PRESETS.find(p => p.id === id);
+    if (!preset) return;
+    root.querySelectorAll('[data-sbx-preset]').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    Object.assign(metrics, preset.metrics);
+    metricsEl.querySelectorAll('[data-sbx-metric]').forEach(input => {
+      const key = input.getAttribute('data-sbx-metric');
+      if (key in metrics) input.value = metrics[key];
+    });
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-copy]').addEventListener('click', async () => {
+    const text = JSON.stringify(ruleset, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+      statusEl.textContent = 'Tuned ruleset copied. Paste it over raceTracker/assets/data/weather-alert-rules.json and commit to make the automation use it.';
+    } catch {
+      statusEl.textContent = 'Clipboard blocked by the browser. Open weather-alert-rules.json and edit the thresholds by hand.';
+    }
+  });
+
+  root.querySelector('[data-sbx-reset]').addEventListener('click', () => {
+    try { localStorage.removeItem(WEATHER_OVERRIDE_KEY); } catch { /* storage unavailable */ }
+    renderWeatherSandbox(root, baseRuleset);
+  });
+
+  evaluate();
+}
+
+function metricLabel(ruleset, metricId) {
+  const metric = (ruleset.metrics || []).find(m => m.id === metricId);
+  return metric ? metric.label : metricId;
+}
+
+function metricUnit(ruleset, metricId) {
+  const metric = (ruleset.metrics || []).find(m => m.id === metricId);
+  return metric && metric.unit ? metric.unit : '';
+}
+
+function applyStoredRuleOverrides(baseRuleset) {
+  const ruleset = JSON.parse(JSON.stringify(baseRuleset));
+  let stored;
+  try { stored = JSON.parse(localStorage.getItem(WEATHER_OVERRIDE_KEY) || 'null'); } catch { stored = null; }
+  if (!stored || stored.schemaVersion !== ruleset.schemaVersion) return ruleset;
+
+  ruleset.rules.forEach(rule => {
+    const override = (stored.rules || {})[rule.id];
+    if (!override) return;
+    ['all', 'any'].forEach(group => {
+      ((rule.when || {})[group] || []).forEach((condition, index) => {
+        const value = (override[group] || [])[index];
+        if (typeof value === 'number') condition.value = value;
+      });
+    });
+  });
+  return ruleset;
+}
+
+function storeRuleOverrides(ruleset) {
+  const rules = {};
+  (ruleset.rules || []).forEach(rule => {
+    const when = rule.when || {};
+    if (!when.all && !when.any) return;
+    rules[rule.id] = {
+      all: (when.all || []).map(condition => condition.value),
+      any: (when.any || []).map(condition => condition.value)
+    };
+  });
+  try {
+    localStorage.setItem(WEATHER_OVERRIDE_KEY, JSON.stringify({ schemaVersion: ruleset.schemaVersion, rules }));
+  } catch { /* storage unavailable — sandbox still works for this session */ }
 }

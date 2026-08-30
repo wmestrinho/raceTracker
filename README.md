@@ -28,6 +28,7 @@ Canonical project structure (single source of truth)
 - `raceTracker/workshop.html`
 - `raceTracker/inventory.html`
 - `raceTracker/schedule.html`
+- `raceTracker/weather.html`
 - `raceTracker/team.html`
 - `raceTracker/settings.html`
 - `raceTracker/assets/css/style.css`
@@ -35,11 +36,14 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/data/telemetry.json`
 - `raceTracker/assets/data/track-context.json`
 - `raceTracker/assets/data/event-schedule.json`
+- `raceTracker/assets/data/series-calendars.json`
+- `raceTracker/assets/data/weather-alert-rules.json`
+- `raceTracker/assets/data/race-weather.json` (generated)
 - `raceTracker/assets/images/racetracker-logo.png`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.11.1`
+- Current version: `v1.12.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -59,6 +63,19 @@ Live data
 - Supabase plan: `supabase/schema.sql` defines the durable backend model. Local Supabase secrets are kept in ignored `.env.local`, never in Git.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection unless a team-approved API/source is confirmed.
 
+Race-weekend weather pipeline
+- Purpose: forecast every 2026 race weekend from track coordinates and alert the crew when rain or a severe track-temperature drop lands inside seven days of an event.
+- Data chain:
+  - `raceTracker/assets/data/series-calendars.json` — rounds, each carrying a `trackId`. The ten SKUSA/USPKS national professional 2-stroke rounds are tagged `nationalTier: "pro-2stroke"`.
+  - `raceTracker/assets/data/track-context.json` — latitude, longitude and timezone per facility. `coordinateConfidence: "approximate"` marks points set from a mailing address rather than a surveyed paddock fix.
+  - `raceTracker/assets/data/weather-alert-rules.json` — thresholds mapped to tire, engine, chassis and crew actions.
+  - `raceTracker/assets/data/race-weather.json` — generated feed; do not hand-edit.
+- Run it: `python3 scripts/build_weather_forecast.py` (add `--notify` to post webhook alerts, `--check` for an offline calendar/track join validation).
+- Automation: `.github/workflows/race-weather.yml` runs daily at 11:00 UTC, commits the refreshed feed, and posts an alert when the firing rule set changes.
+- Provider: Open-Meteo by default — public and credential-free, so no API key ever enters static JS or Git, and it returns 16 forecast days rather than the 5 offered by OpenWeatherMap's free tier. Keyed providers (OpenWeatherMap, Tomorrow.io) can be registered in `PROVIDERS` in the script; their keys belong in GitHub Actions secrets only.
+- Alerting: set the repository secret `RACETRACKER_WEATHER_WEBHOOK_URL` to a Slack or Discord incoming webhook. The payload shape is inferred from the URL. The same JSON feed is what a desk display (Arduino or otherwise) should poll.
+- UI: `raceTracker/weather.html` renders the forecast board and an interactive trigger sandbox. The sandbox evaluates the same rule grammar in the browser; tuned thresholds are stored per-browser in `localStorage` and must be copied back into `weather-alert-rules.json` to change what the automation does.
+
 Deployment
 - Cloudflare Workers/Pages via Wrangler
 - Config: `wrangler.jsonc`
@@ -71,6 +88,7 @@ Validation
 - Run before commit:
   - `python3 scripts/validate_structure.py`
   - `python3 scripts/validate_agent_baseline.py`
+  - `python3 scripts/test_weather_pipeline.py`
 
 Guardrails
 - Do not create parallel site roots, for example `docs/` plus `raceTracker/`.
@@ -101,7 +119,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.11.1`
+- Current baseline version: `v1.12.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

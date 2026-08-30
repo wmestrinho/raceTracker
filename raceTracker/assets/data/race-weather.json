@@ -1,0 +1,16 @@
+{
+  "updatedAt": null,
+  "generatedFor": null,
+  "generator": "scripts/build_weather_forecast.py",
+  "provider": "Open-Meteo",
+  "rulesSchemaVersion": 1,
+  "rulesUpdatedAt": "2026-08-30",
+  "leadDays": 16,
+  "notifyWindowDays": 7,
+  "status": "awaiting-first-run",
+  "notes": "Seed file. This is overwritten by the daily GitHub Actions run (.github/workflows/race-weather.yml) or by running scripts/build_weather_forecast.py locally. No forecast values are hand-written here — an empty events array means the pipeline has not run yet, not that the weather is clear.",
+  "eventCount": 0,
+  "alertDigest": "",
+  "events": [],
+  "skipped": []
+}
