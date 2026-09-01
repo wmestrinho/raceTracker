@@ -24,6 +24,8 @@ Environment
     RACETRACKER_WEATHER_GEOCODE        print paste-ready track-context entries for
                                        venues missing coordinates, then exit
     RACETRACKER_WEATHER_TIMEOUT        per-request seconds (default 45)
+    RACETRACKER_WEATHER_WEBHOOK_URL    Slack/Discord incoming webhook for alerts
+    RACETRACKER_WEATHER_FORCE_ALERT    post the webhook even if nothing changed
 """
 
 from __future__ import annotations
@@ -59,6 +61,8 @@ CLIMATE_WINDOW_DAYS = 3
 CLIMATE_CACHE_DAYS = 30
 MAX_WEEKEND_SPAN_DAYS = 14  # mirrors CONFLICT_MAX_SPAN_DAYS in main.js
 CALENDAR_STALE_DAYS = 60
+# Alerts only fire for real forecasts this close to a race weekend.
+NOTIFY_WINDOW_DAYS = 7
 
 MIN_REQUEST_INTERVAL_S = 1.1
 USER_AGENT = "raceTracker weather refresh (tracker.absolutelyplausible.com)"
@@ -85,6 +89,9 @@ RISK_THRESHOLDS = {
     "warnGustMph": 20,
     "hotF": 92,
     "coldF": 50,
+    # Day-over-day fall in the daily high. A collapse of this size resets grip,
+    # jetting and clutch engagement even when neither day trips hotF/coldF.
+    "severeTempDropF": 15,
 }
 
 RISK_COPY = {
@@ -208,14 +215,44 @@ def classify_race_day_risk(day, mode):
     wet_forecast = mode == "forecast" and (day.get("precipProbabilityMaxPct") or 0) >= t["dailyRainProbPct"]
     wet_climate = mode == "climate" and (day.get("wetDayFrequencyPct") or 0) >= t["climateWetDayPct"]
     rainy_code = day.get("weatherCode") in t["rainyCodes"]
+    temp_collapse = (day.get("tempDropF") or 0) >= t["severeTempDropF"]
 
-    if rain >= t["dailyRainIn"] or wet_forecast or wet_climate or rainy_code or gust >= t["alertGustMph"]:
+    if (rain >= t["dailyRainIn"] or wet_forecast or wet_climate or rainy_code
+            or gust >= t["alertGustMph"] or temp_collapse):
         return {"state": "alert", **RISK_COPY["alert"]}
     if (wind >= t["warnWindMph"] or gust >= t["warnGustMph"]
             or (high is not None and high >= t["hotF"])
             or (low is not None and low <= t["coldF"])):
         return {"state": "warn", **RISK_COPY["warn"]}
     return {"state": "ok", **RISK_COPY["ok"]}
+
+
+def attach_temp_drops(days, mode, lead_in_high=None):
+    """Fill in tempDropF, then re-classify — the drop is a risk input.
+
+    lead_in_high is the daily high for the day *before* the weekend, so a
+    Thursday-to-Friday collapse is caught on day one rather than being invisible
+    until Saturday. Without it the first day simply carries no drop.
+    """
+    previous = lead_in_high
+    for day in days:
+        high = day.get("tempMaxF")
+        if previous is not None and high is not None:
+            day["tempDropF"] = round(max(0.0, previous - high), 1)
+        else:
+            day["tempDropF"] = 0.0
+        if high is not None:
+            previous = high
+        day["risk"] = classify_race_day_risk(day, mode)
+    return days
+
+
+def lead_in_high(rows, start):
+    """Daily high for the day before the weekend, when the fetch window covers it."""
+    if not start:
+        return None
+    row = rows.get(iso(start - timedelta(days=1)))
+    return round_or_none((row or {}).get("temperature_2m_max"), 1)
 
 
 RISK_ORDER = {"ok": 0, "warn": 1, "alert": 2}
@@ -252,6 +289,14 @@ def build_prep(days, summary, mode):
         prep.append(f"Heat: {high:.0f}°F peak — drop tire pressures, plan driver cooling and hydration")
     if low is not None and low <= t["coldF"]:
         prep.append(f"Cold start: {low:.0f}°F low — warmers, richer jetting, longer out-laps")
+    drop = summary.get("tempDropF") or 0
+    if drop >= t["severeTempDropF"]:
+        collapse = next((d for d in days if (d.get("tempDropF") or 0) >= t["severeTempDropF"]), None)
+        when = f" on {collapse['weekdayLabel']}" if collapse else ""
+        prep.append(
+            f"Track temp falls {drop:.0f}°F day over day{when} — re-baseline pressures, "
+            "richen the main a step, recheck clutch engagement"
+        )
     if not prep:
         prep.append("Nothing unusual forecast — run the standard pressure and jetting baseline")
     if mode == "climate":
@@ -414,6 +459,9 @@ def summarize(days, mode):
         summary["precipProbabilityMaxPct"] = max(probs)
     if wet_days:
         summary["wetDayFrequencyPct"] = max(wet_days)
+    drops = collect("tempDropF")
+    if drops:
+        summary["tempDropF"] = round(max(drops), 1)
 
     state = worst_risk(days)
     summary["risk"] = {"state": state, **RISK_COPY[state]}
@@ -429,12 +477,12 @@ def summarize(days, mode):
     return summary
 
 
-def finish(entry, days, mode, source, confidence, extra=None):
+def finish(entry, days, mode, source, confidence, extra=None, lead_in=None):
     entry = dict(entry)
     entry["mode"] = mode
     entry["modeSource"] = source
     entry["confidence"] = confidence
-    entry["days"] = days
+    entry["days"] = attach_temp_drops(days, mode, lead_in)
     entry["summary"] = summarize(days, mode)
     entry["prep"] = build_prep(days, entry["summary"], mode)
     if extra:
@@ -453,21 +501,38 @@ def climate_days(entry, rows):
     index = 0
     cursor = start
     while cursor <= end:
-        samples = []
-        for year in range(first_year, last_year + 1):
-            for offset in range(-CLIMATE_WINDOW_DAYS, CLIMATE_WINDOW_DAYS + 1):
-                try:
-                    anchor = date(year, cursor.month, cursor.day)
-                except ValueError:  # Feb 29 in a non-leap year
-                    continue
-                row = rows.get(iso(anchor + timedelta(days=offset)))
-                if row:
-                    samples.append(row)
+        samples = climate_samples(cursor, rows, first_year, last_year)
         if samples:
             days.append(climate_day(cursor, samples, index))
         index += 1
         cursor += timedelta(days=1)
     return days
+
+
+def climate_samples(day, rows, first_year, last_year):
+    """Every archive row within the +/- window of this calendar day, across seasons."""
+    samples = []
+    for year in range(first_year, last_year + 1):
+        for offset in range(-CLIMATE_WINDOW_DAYS, CLIMATE_WINDOW_DAYS + 1):
+            try:
+                anchor = date(year, day.month, day.day)
+            except ValueError:  # Feb 29 in a non-leap year
+                continue
+            row = rows.get(iso(anchor + timedelta(days=offset)))
+            if row:
+                samples.append(row)
+    return samples
+
+
+def climate_lead_in_high(entry, rows):
+    """Normal high for the day before the weekend, so day one can carry a drop."""
+    start = parse_iso(entry["dateStart"])
+    if not start:
+        return None
+    samples = climate_samples(start - timedelta(days=1), rows, *CLIMATE_YEARS)
+    highs = [float(s["temperature_2m_max"]) for s in samples
+             if s.get("temperature_2m_max") is not None]
+    return round(statistics.fmean(highs), 1) if highs else None
 
 
 def climate_day(day, samples, index):
@@ -592,6 +657,102 @@ def calendar_health(calendar, weekends, today):
 
 
 # ── output ────────────────────────────────────────────────────────────────
+
+# ── alerting ──────────────────────────────────────────────────────────────
+
+def alerting_weekends(weekends, window_days):
+    """Real forecasts inside the window that classify as alert.
+
+    Climate normals are excluded on purpose — a ten-year average is not news,
+    and paging the crew about one would train them to ignore the channel.
+    """
+    hits = []
+    for weekend in weekends:
+        if weekend.get("mode") != "forecast":
+            continue
+        lead = weekend.get("leadDays")
+        if lead is None or lead < 0 or lead > window_days:
+            continue
+        if ((weekend.get("summary") or {}).get("risk") or {}).get("state") == "alert":
+            hits.append(weekend)
+    return hits
+
+
+def alert_digest(hits):
+    """Fingerprint of what is being alerted, so an unchanged picture stays quiet."""
+    parts = []
+    for weekend in hits:
+        days = [f"{d['date']}:{(d.get('risk') or {}).get('state')}" for d in weekend.get("days", [])]
+        parts.append(f"{weekend['key']}|{'|'.join(days)}")
+    if not parts:
+        return ""
+    return hashlib.sha256("\n".join(sorted(parts)).encode("utf-8")).hexdigest()[:16]
+
+
+def build_alert_message(hits, window_days):
+    lines = [f"*raceTracker weather alert* — {len(hits)} race weekend(s) "
+             f"inside {window_days} days"]
+    for weekend in hits:
+        summary = weekend.get("summary") or {}
+        lines.append("")
+        lines.append(f"{weekend.get('seriesName') or weekend['seriesId']} · {weekend['name']} — {weekend.get('track') or ''}"
+                     f" ({weekend.get('trackCity') or ''}) · in {weekend['leadDays']} day(s)")
+        lines.append(f"  {summary.get('headline', 'No data')}")
+        for day in weekend.get("days", []):
+            if (day.get("risk") or {}).get("state") != "alert":
+                continue
+            bits = []
+            if day.get("precipProbabilityMaxPct") is not None:
+                bits.append(f"{day['precipProbabilityMaxPct']}% rain")
+            if day.get("precipInches"):
+                bits.append(f"{day['precipInches']:.2f} in")
+            if day.get("gustMaxMph") is not None:
+                bits.append(f"gusts {day['gustMaxMph']:.0f} mph")
+            if (day.get("tempDropF") or 0) >= RISK_THRESHOLDS["severeTempDropF"]:
+                bits.append(f"temp down {day['tempDropF']:.0f}°F")
+            lines.append(f"  {day['weekdayLabel']} {day['date']}: {', '.join(bits) or 'alert'}")
+        for prep in weekend.get("prep", []):
+            lines.append(f"    · {prep}")
+    lines.append("")
+    lines.append("https://tracker.absolutelyplausible.com/weather.html")
+    return "\n".join(lines)
+
+
+def webhook_body(url, message, style="auto"):
+    if style == "auto":
+        style = "discord" if "discord" in urllib.parse.urlparse(url).netloc else "slack"
+    if style == "discord":
+        return json.dumps({"content": message[:1900]}).encode("utf-8")
+    return json.dumps({"text": message}).encode("utf-8")
+
+
+def post_webhook(url, message, timeout):
+    request = urllib.request.Request(
+        url,
+        data=webhook_body(url, message),
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT},
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        response.read()
+
+
+def send_alerts(payload, previous, timeout):
+    """Post the alert digest to Slack/Discord. Returns a short status for the log."""
+    webhook = (os.environ.get("RACETRACKER_WEATHER_WEBHOOK_URL") or "").strip()
+    hits = alerting_weekends(payload["weekends"], payload["notifyWindowDays"])
+    if not webhook:
+        return f"{len(hits)} weekend(s) in the alert window; no webhook configured"
+    if not hits:
+        return "nothing inside the alert window"
+    if (previous or {}).get("alertDigest") == payload["alertDigest"] and not os.environ.get(
+            "RACETRACKER_WEATHER_FORCE_ALERT"):
+        return "alert set unchanged since the last run; webhook skipped"
+    try:
+        post_webhook(webhook, build_alert_message(hits, payload["notifyWindowDays"]), timeout)
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return f"webhook POST failed: {exc}"
+    return f"posted alert for {len(hits)} weekend(s)"
+
 
 def content_hash(payload):
     stripped = {k: v for k, v in payload.items() if k not in ("updatedAt", "contentHash")}
@@ -752,6 +913,7 @@ def main() -> int:
                     entry, days, "forecast", "open-meteo-forecast",
                     "high" if lead <= 7 else "medium",
                     {"modeLabel": f"{FORECAST_HORIZON_DAYS}-day forecast"},
+                    lead_in=lead_in_high(rows, parse_iso(entry["dateStart"])),
                 )
             else:
                 issues.append({"key": entry["key"], "stage": "forecast", "error": "no rows for weekend"})
@@ -798,6 +960,7 @@ def main() -> int:
                         entry, days, "climate", "open-meteo-archive-normals", "low",
                         {"modeLabel": f"Climate normal ({CLIMATE_YEARS[0]}–{CLIMATE_YEARS[1]})",
                          "climateComputedAt": iso(today)},
+                        lead_in=climate_lead_in_high(entry, rows),
                     )
                     continue
             else:
@@ -815,6 +978,7 @@ def main() -> int:
                     resolved[entry["key"]] = finish(
                         entry, days, "actual", "open-meteo-archive", "high",
                         {"modeLabel": "Recorded conditions"},
+                        lead_in=lead_in_high(rows, parse_iso(entry["dateStart"])),
                     )
                     continue
             issues.append({"key": entry["key"], "stage": mode, "error": "no rows for weekend"})
@@ -864,6 +1028,8 @@ def main() -> int:
         "climateBaselineYears": list(CLIMATE_YEARS),
         "climateWindowDays": CLIMATE_WINDOW_DAYS,
         "maxWeekendSpanDays": MAX_WEEKEND_SPAN_DAYS,
+        "notifyWindowDays": NOTIFY_WINDOW_DAYS,
+        "alertDigest": alert_digest(alerting_weekends(ordered, NOTIFY_WINDOW_DAYS)),
         "units": {"temperature": "F", "wind": "mph", "precipitation": "in"},
         "riskThresholds": RISK_THRESHOLDS,
         "counts": counts,
@@ -873,6 +1039,7 @@ def main() -> int:
     }
 
     write_output(output, payload, previous)
+    print(f"alerts: {send_alerts(payload, previous, timeout)}")
     if issues:
         log(f"{len(issues)} issue(s) recorded; sourceStatus=partial")
     return 0

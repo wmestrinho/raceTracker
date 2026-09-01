@@ -24,6 +24,7 @@ required_files = [
     CANON / "workshop.html",
     CANON / "inventory.html",
     CANON / "schedule.html",
+    CANON / "weather.html",
     CANON / "team.html",
     CANON / "settings.html",
     CANON / "registrations.html",

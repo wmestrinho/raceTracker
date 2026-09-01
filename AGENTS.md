@@ -63,6 +63,7 @@ Live data guardrails
 - Credentialed sources must go through a backend/Cloudflare Worker proxy; never put API keys in static JS or checked-in data files.
 - Track/weather defaults live in `raceTracker/assets/data/track-context.json`.
 - Race-weekend weather is generated into `raceTracker/assets/data/race-weather.json` by `scripts/refresh_race_weather.py` (Open-Meteo, credential-free) and refreshed daily by `.github/workflows/refresh-race-weather.yml`. Never hand-edit the generated file.
+- Weather alerts post to `RACETRACKER_WEATHER_WEBHOOK_URL` (Slack/Discord), configured only as a GitHub Actions secret. Never commit a webhook URL.
 - Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
 - Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
 - Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward Supabase/backend ownership for durable multi-client use.

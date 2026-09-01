@@ -243,10 +243,130 @@ def test_thresholds_match_js():
             check(f"{name} matches", f"{name}:" in block and str(value) in block)
 
 
+def test_temp_drop():
+    print("day-over-day temperature drop")
+    t = rw.RISK_THRESHOLDS
+
+    days = [{"date": "2026-07-24", "weekdayLabel": "Fri", "tempMaxF": 88.0, "tempMinF": 70.0,
+             "windMaxMph": 6, "gustMaxMph": 10, "precipInches": 0.0, "weatherCode": 1},
+            {"date": "2026-07-25", "weekdayLabel": "Sat", "tempMaxF": 62.0, "tempMinF": 55.0,
+             "windMaxMph": 6, "gustMaxMph": 10, "precipInches": 0.0, "weatherCode": 1},
+            {"date": "2026-07-26", "weekdayLabel": "Sun", "tempMaxF": 61.0, "tempMinF": 54.0,
+             "windMaxMph": 6, "gustMaxMph": 10, "precipInches": 0.0, "weatherCode": 1}]
+    rw.attach_temp_drops(days, "forecast")
+    check("first day has no drop without a lead-in", days[0]["tempDropF"] == 0.0)
+    check("26F collapse recorded", days[1]["tempDropF"] == 26.0, f"got {days[1]['tempDropF']}")
+    check("collapse day alerts", days[1]["risk"]["state"] == "alert")
+    check("a warm day either side of it stays ok", days[0]["risk"]["state"] == "ok")
+    check("a mild 1F change does not alert", days[2]["tempDropF"] == 1.0
+          and days[2]["risk"]["state"] == "ok")
+
+    # A warming trend must never register as a drop.
+    warming = [{"date": "2026-07-24", "weekdayLabel": "Fri", "tempMaxF": 60.0, "tempMinF": 55.0},
+               {"date": "2026-07-25", "weekdayLabel": "Sat", "tempMaxF": 85.0, "tempMinF": 65.0}]
+    rw.attach_temp_drops(warming, "forecast")
+    check("warming is not a drop", warming[1]["tempDropF"] == 0.0)
+
+    # The lead-in catches a collapse that lands on day one of the weekend.
+    lead = [{"date": "2026-07-24", "weekdayLabel": "Fri", "tempMaxF": 60.0, "tempMinF": 50.0,
+             "windMaxMph": 5, "gustMaxMph": 9, "precipInches": 0.0, "weatherCode": 1}]
+    rw.attach_temp_drops(lead, "forecast", lead_in_high=85.0)
+    check("lead-in catches a day-one collapse", lead[0]["tempDropF"] == 25.0)
+    check("day-one collapse alerts", lead[0]["risk"]["state"] == "alert")
+
+    summary = rw.summarize(days, "forecast")
+    check("summary carries the worst drop", summary["tempDropF"] == 26.0)
+    prep = rw.build_prep(days, summary, "forecast")
+    check("prep names the collapse", any("falls 26" in line for line in prep), prep)
+    check("prep is actionable", any("richen the main" in line for line in prep), prep)
+
+    below = dict(days[1], tempDropF=t["severeTempDropF"] - 1)
+    check("just under the threshold does not alert",
+          rw.classify_race_day_risk(below, "forecast")["state"] == "ok")
+
+
+def test_alerting():
+    print("webhook alerting")
+    def weekend(key, lead, state, mode="forecast"):
+        return {"key": key, "seriesId": "skusa", "seriesName": "SKUSA", "name": key,
+                "track": "New Castle", "trackCity": "New Castle, IN", "leadDays": lead,
+                "mode": mode, "prep": ["Rain tires and wet setup"],
+                "summary": {"headline": "64°F · 0.40 in", "risk": {"state": state}},
+                "days": [{"date": "2026-07-24", "weekdayLabel": "Fri", "precipInches": 0.4,
+                          "precipProbabilityMaxPct": 90, "gustMaxMph": 18, "tempDropF": 0,
+                          "risk": {"state": state}}]}
+
+    inside = weekend("skusa:pro-tour:pt-3", 4, "alert")
+    outside = weekend("uspks:main:2", 20, "alert")
+    calm = weekend("uspks:main:3", 3, "ok")
+    normals = weekend("uspks:main:4", 5, "alert", mode="climate")
+
+    hits = rw.alerting_weekends([inside, outside, calm, normals], rw.NOTIFY_WINDOW_DAYS)
+    check("alerts inside the window", [h["key"] for h in hits] == ["skusa:pro-tour:pt-3"],
+          [h["key"] for h in hits])
+    check("a climate normal never pages", all(h["mode"] == "forecast" for h in hits))
+
+    past = weekend("skusa:pro-tour:pt-2", -3, "alert")
+    check("a finished weekend never pages",
+          rw.alerting_weekends([past], rw.NOTIFY_WINDOW_DAYS) == [])
+
+    digest = rw.alert_digest(hits)
+    check("digest is stable", digest == rw.alert_digest(hits))
+    check("empty alert set has an empty digest", rw.alert_digest([]) == "")
+    changed = json.loads(json.dumps(inside))
+    changed["days"][0]["risk"]["state"] = "warn"
+    check("a changed alert set changes the digest",
+          rw.alert_digest([changed]) != digest)
+
+    message = rw.build_alert_message(hits, rw.NOTIFY_WINDOW_DAYS)
+    check("message names the event", "skusa:pro-tour:pt-3" in message)
+    check("message carries prep", "Rain tires" in message)
+
+    slack = json.loads(rw.webhook_body("https://hooks.slack.com/services/x", "hi"))
+    check("slack shape", "text" in slack)
+    discord = json.loads(rw.webhook_body("https://discord.com/api/webhooks/x", "hi"))
+    check("discord shape", "content" in discord)
+
+    saved = os.environ.pop("RACETRACKER_WEATHER_WEBHOOK_URL", None)
+    try:
+        payload = {"weekends": [inside], "notifyWindowDays": rw.NOTIFY_WINDOW_DAYS,
+                   "alertDigest": digest}
+        status = rw.send_alerts(payload, None, 5)
+        check("no webhook configured is not an error", "no webhook configured" in status, status)
+    finally:
+        if saved is not None:
+            os.environ["RACETRACKER_WEATHER_WEBHOOK_URL"] = saved
+
+
+def test_prep_copy_matches_js():
+    """buildPrepLines() in main.js must say the same things build_prep() does.
+
+    The sandbox shows a mechanic what the automation would tell them, so the two
+    sets of wording drifting apart would make the sandbox quietly dishonest.
+    """
+    print("prep copy parity with main.js")
+    js = (rw.ROOT / "raceTracker/assets/js/main.js").read_text()
+    for phrase in ("Rain tires and wet setup",
+                   "recheck ride height and front-end toe after run 1",
+                   "expect a loose entry down the straight",
+                   "drop tire pressures, plan driver cooling and hydration",
+                   "warmers, richer jetting, longer out-laps",
+                   "richen the main a step, recheck clutch engagement",
+                   "run the standard pressure and jetting baseline",
+                   "Based on past seasons, not a forecast"):
+        check(f"js carries {phrase!r}", phrase in js)
+
+    py = (rw.ROOT / "scripts/refresh_race_weather.py").read_text()
+    check("notify window mirrored in main.js",
+          f"RACE_WX_NOTIFY_WINDOW_DAYS = {rw.NOTIFY_WINDOW_DAYS}" in js)
+    check("python still owns the notify window", "NOTIFY_WINDOW_DAYS = 7" in py)
+
+
 def main() -> int:
     for test in (test_risk, test_key_formula, test_multi_location_parse, test_climate,
                  test_summary, test_content_hash, test_mode_selection,
-                 test_unavailable_reasons, test_thresholds_match_js):
+                 test_unavailable_reasons, test_temp_drop, test_alerting,
+                 test_thresholds_match_js, test_prep_copy_matches_js):
         test()
     print()
     if FAILURES:

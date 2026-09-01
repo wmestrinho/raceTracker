@@ -28,6 +28,7 @@ Canonical project structure (single source of truth)
 - `raceTracker/workshop.html`
 - `raceTracker/inventory.html`
 - `raceTracker/schedule.html`
+- `raceTracker/weather.html`
 - `raceTracker/team.html`
 - `raceTracker/settings.html`
 - `raceTracker/assets/css/style.css`
@@ -43,7 +44,7 @@ Canonical project structure (single source of truth)
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.12.0`
+- Current version: `v1.13.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -71,6 +72,19 @@ Race weekend weather
   `RACETRACKER_WEATHER_GEOCODE=1 python3 scripts/refresh_race_weather.py`, which prints
   paste-ready entries; `track-context.json` stays hand-curated.
 - Tests: `python3 scripts/test_race_weather.py` (no network required).
+- Alerts: a weekend whose forecast classifies as `alert` inside 7 days posts to
+  `RACETRACKER_WEATHER_WEBHOOK_URL` (Slack or Discord — the payload shape is inferred
+  from the URL). Climate normals never page anyone, and an unchanged alert set is
+  skipped via `alertDigest`, so the channel stays quiet until something actually moves.
+  Set the repository secret of the same name to switch alerting on; without it the run
+  just reports how many weekends would have alerted.
+- `severeTempDropF` (15°F) triggers on the day-over-day fall in the daily high, so an
+  overnight collapse alerts even when neither day is hot or cold in absolute terms. The
+  day before the weekend is included, so a Thursday-to-Friday collapse is caught on day one.
+- `raceTracker/weather.html` is a trigger sandbox: pick a scenario, move a threshold and
+  read the tire and engine call it produces. It runs the shipped classifier, not a copy.
+  Draft thresholds live in `localStorage` only — copy them into **both**
+  `WEATHER_THRESHOLDS` (main.js) and `RISK_THRESHOLDS` (refresh script) to make them real.
 
 Live data
 - Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
@@ -130,7 +144,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.12.0`
+- Current baseline version: `v1.13.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

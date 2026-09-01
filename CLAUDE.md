@@ -54,6 +54,12 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
   schedule page defaults to 2-stroke US
 - Calendar rounds sourced from a single reference are marked
   `"sourceConfidence": "unverified"` — do not silently promote them to confirmed
+- Alerting is webhook-only and opt-in via `RACETRACKER_WEATHER_WEBHOOK_URL` (GitHub
+  Actions secret, never in the repo). Only real forecasts inside `NOTIFY_WINDOW_DAYS`
+  page the crew — never climate normals
+- `raceTracker/weather.html` runs the shipped classifier in the browser. If you change
+  `build_prep`, change `buildPrepLines` in main.js too — `test_race_weather.py` asserts
+  the wording matches
 
 ## Before Committing
 

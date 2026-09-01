@@ -11,6 +11,10 @@ on:
         description: 'Refetch climate normals (ignores the 30-day cache)'
         type: boolean
         default: false
+      force_alert:
+        description: 'Post the webhook even if the alert set has not changed'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -34,9 +38,13 @@ jobs:
         with:
           python-version: '3.11'
 
+      # The webhook secret is optional: without it the run still refreshes the
+      # feed and just reports how many weekends would have alerted.
       - name: Refresh race weekend weather
         env:
           RACETRACKER_WEATHER_FORCE_CLIMATE: ${{ inputs.force_climate && '1' || '' }}
+          RACETRACKER_WEATHER_FORCE_ALERT: ${{ inputs.force_alert && '1' || '' }}
+          RACETRACKER_WEATHER_WEBHOOK_URL: ${{ secrets.RACETRACKER_WEATHER_WEBHOOK_URL }}
         run: python3 scripts/refresh_race_weather.py
 
       - name: Validate generated JSON

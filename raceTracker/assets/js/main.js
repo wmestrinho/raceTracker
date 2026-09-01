@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTeamRoster();
   initBillingModule();
   initSeriesCalendars();
+  initWeatherSandbox();
 });
 
 function initSidebarToggle() {
@@ -401,7 +402,10 @@ const WEATHER_THRESHOLDS = {
   warnWindMph:      14,
   warnGustMph:      20,
   hotF:             92,
-  coldF:            50
+  coldF:            50,
+  // Day-over-day fall in the daily high. A collapse this size resets grip,
+  // jetting and clutch engagement even when neither day trips hotF/coldF.
+  severeTempDropF:  15
 };
 
 const RISK_COPY = {
@@ -454,8 +458,10 @@ function classifyRaceDayRisk(day, mode) {
   const wetForecast = mode === 'forecast' && Number(day.precipProbabilityMaxPct || 0) >= t.dailyRainProbPct;
   const wetClimate  = mode === 'climate'  && Number(day.wetDayFrequencyPct || 0) >= t.climateWetDayPct;
 
+  const tempCollapse = Number(day.tempDropF || 0) >= t.severeTempDropF;
+
   if (rain >= t.dailyRainIn || wetForecast || wetClimate ||
-      isRainyWeatherCode(day.weatherCode) || gust >= t.alertGustMph) {
+      isRainyWeatherCode(day.weatherCode) || gust >= t.alertGustMph || tempCollapse) {
     return { state: 'alert', ...RISK_COPY.alert };
   }
   if (wind >= t.warnWindMph || gust >= t.warnGustMph ||
@@ -1465,4 +1471,345 @@ function renderCalRow(round, conflictIds, wx) {
     <td class="cal-city-cell">${escapeHtml(round.trackCity || '—')}</td>
     <td class="cal-wx-cell">${renderRaceWeatherCell(entry, key, wx)}</td>
   </tr>${detail ? `<tr class="cal-wx-detail-row" data-wx-detail="${escapeHtml(key)}"><td colspan="5">${detail}</td></tr>` : ''}`;
+}
+
+// ── Trigger sandbox ───────────────────────────────────────────
+//
+// Runs the shipped classifier against a scenario you control, so a threshold
+// can be judged by the tire and engine call it produces before it is committed.
+// classifyRaceDayRisk() and buildPrepLines() below are the same functions the
+// schedule page and the refresh script use — nothing here is a mock.
+
+const SANDBOX_STORAGE_KEY = 'raceTracker.weatherThresholdDraft';
+
+// Mirrors build_prep() in scripts/refresh_race_weather.py. The phrasing is
+// asserted against the Python in scripts/test_race_weather.py.
+function buildPrepLines(days, summary, mode) {
+  const t = WEATHER_THRESHOLDS;
+  const prep = [];
+  const wet = days.filter(d =>
+    Number(d.precipInches || 0) >= t.dailyRainIn ||
+    Number(d.precipProbabilityMaxPct || 0) >= t.dailyRainProbPct ||
+    Number(d.wetDayFrequencyPct || 0) >= t.climateWetDayPct ||
+    isRainyWeatherCode(d.weatherCode));
+  if (wet.length) {
+    prep.push(`Rain tires and wet setup — wet risk on ${wet.map(d => d.weekdayLabel).join(', ')}`);
+  }
+  const gust = Number(summary.gustMaxMph || 0);
+  if (gust >= t.alertGustMph) {
+    prep.push(`Gusts to ${gust.toFixed(0)} mph: recheck ride height and front-end toe after run 1`);
+  } else if (gust >= t.warnGustMph) {
+    prep.push(`Breezy — gusts near ${gust.toFixed(0)} mph; expect a loose entry down the straight`);
+  }
+  const high = summary.tempMaxF;
+  const low = summary.tempMinF;
+  if (high !== null && high !== undefined && high >= t.hotF) {
+    prep.push(`Heat: ${Number(high).toFixed(0)}°F peak — drop tire pressures, plan driver cooling and hydration`);
+  }
+  if (low !== null && low !== undefined && low <= t.coldF) {
+    prep.push(`Cold start: ${Number(low).toFixed(0)}°F low — warmers, richer jetting, longer out-laps`);
+  }
+  const drop = Number(summary.tempDropF || 0);
+  if (drop >= t.severeTempDropF) {
+    const collapse = days.find(d => Number(d.tempDropF || 0) >= t.severeTempDropF);
+    const when = collapse ? ` on ${collapse.weekdayLabel}` : '';
+    prep.push(`Track temp falls ${drop.toFixed(0)}°F day over day${when} — re-baseline pressures, ` +
+              'richen the main a step, recheck clutch engagement');
+  }
+  if (!prep.length) {
+    prep.push('Nothing unusual forecast — run the standard pressure and jetting baseline');
+  }
+  if (mode === 'climate') {
+    prep.push('Based on past seasons, not a forecast — recheck inside 16 days');
+  }
+  return prep;
+}
+
+const SANDBOX_FIELDS = [
+  { id: 'tempMaxF',                 label: 'Air temp max',      unit: '°F' },
+  { id: 'tempMinF',                 label: 'Air temp min',      unit: '°F' },
+  { id: 'tempDropF',                label: 'Drop vs prior day', unit: '°F' },
+  { id: 'precipInches',             label: 'Precipitation',     unit: 'in' },
+  { id: 'precipProbabilityMaxPct',  label: 'Rain probability',  unit: '%'  },
+  { id: 'wetDayFrequencyPct',       label: 'Wet-day frequency', unit: '%'  },
+  { id: 'windMaxMph',               label: 'Wind max',          unit: 'mph' },
+  { id: 'gustMaxMph',               label: 'Gust max',          unit: 'mph' }
+];
+
+const SANDBOX_CODES = [
+  { code: 1,  label: 'Mainly clear' },
+  { code: 3,  label: 'Overcast' },
+  { code: 61, label: 'Rain, slight' },
+  { code: 65, label: 'Rain, heavy' },
+  { code: 82, label: 'Showers, violent' },
+  { code: 95, label: 'Thunderstorm' }
+];
+
+const SANDBOX_PRESETS = [
+  { id: 'wet-finale', label: 'Wet Lake Erie finale', mode: 'forecast',
+    day: { tempMaxF: 64, tempMinF: 52, tempDropF: 6, precipInches: 0.42,
+           precipProbabilityMaxPct: 85, wetDayFrequencyPct: 0, windMaxMph: 16,
+           gustMaxMph: 26, weatherCode: 61 } },
+  { id: 'cold-snap', label: 'Overnight collapse', mode: 'forecast',
+    day: { tempMaxF: 60, tempMinF: 44, tempDropF: 25, precipInches: 0,
+           precipProbabilityMaxPct: 10, wetDayFrequencyPct: 0, windMaxMph: 10,
+           gustMaxMph: 17, weatherCode: 1 } },
+  { id: 'supernats', label: 'SuperNats desert week', mode: 'forecast',
+    day: { tempMaxF: 74, tempMinF: 49, tempDropF: 4, precipInches: 0,
+           precipProbabilityMaxPct: 5, wetDayFrequencyPct: 0, windMaxMph: 18,
+           gustMaxMph: 30, weatherCode: 1 } },
+  { id: 'summer-heat', label: 'New Castle July heat', mode: 'forecast',
+    day: { tempMaxF: 95, tempMinF: 74, tempDropF: 0, precipInches: 0.02,
+           precipProbabilityMaxPct: 20, wetDayFrequencyPct: 0, windMaxMph: 8,
+           gustMaxMph: 14, weatherCode: 3 } },
+  { id: 'climate-normal', label: 'Climate normal (far out)', mode: 'climate',
+    day: { tempMaxF: 71, tempMinF: 55, tempDropF: 2, precipInches: 0.08,
+           precipProbabilityMaxPct: 0, wetDayFrequencyPct: 55, windMaxMph: 9,
+           gustMaxMph: 16, weatherCode: 3 } },
+  { id: 'clear', label: 'Clear baseline', mode: 'forecast',
+    day: { tempMaxF: 76, tempMinF: 58, tempDropF: 0, precipInches: 0,
+           precipProbabilityMaxPct: 5, wetDayFrequencyPct: 0, windMaxMph: 7,
+           gustMaxMph: 12, weatherCode: 1 } }
+];
+
+// Thresholds the sandbox exposes. rainyCodes is a list, not a dial, so it stays out.
+const SANDBOX_THRESHOLDS = [
+  { id: 'dailyRainIn',      label: 'Daily rain',        unit: 'in', tier: 'alert' },
+  { id: 'dailyRainProbPct', label: 'Rain probability',  unit: '%',  tier: 'alert' },
+  { id: 'climateWetDayPct', label: 'Wet-day frequency', unit: '%',  tier: 'alert' },
+  { id: 'alertGustMph',     label: 'Gusts',             unit: 'mph', tier: 'alert' },
+  { id: 'severeTempDropF',  label: 'Temp drop',         unit: '°F', tier: 'alert' },
+  { id: 'warnWindMph',      label: 'Wind',              unit: 'mph', tier: 'warn' },
+  { id: 'warnGustMph',      label: 'Gusts',             unit: 'mph', tier: 'warn' },
+  { id: 'hotF',             label: 'Heat',              unit: '°F', tier: 'warn' },
+  { id: 'coldF',            label: 'Cold',              unit: '°F', tier: 'warn' }
+];
+
+function initWeatherSandbox() {
+  const root = document.querySelector('[data-weather-sandbox]');
+  if (!root) return;
+
+  const committed = { ...WEATHER_THRESHOLDS };
+  let preset = SANDBOX_PRESETS[0];
+  let mode = preset.mode;
+  const day = { ...preset.day, date: '2026-09-26', weekdayLabel: 'Sat' };
+
+  restoreThresholdDraft();
+
+  root.innerHTML = `
+    <div class="sbx-presets" data-sbx-presets>
+      ${SANDBOX_PRESETS.map((p, i) =>
+        `<button type="button" class="series-pill${i === 0 ? ' active' : ''}" data-sbx-preset="${escapeHtml(p.id)}">${escapeHtml(p.label)}</button>`
+      ).join('')}
+    </div>
+    <div class="sbx-grid">
+      <div class="sbx-col">
+        <h4 class="sbx-heading">Scenario</h4>
+        <label class="sbx-metric sbx-mode">
+          <span>Data mode</span>
+          <select class="setup-input" data-sbx-mode>
+            <option value="forecast">Forecast (within 16 days)</option>
+            <option value="climate">Climate normal (further out)</option>
+            <option value="actual">Recorded (past weekend)</option>
+          </select>
+        </label>
+        <div class="sbx-metrics" data-sbx-metrics></div>
+        <label class="sbx-metric">
+          <span>Weather code</span>
+          <select class="setup-input" data-sbx-code>
+            ${SANDBOX_CODES.map(c => `<option value="${c.code}">${c.code} · ${escapeHtml(c.label)}</option>`).join('')}
+          </select>
+        </label>
+      </div>
+      <div class="sbx-col">
+        <h4 class="sbx-heading">Call the crew gets <span class="badge ok" data-sbx-state>—</span></h4>
+        <p class="mechanic-focus" data-sbx-guidance></p>
+        <ul class="sbx-prep" data-sbx-prep></ul>
+        <p class="sbx-why" data-sbx-why></p>
+        <p class="sbx-page" data-sbx-page></p>
+      </div>
+    </div>
+    <div class="sbx-thresholds">
+      <div class="section-headline">
+        <div>
+          <h4 class="sbx-heading">Thresholds</h4>
+          <p class="muted-copy">Draft values live in this browser only. Copy them out and paste into
+            <code>WEATHER_THRESHOLDS</code> in <code>main.js</code> and <code>RISK_THRESHOLDS</code> in
+            <code>refresh_race_weather.py</code> — validate_structure.py fails the build if the two disagree.</p>
+        </div>
+        <div class="sbx-threshold-actions">
+          <button type="button" class="series-pill" data-sbx-copy>Copy both blocks</button>
+          <button type="button" class="series-pill" data-sbx-reset>Reset to committed</button>
+        </div>
+      </div>
+      <div class="sbx-rules" data-sbx-rules></div>
+      <p class="sbx-copy-status" data-sbx-status></p>
+    </div>`;
+
+  const metricsEl = root.querySelector('[data-sbx-metrics]');
+  const rulesEl   = root.querySelector('[data-sbx-rules]');
+  const statusEl  = root.querySelector('[data-sbx-status]');
+
+  metricsEl.innerHTML = SANDBOX_FIELDS.map(field => `
+    <label class="sbx-metric">
+      <span>${escapeHtml(field.label)} <em>${escapeHtml(field.unit)}</em></span>
+      <input class="setup-input" type="number" step="any" data-sbx-field="${escapeHtml(field.id)}">
+    </label>`).join('');
+
+  rulesEl.innerHTML = ['alert', 'warn'].map(tier => `
+    <div class="sbx-rule sbx-rule--${tier}">
+      <div class="sbx-rule-head">
+        <span class="badge ${tier === 'alert' ? 'alert' : 'warn'}">${tier === 'alert' ? 'Alert — pages the crew' : 'Watch — dashboard only'}</span>
+      </div>
+      <div class="sbx-conditions">
+        ${SANDBOX_THRESHOLDS.filter(x => x.tier === tier).map(x => `
+          <label class="sbx-condition">
+            <span>${escapeHtml(x.label)}</span>
+            <input class="setup-input" type="number" step="any" data-sbx-threshold="${escapeHtml(x.id)}">
+            <em>${escapeHtml(x.unit)}</em>
+          </label>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const syncInputs = () => {
+    root.querySelector('[data-sbx-mode]').value = mode;
+    root.querySelector('[data-sbx-code]').value = String(day.weatherCode);
+    metricsEl.querySelectorAll('[data-sbx-field]').forEach(input => {
+      input.value = day[input.getAttribute('data-sbx-field')];
+    });
+    rulesEl.querySelectorAll('[data-sbx-threshold]').forEach(input => {
+      input.value = WEATHER_THRESHOLDS[input.getAttribute('data-sbx-threshold')];
+    });
+  };
+
+  const evaluate = () => {
+    const risk = classifyRaceDayRisk(day, mode);
+    const summary = {
+      tempMaxF: day.tempMaxF, tempMinF: day.tempMinF, tempDropF: day.tempDropF,
+      gustMaxMph: day.gustMaxMph
+    };
+    const stateEl = root.querySelector('[data-sbx-state]');
+    stateEl.textContent = risk.label;
+    stateEl.classList.remove('ok', 'warn', 'alert');
+    stateEl.classList.add(risk.state);
+    root.querySelector('[data-sbx-guidance]').textContent = risk.guidance;
+    root.querySelector('[data-sbx-prep]').innerHTML =
+      buildPrepLines([day], summary, mode).map(line => `<li>${escapeHtml(line)}</li>`).join('');
+    root.querySelector('[data-sbx-why]').textContent = explainTriggers(day, mode);
+    root.querySelector('[data-sbx-page]').textContent = risk.state === 'alert'
+      ? `Inside ${RACE_WX_NOTIFY_WINDOW_DAYS} days of a race weekend this posts to the crew webhook.`
+      : 'Shown on the schedule board; no webhook is sent.';
+    rulesEl.querySelectorAll('.sbx-rule').forEach(el => {
+      el.classList.toggle('sbx-rule--firing',
+        el.classList.contains(`sbx-rule--${risk.state}`));
+    });
+  };
+
+  metricsEl.addEventListener('input', (event) => {
+    const key = event.target.getAttribute('data-sbx-field');
+    if (!key) return;
+    day[key] = event.target.value === '' ? 0 : Number(event.target.value);
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-code]').addEventListener('change', (event) => {
+    day.weatherCode = Number(event.target.value);
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-mode]').addEventListener('change', (event) => {
+    mode = event.target.value;
+    evaluate();
+  });
+
+  rulesEl.addEventListener('input', (event) => {
+    const key = event.target.getAttribute('data-sbx-threshold');
+    if (!key || event.target.value === '') return;
+    WEATHER_THRESHOLDS[key] = Number(event.target.value);
+    saveThresholdDraft();
+    statusEl.textContent = 'Draft thresholds saved in this browser. They do not affect the pipeline until copied out and committed.';
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-presets]').addEventListener('click', (event) => {
+    const id = event.target.getAttribute('data-sbx-preset');
+    if (!id) return;
+    const found = SANDBOX_PRESETS.find(p => p.id === id);
+    if (!found) return;
+    root.querySelectorAll('[data-sbx-preset]').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    preset = found;
+    mode = found.mode;
+    Object.assign(day, found.day);
+    syncInputs();
+    evaluate();
+  });
+
+  root.querySelector('[data-sbx-copy]').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(thresholdExport());
+      statusEl.textContent = 'Copied. Paste the JS block into main.js and the Python block into refresh_race_weather.py — both, or the drift guard fails the build.';
+    } catch {
+      statusEl.textContent = 'Clipboard blocked. Edit WEATHER_THRESHOLDS and RISK_THRESHOLDS by hand.';
+    }
+  });
+
+  root.querySelector('[data-sbx-reset]').addEventListener('click', () => {
+    Object.assign(WEATHER_THRESHOLDS, committed);
+    try { localStorage.removeItem(SANDBOX_STORAGE_KEY); } catch { /* storage unavailable */ }
+    statusEl.textContent = 'Back to the committed thresholds.';
+    syncInputs();
+    evaluate();
+  });
+
+  function restoreThresholdDraft() {
+    let draft;
+    try { draft = JSON.parse(localStorage.getItem(SANDBOX_STORAGE_KEY) || 'null'); } catch { draft = null; }
+    if (!draft) return;
+    SANDBOX_THRESHOLDS.forEach(({ id }) => {
+      if (typeof draft[id] === 'number') WEATHER_THRESHOLDS[id] = draft[id];
+    });
+  }
+
+  function saveThresholdDraft() {
+    const draft = {};
+    SANDBOX_THRESHOLDS.forEach(({ id }) => { draft[id] = WEATHER_THRESHOLDS[id]; });
+    try { localStorage.setItem(SANDBOX_STORAGE_KEY, JSON.stringify(draft)); } catch { /* storage unavailable */ }
+  }
+
+  syncInputs();
+  evaluate();
+}
+
+// Name the thresholds this day actually crossed — a state badge alone does not
+// tell a mechanic which dial to argue with.
+function explainTriggers(day, mode) {
+  const t = WEATHER_THRESHOLDS;
+  const hits = [];
+  if (Number(day.precipInches || 0) >= t.dailyRainIn) hits.push(`rain ${day.precipInches} in ≥ ${t.dailyRainIn}`);
+  if (mode === 'forecast' && Number(day.precipProbabilityMaxPct || 0) >= t.dailyRainProbPct) {
+    hits.push(`rain probability ${day.precipProbabilityMaxPct}% ≥ ${t.dailyRainProbPct}%`);
+  }
+  if (mode === 'climate' && Number(day.wetDayFrequencyPct || 0) >= t.climateWetDayPct) {
+    hits.push(`wet-day frequency ${day.wetDayFrequencyPct}% ≥ ${t.climateWetDayPct}%`);
+  }
+  if (isRainyWeatherCode(day.weatherCode)) hits.push(`weather code ${day.weatherCode} is wet`);
+  if (Number(day.gustMaxMph || 0) >= t.alertGustMph) hits.push(`gusts ${day.gustMaxMph} ≥ ${t.alertGustMph} mph`);
+  if (Number(day.tempDropF || 0) >= t.severeTempDropF) hits.push(`temp drop ${day.tempDropF}°F ≥ ${t.severeTempDropF}°F`);
+  if (Number(day.windMaxMph || 0) >= t.warnWindMph) hits.push(`wind ${day.windMaxMph} ≥ ${t.warnWindMph} mph`);
+  if (Number(day.gustMaxMph || 0) >= t.warnGustMph && Number(day.gustMaxMph || 0) < t.alertGustMph) {
+    hits.push(`gusts ${day.gustMaxMph} ≥ ${t.warnGustMph} mph`);
+  }
+  if (Number(day.tempMaxF) >= t.hotF) hits.push(`high ${day.tempMaxF}°F ≥ ${t.hotF}°F`);
+  if (Number(day.tempMinF) <= t.coldF) hits.push(`low ${day.tempMinF}°F ≤ ${t.coldF}°F`);
+  return hits.length ? `Triggered by: ${hits.join(' · ')}` : 'No threshold crossed.';
+}
+
+const RACE_WX_NOTIFY_WINDOW_DAYS = 7;  // mirrors NOTIFY_WINDOW_DAYS in the refresh script
+
+function thresholdExport() {
+  const js = SANDBOX_THRESHOLDS.map(({ id }) => `  ${id}: ${WEATHER_THRESHOLDS[id]}`).join(',\n');
+  const py = SANDBOX_THRESHOLDS.map(({ id }) => `    "${id}": ${WEATHER_THRESHOLDS[id]},`).join('\n');
+  return `// raceTracker/assets/js/main.js — WEATHER_THRESHOLDS\n${js}\n\n` +
+         `# scripts/refresh_race_weather.py — RISK_THRESHOLDS\n${py}\n`;
 }
