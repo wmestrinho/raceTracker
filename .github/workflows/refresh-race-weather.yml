@@ -1,0 +1,116 @@
+name: Refresh Race Weather
+
+on:
+  schedule:
+    # 09:17 UTC daily (~05:17 ET). Deliberately off the hour: GitHub's scheduler
+    # is congested at :00 and delays or drops those runs.
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+    inputs:
+      force_climate:
+        description: 'Refetch climate normals (ignores the 30-day cache)'
+        type: boolean
+        default: false
+      force_alert:
+        description: 'Post the webhook even if the alert set has not changed'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-race-weather
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # The webhook secret is optional: without it the run still refreshes the
+      # feed and just reports how many weekends would have alerted.
+      - name: Refresh race weekend weather
+        env:
+          RACETRACKER_WEATHER_FORCE_CLIMATE: ${{ inputs.force_climate && '1' || '' }}
+          RACETRACKER_WEATHER_FORCE_ALERT: ${{ inputs.force_alert && '1' || '' }}
+          RACETRACKER_WEATHER_WEBHOOK_URL: ${{ secrets.RACETRACKER_WEATHER_WEBHOOK_URL }}
+        run: python3 scripts/refresh_race_weather.py
+
+      - name: Validate generated JSON
+        run: python3 -m json.tool raceTracker/assets/data/race-weather.json > /dev/null
+
+      - name: Validate canonical structure
+        run: python3 scripts/validate_structure.py
+
+      - name: Surface calendar staleness warnings
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          data = json.loads(pathlib.Path("raceTracker/assets/data/race-weather.json").read_text())
+          counts = data.get("counts", {})
+          print("## Race weather refresh\n")
+          print(f"- Source status: `{data.get('sourceStatus')}`")
+          print("- Weekends: " + ", ".join(f"{k}={v}" for k, v in counts.items()))
+          warnings = (data.get("calendarHealth") or {}).get("warnings") or []
+          if warnings:
+              print("\n### Calendar needs attention\n")
+              for w in warnings:
+                  print(f"- {w}")
+          issues = data.get("issues") or []
+          if issues:
+              print("\n### Fetch issues\n")
+              for i in issues[:20]:
+                  print(f"- `{i}`")
+          PY
+
+      - name: Commit if changed
+        id: commit
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- raceTracker/assets/data/race-weather.json; then
+            echo "No weather changes; skipping commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add raceTracker/assets/data/race-weather.json
+          git commit -m "chore(data): refresh race weekend weather [skip ci]"
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "push attempt $attempt failed; retrying"
+            sleep 5
+          done
+          exit 1
+
+      # A commit to main does not publish on its own — deploys are otherwise
+      # manual `wrangler deploy`. Without this the refreshed data never reaches
+      # the live site. Skipped cleanly when the secret is not configured.
+      - name: Check for Cloudflare credentials
+        id: gate
+        run: echo "ok=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloudflare
+        if: steps.gate.outputs.ok == 'true' && steps.commit.outputs.changed == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Note missing deploy credentials
+        if: steps.gate.outputs.ok != 'true' && steps.commit.outputs.changed == 'true'
+        run: |
+          echo "::warning::Weather data was committed but CLOUDFLARE_API_TOKEN is not set, so the live site still serves the previous file. Add the secret (Workers Scripts: Edit) or run 'wrangler deploy' manually."

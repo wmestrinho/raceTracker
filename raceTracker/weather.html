@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory | Evolution + TKD Operations</title>
+  <title>Weather Triggers | Evolution + TKD Operations</title>
   <meta name="description" content="Shared race and shop operations for Evolution Kart School and The Kart Depot">
   <meta name="theme-color" content="#001a52">
   <link rel="icon" type="image/png" href="/assets/images/tkd-the-kart-depot.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="inventory">
+<body data-page="weather">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <header id="primary-sidebar" class="sidebar" aria-label="Application sidebar">
@@ -44,28 +44,87 @@
     <div class="main">
       <div class="topbar">
         <div>
-          <h1>Inventory</h1>
-          <p>Parts stock, reorder points, shortages</p>
+          <h1>Weather Triggers</h1>
+          <p>What the automation does, and when</p>
         </div>
         <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </div>
       <main id="main-content" class="content" role="main">
-        
+
 <section class="page-grid">
+
   <div class="card full">
-    <h3>Parts Inventory</h3>
+    <h2>Weather Triggers</h2>
+    <p style="color:var(--muted);margin-top:.35rem;">
+      Every race weekend on the calendar is scored against a small set of thresholds. This page
+      is where you decide what those thresholds should be — by watching the tire and engine call
+      each one produces, before it goes anywhere near the crew's phones.
+    </p>
+  </div>
+
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Trigger Sandbox</h3>
+        <p class="muted-copy">
+          Pick a scenario, move a threshold, and read the tire and engine call it produces.
+          This runs the shipped classifier — the same <code>classifyRaceDayRisk</code> the schedule
+          board uses, mirrored by <code>classify_race_day_risk</code> in the refresh script — so
+          nothing here is a simulation of the logic. It is the logic.
+        </p>
+      </div>
+    </div>
+    <div data-weather-sandbox>
+      <p class="muted-copy">Loading trigger sandbox…</p>
+    </div>
+  </div>
+
+  <div class="card full">
+    <h3>What reaches the crew</h3>
     <table class="table" style="margin-top:.6rem;">
-      <thead><tr><th>Part</th><th>In stock</th><th>Reorder point</th><th>Status</th></tr></thead>
+      <thead><tr><th>State</th><th>Where it shows</th><th>Who hears about it</th></tr></thead>
       <tbody>
-        <tr><td>Rear Tires (sets)</td><td>12</td><td>8</td><td><span class="badge ok">Healthy</span></td></tr>
-        <tr><td>Brake Pads</td><td>24</td><td>20</td><td><span class="badge warn">Watch</span></td></tr>
-        <tr><td>Engine Oil (liters)</td><td>8</td><td>10</td><td><span class="badge alert">Low</span></td></tr>
-        <tr><td>Spark Plugs</td><td>30</td><td>18</td><td><span class="badge ok">Healthy</span></td></tr>
+        <tr>
+          <td><span class="badge alert">Weather risk high</span></td>
+          <td>Schedule board, weather column</td>
+          <td>Slack or Discord webhook, but only for a real forecast inside 7 days of the weekend</td>
+        </tr>
+        <tr>
+          <td><span class="badge warn">Watch conditions</span></td>
+          <td>Schedule board, weather column</td>
+          <td>Nobody — visible on the dashboard only</td>
+        </tr>
+        <tr>
+          <td><span class="badge ok">Good track window</span></td>
+          <td>Schedule board, weather column</td>
+          <td>Nobody</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="muted-copy" style="margin-top:.75rem;">
+      Climate normals never page anyone. A ten-year average is not news, and paging on one would
+      train the crew to ignore the channel. Alerts are also deduplicated by digest, so an unchanged
+      picture stays quiet on the second and third day.
+    </p>
+  </div>
+
+  <div class="card full">
+    <h3>Where each piece lives</h3>
+    <table class="table" style="margin-top:.6rem;">
+      <thead><tr><th>Stage</th><th>What happens</th><th>File</th></tr></thead>
+      <tbody>
+        <tr><td>Schedule</td><td>Every round, joined to a venue by trackId</td><td>assets/data/series-calendars.json</td></tr>
+        <tr><td>Coordinates</td><td>Latitude, longitude and timezone per venue</td><td>assets/data/track-context.json</td></tr>
+        <tr><td>Weather</td><td>Forecast, ERA5 archive, or climate normals — no API key</td><td>scripts/refresh_race_weather.py</td></tr>
+        <tr><td>Thresholds</td><td>Mirrored in both runtimes; the build fails if they drift</td><td>main.js · refresh_race_weather.py</td></tr>
+        <tr><td>Feed</td><td>Generated output the schedule board reads</td><td>assets/data/race-weather.json</td></tr>
+        <tr><td>Automation</td><td>Daily refresh, commit, deploy, and alert</td><td>.github/workflows/refresh-race-weather.yml</td></tr>
       </tbody>
     </table>
   </div>
+
 </section>
 
         <footer class="site-footer">

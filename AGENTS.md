@@ -10,13 +10,14 @@ Legacy path
 - Treat it as deprecated after migration. Do not start new work there unless Luiz explicitly says the migration is paused or reversed.
 
 Project purpose
-- Static frontend prototype for karting operations, workshop execution, and telemetry visibility.
+- Shared operations app for Evolution Kart School and The Kart Depot, built on the raceTracker codebase.
+- Covers race calendars, weather, workshop execution, billing, registrations, and telemetry visibility.
 - Live target: `https://tracker.absolutelyplausible.com`
 
 Client / branding context
-- Current client context: Sergio “Nuno” Campos.
-- “Nash” may appear in internal theme/branding references; it is intentional original naming for this client-specific theme.
-- Keep external app naming as raceTracker so this prototype/MVP can later be adapted for other teams, mechanics, or vendors.
+- Current client context: Emerson Silveira, owner of Evolution Kart School and The Kart Depot.
+- The repository and internal storage keys retain the `raceTracker` name; the interface is branded for Evolution/TKD.
+- The approved shared theme is Trackside Navy. Brand masters live in `evo-krt-schl`; the detailed token source is `kart-depot-shopify/brand/tokens.json`.
 
 Source of truth
 - Frontend assets live only under `raceTracker/`.
@@ -26,7 +27,7 @@ Source of truth
 Case/path guardrails
 - The canonical frontend directory is exactly `raceTracker/`.
 - On macOS, `RaceTracker/` and `racetracker/` may resolve to the same directory because the filesystem is case-insensitive; do not create or reference those aliases.
-- Do not add logo variants under `raceTracker/assets/images/` unless the validation script is intentionally updated. The canonical logo is `raceTracker/assets/images/racetracker-logo.png`.
+- Do not add logo variants under `raceTracker/assets/images/` unless the validation script is intentionally updated. The deployed brand logos are `evolution-kart-school.png` and `tkd-the-kart-depot.png`.
 - Do not commit `.DS_Store` files.
 
 Required files
@@ -36,7 +37,8 @@ Required files
 - `raceTracker/index.html` — static entrypoint.
 - `raceTracker/assets/css/style.css`
 - `raceTracker/assets/js/main.js`
-- `raceTracker/assets/images/racetracker-logo.png`
+- `raceTracker/assets/images/evolution-kart-school.png`
+- `raceTracker/assets/images/tkd-the-kart-depot.png`
 
 Version rule
 - Every web UI must visibly display the version.
@@ -62,12 +64,23 @@ Live data guardrails
 - Browser-side live data must use public, credential-free APIs only.
 - Credentialed sources must go through a backend/Cloudflare Worker proxy; never put API keys in static JS or checked-in data files.
 - Track/weather defaults live in `raceTracker/assets/data/track-context.json`.
+- Race-weekend weather is generated into `raceTracker/assets/data/race-weather.json` by `scripts/refresh_race_weather.py` (Open-Meteo, credential-free) and refreshed daily by `.github/workflows/refresh-race-weather.yml`. Never hand-edit the generated file.
+- Weather alerts post to `RACETRACKER_WEATHER_WEBHOOK_URL` (Slack/Discord), configured only as a GitHub Actions secret. Never commit a webhook URL.
 - Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
 - Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
 - Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward Supabase/backend ownership for durable multi-client use.
 - Supabase planning lives under `supabase/`; local secrets belong only in ignored `.env.local` and must not be copied into Git, static JS, markdown, or memory.
 - Candidate event/registration sources currently include NCMP official schedule, Route 66/USPKS Race Select, Trackhouse official events, Trackhouse MotorsportReg, and Trackhouse Clubspeed/timing.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection without a team-approved source/API.
+
+Businesses and scope
+- The app serves Evolution Kart School and The Kart Depot, two legally separate businesses under
+  the same owner. `raceTracker/assets/data/entities.json` is the source of truth; every billing
+  record carries an `entityId` and the validator enforces it.
+- Calendar scope is US series only through roughly 2028. The validator fails on a non-US round.
+- The palette lives in `:root`. Brand tints use `rgb(var(--primary-rgb) / a)`; a raw brand rgba()
+  literal fails the build. Series badge colours are excluded on purpose.
+- Evolution and TKD share one palette; the active logo, name, and badge change by entity. Do not invent separate colour systems.
 
 Coordination warning
 - Another AI agent may be working on this project. Before destructive edits, branch resets, rebases, or force pushes, check `git status` and coordinate with Luiz.

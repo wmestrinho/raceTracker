@@ -3,56 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Billing | raceTracker</title>
-  <meta name="description" content="raceTracker driver billing and expense log">
-  <meta name="theme-color" content="#bfff00">
-  <link rel="icon" type="image/png" href="/assets/images/racetracker-logo.png">
+  <title>Billing | Evolution + TKD Operations</title>
+  <meta name="description" content="Shared race and shop operations for Evolution Kart School and The Kart Depot">
+  <meta name="theme-color" content="#001a52">
+  <link rel="icon" type="image/png" href="/assets/images/tkd-the-kart-depot.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-page="billing">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
-    <aside id="primary-sidebar" class="sidebar" aria-label="Primary">
-      <a href="/index.html" class="brand">
-        <img src="/assets/images/racetracker-logo.png" alt="raceTracker">
-        <span><strong>raceTracker</strong><small>Pit Wall Ops</small></span>
-      </a>
-      <div class="nav-group">
-        <p class="nav-group-title">Core</p>
-        <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
-        <a class="nav-link" data-page="telemetry" href="/telemetry.html" data-min-clearance="staff">Telemetry</a>
-        <a class="nav-link" data-page="workshop" href="/workshop.html" data-min-clearance="staff">Workshop</a>
-        <a class="nav-link" data-page="inventory" href="/inventory.html" data-min-clearance="staff">Inventory</a>
+    <header id="primary-sidebar" class="sidebar" aria-label="Application sidebar">
+      <div class="header-inner">
+          <a href="/" class="brand" aria-label="Evolution Kart School home" data-entity-home>
+            <span class="brand-mark"><img src="/assets/images/evolution-kart-school.png" alt="" data-entity-logo></span>
+            <span class="brand-copy">
+              <span><strong data-entity-name>Evolution</strong><small>Race operations</small></span>
+              <span class="entity-badge" data-entity-badge></span>
+            </span>
+          </a>
+        <nav aria-label="Primary">
+        <div class="nav-group">
+          <p class="nav-group-title">Core</p>
+          <a class="nav-link" data-page="overview" href="/index.html">Overview</a>
+          <a class="nav-link" data-page="telemetry" href="/telemetry.html" data-min-clearance="staff">Telemetry</a>
+          <a class="nav-link" data-page="workshop" href="/workshop.html" data-min-clearance="staff">Workshop</a>
+          <a class="nav-link" data-page="inventory" href="/inventory.html" data-min-clearance="staff">Inventory</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-title">Ops</p>
+          <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
+          <a class="nav-link" data-page="weather" href="/weather.html">Weather Triggers</a>
+          <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
+          <a class="nav-link" data-page="billing" href="/billing.html">Billing</a>
+          <a class="nav-link" data-page="team" href="/team.html" data-min-clearance="staff">Team</a>
+          <a class="nav-link" data-page="settings" href="/settings.html" data-min-clearance="admin">Settings</a>
+        </div>
+        </nav>
       </div>
-      <div class="nav-group">
-        <p class="nav-group-title">Ops</p>
-        <a class="nav-link" data-page="schedule" href="/schedule.html">Schedule</a>
-        <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
-        <a class="nav-link" data-page="billing" href="/billing.html">Billing</a>
-        <a class="nav-link" data-page="team" href="/team.html" data-min-clearance="staff">Team</a>
-        <a class="nav-link" data-page="settings" href="/settings.html" data-min-clearance="admin">Settings</a>
-      </div>
-    </aside>
+    </header>
     <div class="main">
-      <header class="topbar" role="banner">
+      <div class="topbar">
         <div>
           <h1>Billing</h1>
           <p>Driver expense log — transparent, accountable, event-by-event</p>
         </div>
+        <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
-      </header>
+      </div>
       <main id="main-content" class="content" role="main" data-billing-page>
 
 <section class="page-grid">
   <div class="card full">
     <h2>Driver Expense Log</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Every part, tire, service, or entry fee logged here is tied to a driver, an event, and a reason. Seth approves before it reaches the parent view. Parents see the full ledger for their driver — no surprises at the end of a race weekend.</p>
+    <p style="color:var(--muted);margin-top:.35rem;">Every part, tire, service, or entry fee logged here is tied to a business, driver, event, and reason. An admin approves it before it reaches the parent view, keeping Evolution and The Kart Depot in separate ledgers.</p>
   </div>
 
   <div class="kpi-grid full" data-billing-kpis>
     <div class="card kpi"><p class="label">Total billed</p><p class="value" data-billing-total>$0</p><p class="delta up">All drivers</p></div>
-    <div class="card kpi"><p class="label">Pending approval</p><p class="value" data-billing-pending>0</p><p class="delta warn">Awaiting Seth</p></div>
+    <div class="card kpi"><p class="label">Pending approval</p><p class="value" data-billing-pending>0</p><p class="delta warn">Awaiting admin</p></div>
     <div class="card kpi"><p class="label">Events tracked</p><p class="value" data-billing-events>0</p><p class="delta up">This season</p></div>
     <div class="card kpi"><p class="label">Active drivers</p><p class="value" data-billing-drivers>0</p><p class="delta up">In system</p></div>
   </div>
@@ -123,13 +132,19 @@
       </label>
       <div style="margin-top:.75rem;display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;">
         <button type="submit" class="timer-btn timer-btn-start">+ Log Expense</button>
-        <span class="muted-copy" style="font-size:.78rem;">Logged by: <strong data-billing-logged-by>—</strong> · Status: <span class="badge warn">Pending Seth approval</span></span>
+        <span class="muted-copy" style="font-size:.78rem;">Logged by: <strong data-billing-logged-by>—</strong> · Status: <span class="badge warn">Pending admin approval</span></span>
       </div>
     </form>
   </div>
 </section>
 
-        <p class="footer">© 2026 raceTracker · <span class="site-version">v1.11.1</span> · <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+        <footer class="site-footer">
+          <div class="site-footer__inner">
+            <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
+            <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
+            <p class="footer-version">v1.15.0</p>
+          </div>
+        </footer>
       </main>
     </div>
   </div>

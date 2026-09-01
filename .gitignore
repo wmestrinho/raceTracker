@@ -14,3 +14,7 @@
 
 # Editor artifacts
 .vscode/
+
+# Python bytecode (py_compile runs in CI and locally)
+__pycache__/
+*.pyc

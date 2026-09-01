@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-08-15",
   "sourceStatus": "infrastructure-ready",
-  "notes": "eventType values: 'own-kart' = professional/own-equipment races (the only category Seth's team competes in); 'arrive-and-drive' = rental-fleet races open to general public. motorsportregEventId is MotorsportReg's INTERNAL numeric event ID, confirmed via /rest/events/{id}/entrylist.json — it is NOT the number at the end of the public event URL (that slug ID reliably 404s/'Invalid ID's against the REST API) and isn't shown anywhere on the public event page; get the real ID from MotorsportReg or the event organizer. raceSelectUrl must be a specific event's own '.../EventEntries' page (see the parsing note per event) — a series season-index page like 'raceselect.com/route66/2026' lists rounds but has no entry data itself.",
+  "notes": "eventType values: 'own-kart' = professional/own-equipment races (the Evolution team's operating category); 'arrive-and-drive' = rental-fleet races open to the general public. motorsportregEventId is MotorsportReg's INTERNAL numeric event ID, confirmed via /rest/events/{id}/entrylist.json — it is NOT the number at the end of the public event URL (that slug ID reliably 404s/'Invalid ID's against the REST API) and isn't shown anywhere on the public event page; get the real ID from MotorsportReg or the event organizer. raceSelectUrl must be a specific event's own '.../EventEntries' page (see the parsing note per event) — a series season-index page like 'raceselect.com/route66/2026' lists rounds but has no entry data itself.",
   "eventTypes": {
     "own-kart":        "Pro / competition event — drivers arrive with their own prepared karts. Setup sheets, tire decisions, and registration intel all apply.",
     "arrive-and-drive":"Rental-fleet event — track provides karts. No personal setup data. Scheduling and timing only."
@@ -34,7 +34,7 @@
       "raceSelectUrl":        "REPLACE_WITH_REAL_EVENTENTRIES_URL",
       "registrationUrl":      "https://raceselect.com/route66/2026",
       "registrationStatus":   "Pending confirmation",
-      "note":                 "raceSelectUrl needs the specific round's own '.../EventEntries' page once Nuno confirms which round he's entering — the season page above is for humans browsing rounds, not a pull source. See route66-r4-2026-reference below for a live-verified raceselect example."
+      "note":                 "raceSelectUrl needs the specific round's own '.../EventEntries' page once the team confirms which round it is entering — the season page above is for humans browsing rounds, not a pull source. See route66-r4-2026-reference below for a live-verified raceselect example."
     },
     {
       "id":                   "trackhouse-challenge-r1-2026",
@@ -63,7 +63,7 @@
       "raceSelectUrl":        "REPLACE_WITH_REAL_EVENTENTRIES_URL",
       "registrationUrl":      "https://raceselect.com/uspks/2026",
       "registrationStatus":   "Pending confirmation",
-      "note":                 "raceSelectUrl needs the specific round's own '.../EventEntries' page once Nuno confirms which round he's entering — the season page above is for humans browsing rounds, not a pull source. See route66-r4-2026-reference below for a live-verified raceselect example."
+      "note":                 "raceSelectUrl needs the specific round's own '.../EventEntries' page once the team confirms which round it is entering — the season page above is for humans browsing rounds, not a pull source. See route66-r4-2026-reference below for a live-verified raceselect example."
     },
     {
       "id":                   "qcmp-6hours-ohio-2026",
@@ -78,7 +78,7 @@
       "motorsportregEventId": "563342",
       "registrationUrl":      "https://www.motorsportreg.com/events/2026-6-hours-of-ohio-quaker-city-motorsports-park-procup-karting-563342",
       "registrationStatus":   "Open",
-      "note":                 "Reference example of arrive-and-drive event. Track provides rental karts — no personal setup data applies. Different product from Seth's team's pro-level engagements. CAVEAT (verified 2026-08-15): 563342 is the public URL slug ID, not MotorsportReg's internal REST event_id — a live pull against this ID returns 'Invalid ID'. Kept as an event-listing reference only; do not expect a live pull to succeed until the real internal ID is confirmed."
+      "note":                 "Reference example of an arrive-and-drive event. The track provides rental karts, so no personal setup data applies. It is a different product from the Evolution team's own-kart engagements. CAVEAT (verified 2026-08-15): 563342 is the public URL slug ID, not MotorsportReg's internal REST event_id — a live pull against this ID returns 'Invalid ID'. Kept as an event-listing reference only; do not expect a live pull to succeed until the real internal ID is confirmed."
     },
     {
       "id":                   "route66-r4-2026-reference",
@@ -93,7 +93,7 @@
       "raceSelectUrl":        "https://raceselect.com/route66/2026-route66-round-4/EventEntries",
       "registrationUrl":      "https://raceselect.com/route66/2026-route66-round-4/EventEntries",
       "registrationStatus":   "Open",
-      "note":                 "Reference example only — not one of Seth's team's events. Live-verified 2026-08-15: a real pull against this URL returned 206/206 entries correctly, matching the page's own reported vehicle count. Demonstrates the raceselect provider pattern works end-to-end once pointed at a real event's own '.../EventEntries' page."
+      "note":                 "Reference example only — not one of the Evolution team's events. Live-verified 2026-08-15: a real pull against this URL returned 206/206 entries correctly, matching the page's own reported vehicle count. Demonstrates the raceselect provider pattern works end-to-end once pointed at a real event's own '.../EventEntries' page."
     }
   ],
   "sourceCandidates": [

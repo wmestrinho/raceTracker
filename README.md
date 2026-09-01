@@ -1,6 +1,6 @@
 # raceTracker
 
-Static frontend prototype for raceTracker: karting operations, workshop execution, and telemetry visibility.
+Shared operations app for Evolution Kart School and The Kart Depot, built from the raceTracker platform.
 
 Live site
 - https://tracker.absolutelyplausible.com
@@ -14,9 +14,9 @@ Legacy local path
 
 
 Client / MVP context
-- Current client context: Sergio “Nuno” Campos.
-- “Nash” may appear in internal theme/branding references; it is the original internal naming for this client-specific theme and is intentional.
-- Keep external app naming as raceTracker so the prototype can later be adapted for other teams, mechanics, or vendors.
+- Current client context: Emerson Silveira, owner of Evolution Kart School and The Kart Depot.
+- The repository and internal storage keys retain `raceTracker`; the interface is branded for the two businesses.
+- Trackside Navy is the approved shared theme. Evolution and TKD keep distinct logos but one palette.
 
 Agent instructions
 - Read `AGENTS.md` before making changes.
@@ -28,6 +28,7 @@ Canonical project structure (single source of truth)
 - `raceTracker/workshop.html`
 - `raceTracker/inventory.html`
 - `raceTracker/schedule.html`
+- `raceTracker/weather.html`
 - `raceTracker/team.html`
 - `raceTracker/settings.html`
 - `raceTracker/assets/css/style.css`
@@ -35,13 +36,82 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/data/telemetry.json`
 - `raceTracker/assets/data/track-context.json`
 - `raceTracker/assets/data/event-schedule.json`
-- `raceTracker/assets/images/racetracker-logo.png`
+- `raceTracker/assets/data/series-calendars.json`
+- `raceTracker/assets/data/race-weather.json` (generated — see Race weekend weather)
+- `raceTracker/assets/data/entities.json`
+- `raceTracker/assets/images/evolution-kart-school.png`
+- `raceTracker/assets/images/tkd-the-kart-depot.png`
+- `scripts/refresh_race_weather.py`
+- `.github/workflows/refresh-race-weather.yml`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.11.1`
+- Current version: `v1.15.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
+
+Race weekend weather
+- Every round in `series-calendars.json` gets a weather outlook in the generated
+  `raceTracker/assets/data/race-weather.json`, keyed `seriesId:division:round`.
+- Open-Meteo's forecast reaches only 16 days, so each weekend lands in one of four modes:
+  `actual` (already run — ERA5 archive), `forecast` (within 16 days), `climate`
+  (further out — normals averaged over past seasons, +/-3 calendar days per year),
+  and `unavailable` (venue TBA, multi-month event, non-race, or a failed fetch).
+- Regenerate with `python3 scripts/refresh_race_weather.py`. It reuses recorded past
+  weather and climate normals under 30 days old, so a normal run makes ~2 API calls.
+  The file is left untouched when the content hash is unchanged.
+- `.github/workflows/refresh-race-weather.yml` runs it daily and commits only real
+  changes. Note that GitHub disables scheduled workflows after 60 days of repository
+  inactivity, and that the commit publishes only if `CLOUDFLARE_API_TOKEN` is set as a
+  repository secret — otherwise the live site waits for a manual `wrangler deploy`.
+- The schedule page degrades to an em dash in the weather column when the file is
+  absent, and flags data older than 3 days rather than hiding it.
+- Series are tagged `engineType` (`2-stroke` / `4-stroke` / `mixed`) and `country`;
+  the schedule page defaults to 2-stroke US racing.
+- Rounds marked `"sourceConfidence": "unverified"` came from a single source. Verify
+  them against the series' own `scheduleUrl` before relying on them for travel.
+- Add missing venue coordinates with
+  `RACETRACKER_WEATHER_GEOCODE=1 python3 scripts/refresh_race_weather.py`, which prints
+  paste-ready entries; `track-context.json` stays hand-curated.
+- Tests: `python3 scripts/test_race_weather.py` (no network required).
+- Alerts: a weekend whose forecast classifies as `alert` inside 7 days posts to
+  `RACETRACKER_WEATHER_WEBHOOK_URL` (Slack or Discord — the payload shape is inferred
+  from the URL). Climate normals never page anyone, and an unchanged alert set is
+  skipped via `alertDigest`, so the channel stays quiet until something actually moves.
+  Set the repository secret of the same name to switch alerting on; without it the run
+  just reports how many weekends would have alerted.
+- `severeTempDropF` (15°F) triggers on the day-over-day fall in the daily high, so an
+  overnight collapse alerts even when neither day is hot or cold in absolute terms. The
+  day before the weekend is included, so a Thursday-to-Friday collapse is caught on day one.
+- `raceTracker/weather.html` is a trigger sandbox: pick a scenario, move a threshold and
+  read the tire and engine call it produces. It runs the shipped classifier, not a copy.
+  Draft thresholds live in `localStorage` only — copy them into **both**
+  `WEATHER_THRESHOLDS` (main.js) and `RISK_THRESHOLDS` (refresh script) to make them real.
+
+Businesses (Evolution Kart School / The Kart Depot)
+- raceTracker is the internal ops app for two legally separate businesses under the same owner.
+  `raceTracker/assets/data/entities.json` defines both.
+- The shell and approved palette are shared; the active logo, name, and badge change with the
+  selected business so it is never ambiguous whose data is on screen. Selection persists under
+  `raceTracker.activeEntityId`.
+- Every expense in `billing.json` carries an `entityId`. The ledger and KPIs scope to the active
+  business; `validate_structure.py` fails on a missing or unknown one. Two sets of books must not blend.
+- `kart-depot-shopify/brand/tokens.json` is the detailed palette source; logo masters live in
+  `evo-krt-schl/assets/brand/`, with committed web copies in this app.
+- Inventory is entity-neutral for now: it is static HTML with no data file, so entity-tagged stock
+  needs an `inventory.json` that does not exist yet.
+
+Theme and palette
+- The whole palette lives in `:root` in `style.css`. Translucent brand tints must use
+  `rgb(var(--primary-rgb) / a)` or `rgb(var(--accent-rgb) / a)` — a raw brand `rgba()` literal
+  would survive a palette swap, so `validate_structure.py` fails the build on one.
+- `<meta name="theme-color">` cannot reference a CSS variable, so the validator pins it to the `--navy` page ground.
+- Series badge colours (`.cal-sbadge--*`) are SKUSA's, USPKS's, CKNA's and ROK's identity, not ours.
+  They are deliberately excluded from the palette and must not be harmonised with it.
+
+Scope
+- US series only through roughly 2028. Non-US series and rounds were removed deliberately; recover
+  them from git history if that changes. `validate_structure.py` fails on a non-US series or round.
 
 Live data
 - Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
@@ -101,7 +171,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.11.1`
+- Current baseline version: `v1.15.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

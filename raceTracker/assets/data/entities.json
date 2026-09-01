@@ -1,0 +1,31 @@
+{
+  "updatedAt": "2026-09-01",
+  "notes": "Evolution Kart School and The Kart Depot are legally separate businesses under the same owner, sharing this app. They use the approved Trackside Navy palette together; the active logo, name, and badge make the current workspace explicit. Billing remains scoped by entity so the two sets of books never blend.",
+  "defaultEntityId": "evolution-kart-school",
+  "entities": [
+    {
+      "id": "evolution-kart-school",
+      "name": "Evolution Kart School",
+      "shortName": "Evolution",
+      "legalName": "Evolution Karting & Mechanic School",
+      "badgeLabel": "EVO",
+      "logo": "/assets/images/evolution-kart-school.png",
+      "accent": "#febf00",
+      "accentContrast": "#001a52",
+      "accentPlaceholder": false,
+      "role": "Driver coaching, race-weekend operations and mechanic training."
+    },
+    {
+      "id": "the-kart-depot",
+      "name": "The Kart Depot",
+      "shortName": "Kart Depot",
+      "legalName": "The Kart Depot",
+      "badgeLabel": "TKD",
+      "logo": "/assets/images/tkd-the-kart-depot.png",
+      "accent": "#febf00",
+      "accentContrast": "#001a52",
+      "accentPlaceholder": false,
+      "role": "Kart, parts and equipment retail; workshop supply."
+    }
+  ]
+}
