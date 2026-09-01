@@ -901,7 +901,6 @@ const DIVISION_LABELS = {
   'florida-winter-tour': 'Florida Winter Tour',
   'rok-sonoma-tc1':      'ROK Sonoma — Triple Crown 1',
   'rok-sonoma-tc2':      'ROK Sonoma — Triple Crown 2',
-  'international':       'International',
   'winter-series':       'Winter Series',
   'pro-tour':            'Pro Tour',
   'pkc':                 'California ProKart Challenge (PKC)',
@@ -911,7 +910,6 @@ const DIVISION_LABELS = {
 
 const SERIES_SHORT = {
   'ckna':               'CKNA',
-  'cup-karts-canada':   'CKC',
   'rok-cup-usa':        'ROK Cup',
   'skusa':              'SKUSA',
   'stars':              'STARS',
@@ -965,7 +963,6 @@ async function initSeriesCalendars() {
         _seriesShort: SERIES_SHORT[series.id] || series.id.toUpperCase(),
         _website:     series.website || null,
         _engineType:  roundEngineType(series, round),
-        _country:     round.country || series.country || 'US',
         _timeStatus:  calRoundTimeStatus(round, today)
       });
     });
@@ -1312,7 +1309,8 @@ function renderCalNextUp(upcoming, conflictIds, container, wx) {
 
 // Both filter rows write through here. Two independent handlers each setting
 // style.display would fight each other, so state lives in one place.
-const calFilterState = { series: 'all', engine: '2-stroke', country: 'US' };
+// US-only scope, so there is no country axis to filter on. See CLAUDE.md.
+const calFilterState = { series: 'all', engine: '2-stroke' };
 
 function applyCalFilters(calBody) {
   if (!calBody) return;
@@ -1324,13 +1322,11 @@ function applyCalFilters(calBody) {
     let shown = 0;
     block.querySelectorAll('.cal-round-row').forEach(row => {
       const engine  = row.getAttribute('data-engine') || 'unknown';
-      const country = row.getAttribute('data-country') || 'US';
       // A "mixed" series runs both platforms, so it belongs in either view.
       const engineMatch = calFilterState.engine === 'all'
         || engine === calFilterState.engine
         || engine === 'mixed';
-      const countryMatch = calFilterState.country === 'all' || country === calFilterState.country;
-      const visible = seriesMatch && engineMatch && countryMatch;
+      const visible = seriesMatch && engineMatch;
       row.style.display = visible ? '' : 'none';
       const detail = row.nextElementSibling;
       if (detail && detail.classList.contains('cal-wx-detail-row')) {
@@ -1352,8 +1348,7 @@ function applyCalFilters(calBody) {
   setText('[data-cal-round-count]', String(visibleRounds));
   const engineNote = calFilterState.engine === 'all'
     ? 'all engines' : (ENGINE_LABELS[calFilterState.engine] || calFilterState.engine).toLowerCase();
-  const countryNote = calFilterState.country === 'all' ? 'worldwide' : `${calFilterState.country} only`;
-  setText('[data-cal-engine-note]', `${engineNote} · ${countryNote}`);
+  setText('[data-cal-engine-note]', `${engineNote} · US only`);
 }
 
 function buildCalPillRow(row, pills, stateKey, calBody) {
@@ -1426,13 +1421,6 @@ function renderCalBody(seriesList, allRounds, conflictIds, calBody, wx) {
      { id: 'all',      label: 'All Engines' }],
     'engine', calBody
   );
-  buildCalPillRow(
-    document.querySelector('[data-country-filter]'),
-    [{ id: 'US',  label: 'US Only' },
-     { id: 'all', label: 'Worldwide' }],
-    'country', calBody
-  );
-
   wireRaceWeatherToggles(calBody);
   applyCalFilters(calBody);
 }
@@ -1464,7 +1452,7 @@ function renderCalRow(round, conflictIds, wx) {
   const entry = raceWeatherFor(wx, round);
   const detail = renderRaceWeatherDetail(entry, wx);
 
-  return `<tr class="cal-round-row${rowClass}" data-engine="${escapeHtml(round._engineType || 'unknown')}" data-country="${escapeHtml(round._country || 'US')}">
+  return `<tr class="cal-round-row${rowClass}" data-engine="${escapeHtml(round._engineType || 'unknown')}">
     <td class="cal-date-cell">${escapeHtml(formatCalDate(round))}</td>
     <td>${escapeHtml(round.name)}${flags ? ' ' + flags : ''}</td>
     <td>${trackCell}</td>

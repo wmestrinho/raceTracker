@@ -202,8 +202,6 @@ def test_unavailable_reasons():
     weekends = rw.build_weekends(calendar, tracks, date(2026, 8, 30))
     by_key = {w["key"]: w for w in weekends}
 
-    check("multi-month ROK Italia is span-too-long",
-          by_key["rok-cup-usa:international:int-2"]["_reason"] == "span-too-long")
     check("STARS banquet is non-race",
           by_key["stars:main:banquet"]["_reason"] == "non-race")
     check("venue-tba round has no weather",
@@ -219,13 +217,28 @@ def test_unavailable_reasons():
           ckna_south["trackId"] != ckna_north["trackId"],
           f"{ckna_south['trackId']} vs {ckna_north['trackId']}")
 
+    # A multi-month entry must never be given a weekend forecast. Built here rather
+    # than borrowed from the calendar, so a scope change cannot silently delete the
+    # only case exercising the rule.
+    span_calendar = {"series": [{
+        "id": "synthetic", "name": "Synthetic", "engineType": "2-stroke", "country": "US",
+        "rounds": [{
+            "round": "long", "name": "Season-long championship", "track": "Multiple venues",
+            "trackId": "new-castle-motorsports-park", "trackCity": "Various",
+            "dateStart": "2026-03-01", "dateEnd": "2026-09-30", "status": "confirmed",
+        }],
+    }]}
+    span = rw.build_weekends(span_calendar, tracks, date(2026, 8, 30))[0]
+    check(f"a {span['spanDays']}-day event is span-too-long",
+          span["_reason"] == "span-too-long", f"got {span['_reason']}")
+
     two_stroke = [w for w in weekends if w["engineType"] == "2-stroke"]
     four_stroke = [w for w in weekends if w["engineType"] == "4-stroke"]
     check("2-stroke rounds tagged", len(two_stroke) > 30, f"got {len(two_stroke)}")
     check("4-stroke rounds tagged", len(four_stroke) > 10, f"got {len(four_stroke)}")
     check("every weekend has a country", all(w["country"] for w in weekends))
     non_us = {w["country"] for w in weekends} - {"US"}
-    check("non-US rounds marked", non_us == {"CA", "IT", "PT"}, f"got {non_us}")
+    check("scope is US-only", non_us == set(), f"non-US rounds present: {non_us}")
 
 
 def test_thresholds_match_js():

@@ -651,7 +651,6 @@ a { color: inherit; text-decoration: none; }
 /* Series color badges */
 .cal-sbadge { display:inline-block; font-size:.65rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; padding:.18rem .45rem; white-space:nowrap; }
 .cal-sbadge--ckna             { background:#1a1a2e; color:#e94560; }
-.cal-sbadge--cup-karts-canada { background:#d80027; color:#fff; }
 .cal-sbadge--rok-cup-usa      { background:#003087; color:#fff; }
 .cal-sbadge--skusa            { background:#050607; color:#bfff00; }  /* literal on purpose: SKUSA's colours, not ours */
 .cal-sbadge--stars            { background:#7a5000; color:#ffd966; }

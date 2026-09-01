@@ -192,9 +192,20 @@ if calendar and tracks:
             errors.append(f"series {sid}: engineType must be one of {sorted(VALID_ENGINE_TYPES)}")
         if not series.get("country"):
             errors.append(f"series {sid}: missing country")
+        # Scope is US-only through roughly 2028. A non-US series or round is a
+        # build failure rather than silent scope creep — see CLAUDE.md.
+        elif series.get("country") != "US":
+            errors.append(
+                f"series {sid}: country '{series['country']}' is outside the US-only scope; "
+                f"remove it or lift the scope rule in validate_structure.py and CLAUDE.md"
+            )
 
         for rnd in series.get("rounds", []):
             key = weekend_key(sid, rnd.get("division"), rnd.get("round"))
+            if rnd.get("country") and rnd["country"] != "US":
+                errors.append(
+                    f"round {key}: country '{rnd['country']}' is outside the US-only scope"
+                )
             if key in calendar_keys:
                 errors.append(f"duplicate round key: {key}")
             calendar_keys.add(key)
