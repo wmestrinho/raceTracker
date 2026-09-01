@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initSidebarToggle();
   initActiveNav();
+  initEntityContext();
   initMechanicContext();
   initTelemetryUpdates();
   initWeatherContext();
@@ -715,39 +716,43 @@ async function initBillingModule() {
   const personData = allPeople.find(m => m.name === profile) || { clearance: 'staff' };
   const clearance = personData.clearance || 'staff';
 
-  populateBillingFilters(drivers, events);
+  const rerender = () => {
+    // Untagged expenses belong to nobody's books, so they show under whichever
+    // business is selected rather than disappearing behind the filter.
+    const scoped = allExpenses.filter(e =>
+      !activeEntityId() || !e.entityId || e.entityId === activeEntityId());
+    renderBillingLedger(scoped, drivers, events, clearance, profile);
+    updateBillingKpis(scoped);
+  };
+
+  populateBillingFilters(drivers, events, rerender);
   populateExpenseForm(drivers, events, profile);
-  renderBillingLedger(allExpenses, drivers, events, clearance, profile);
-  updateBillingKpis(allExpenses);
-  wireBillingForm(drivers, events, profile, allExpenses);
+  wireBillingForm(drivers, events, profile, allExpenses, rerender);
   showAddFormByRole(clearance);
+  // Switching business re-scopes the ledger; the two sets of books never mix.
+  document.addEventListener('racetracker:entitychange', rerender);
+  rerender();
 }
 
 async function fetchJson(url) {
   try { const r = await fetch(url, { cache: 'no-store' }); return r.ok ? r.json() : null; } catch { return null; }
 }
 
-function populateBillingFilters(drivers, events) {
+function populateBillingFilters(drivers, events, rerender) {
   const driverFilter = document.querySelector('[data-billing-driver-filter]');
   const eventFilter  = document.querySelector('[data-billing-event-filter]');
   if (driverFilter) {
     drivers.forEach(d => {
       const o = document.createElement('option'); o.value = d.id; o.textContent = d.name; driverFilter.appendChild(o);
     });
-    driverFilter.addEventListener('change', () => triggerBillingRerender());
+    driverFilter.addEventListener('change', rerender);
   }
   if (eventFilter) {
     events.forEach(ev => {
       const o = document.createElement('option'); o.value = ev.id; o.textContent = ev.name; eventFilter.appendChild(o);
     });
-    eventFilter.addEventListener('change', () => triggerBillingRerender());
+    eventFilter.addEventListener('change', rerender);
   }
-}
-
-function triggerBillingRerender() {
-  const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
-  const profile  = localStorage.getItem('raceTracker.mechanicProfile') || 'Luiz';
-  renderBillingLedger(stored, [], [], 'staff', profile);
 }
 
 function populateExpenseForm(drivers, events, profile) {
@@ -810,7 +815,7 @@ function renderBillingLedger(expenses, drivers, events, clearance, profile) {
         <td>${escapeHtml(e.item || '—')}</td>
         <td class="billing-reason">${escapeHtml(e.reason || '—')}</td>
         <td class="billing-amount">$${Number(e.amount || 0).toFixed(2)}</td>
-        <td>${approvalBadge}${approveBtn}</td>
+        <td>${approvalBadge}${approveBtn}${e.entityId ? '' : ' <span class="badge warn" title="No owning business recorded">Unassigned</span>'}</td>
       </tr>`;
     }).join('');
     return `
@@ -835,7 +840,7 @@ function updateBillingKpis(expenses) {
   setText('[data-billing-drivers]', String(drivers));
 }
 
-function wireBillingForm(drivers, events, profile, allExpenses) {
+function wireBillingForm(drivers, events, profile, allExpenses, rerender) {
   const form = document.querySelector('[data-add-expense-form]');
   if (!form) return;
   form.addEventListener('submit', e => {
@@ -847,6 +852,7 @@ function wireBillingForm(drivers, events, profile, allExpenses) {
     const ev = events.find(ev => ev.id === eventSel);
     const expense = {
       id:             `exp-${Date.now()}`,
+      entityId:       activeEntityId(),
       driverId:       driverSel,
       driverName,
       eventId:        eventSel,
@@ -867,8 +873,7 @@ function wireBillingForm(drivers, events, profile, allExpenses) {
     stored.push(expense);
     try { localStorage.setItem(BILLING_KEY, JSON.stringify(stored)); } catch {}
     allExpenses.push(expense);
-    renderBillingLedger(allExpenses, drivers, events, 'staff', profile);
-    updateBillingKpis(allExpenses);
+    rerender();
     form.reset();
     document.querySelector('[data-billing-logged-by]').textContent = profile;
   });
@@ -1800,4 +1805,78 @@ function thresholdExport() {
   const py = SANDBOX_THRESHOLDS.map(({ id }) => `    "${id}": ${WEATHER_THRESHOLDS[id]},`).join('\n');
   return `// raceTracker/assets/js/main.js — WEATHER_THRESHOLDS\n${js}\n\n` +
          `# scripts/refresh_race_weather.py — RISK_THRESHOLDS\n${py}\n`;
+}
+
+
+// ── Entity context ────────────────────────────────────────────
+//
+// Evolution Kart School and The Kart Depot are separate legal entities sharing
+// this app. The shell is common; the accent and badge change so it is never
+// ambiguous whose data is on screen — which matters most on billing, where two
+// sets of books must not blur.
+
+const ENTITY_STORAGE_KEY = 'raceTracker.activeEntityId';
+let activeEntity = null;
+
+async function initEntityContext() {
+  const data = await fetchJson('/assets/data/entities.json');
+  const entities = (data && Array.isArray(data.entities)) ? data.entities : [];
+  if (!entities.length) return;
+
+  const stored = safeStorageGet(ENTITY_STORAGE_KEY);
+  const pick = (id) => entities.find(e => e.id === id);
+  activeEntity = pick(stored) || pick(data.defaultEntityId) || entities[0];
+
+  applyEntity(activeEntity);
+  renderEntitySelectors(entities, () => activeEntity, (id) => {
+    activeEntity = pick(id) || activeEntity;
+    safeStorageSet(ENTITY_STORAGE_KEY, activeEntity.id);
+    applyEntity(activeEntity);
+    document.dispatchEvent(new CustomEvent('racetracker:entitychange', { detail: activeEntity }));
+  });
+}
+
+function applyEntity(entity) {
+  const root = document.body;
+  root.style.setProperty('--entity-accent', entity.accent);
+  root.style.setProperty('--entity-accent-contrast', entity.accentContrast);
+  root.setAttribute('data-entity', entity.id);
+  document.querySelectorAll('[data-entity-badge]').forEach(el => {
+    el.textContent = entity.badgeLabel;
+    el.title = entity.legalName;
+  });
+  document.querySelectorAll('[data-entity-name]').forEach(el => {
+    el.textContent = entity.shortName;
+  });
+}
+
+function renderEntitySelectors(entities, getActive, onChange) {
+  document.querySelectorAll('[data-entity-slot]').forEach(slot => {
+    slot.innerHTML = `
+      <label class="entity-switcher">
+        <span>Business</span>
+        <select data-entity-select aria-label="Select business">
+          ${entities.map(e =>
+            `<option value="${escapeHtml(e.id)}" ${e.id === getActive().id ? 'selected' : ''}>${escapeHtml(e.name)}</option>`
+          ).join('')}
+        </select>
+      </label>`;
+    slot.querySelector('[data-entity-select]').addEventListener('change', (event) => {
+      onChange(event.target.value);
+      document.querySelectorAll('[data-entity-select]').forEach(sel => { sel.value = event.target.value; });
+    });
+  });
+}
+
+function activeEntityId() {
+  return activeEntity ? activeEntity.id : null;
+}
+
+// localStorage throws in some privacy modes; a theme accent is never worth a crash.
+function safeStorageGet(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function safeStorageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* storage unavailable */ }
 }

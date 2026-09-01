@@ -212,7 +212,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-top-color: var(--primary);
+  border-top-color: var(--entity-accent);
 }
 .card.full:first-child p { max-width: 650px; }
 .card.full:first-child p,
@@ -224,7 +224,7 @@ a { color: inherit; text-decoration: none; }
   grid-template-columns: repeat(4, minmax(0,1fr));
   gap: .8rem;
 }
-.kpi { border-top-color: var(--primary); }
+.kpi { border-top-color: var(--entity-accent); }
 .kpi .label { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing:.08em; }
 .kpi .value { font-size: 1.75rem; font-weight: 900; margin-top: .18rem; letter-spacing: -.04em; }
 .kpi .delta { font-size: .8rem; margin-top: .35rem; font-weight: 700; }
@@ -739,3 +739,33 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 980px) { .sbx-grid { grid-template-columns:1fr; } }
 @media (max-width: 620px) { .sbx-metrics { grid-template-columns:1fr; } }
+
+/* Entity identity — Evolution Kart School / The Kart Depot.
+   --entity-accent is set on <body> by initEntityContext(); the fallback keeps
+   the shell coherent if entities.json fails to load. */
+:root { --entity-accent: var(--primary); --entity-accent-contrast: var(--ink); }
+
+.entity-badge {
+  margin-left:auto; align-self:center; flex-shrink:0;
+  background:var(--entity-accent); color:var(--entity-accent-contrast);
+  font-size:.6rem; font-weight:900; letter-spacing:.09em; text-transform:uppercase;
+  padding:.2rem .42rem; border-radius:0;
+}
+.entity-badge:empty { display:none; }
+
+.entity-slot { display:flex; align-items:center; }
+.entity-switcher { display:flex; align-items:center; gap:.45rem; font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+.entity-switcher select {
+  appearance:none; border:1px solid var(--entity-accent); border-radius:0;
+  background:var(--surface); color:var(--ink); font-size:.82rem; font-weight:800;
+  padding:.3rem .55rem; cursor:pointer;
+}
+.entity-switcher select:focus { outline:none; box-shadow:0 0 0 3px rgb(var(--ink-rgb) / .08); }
+
+/* The accent reuses the emphasis the design already had — the hero card and KPI
+   top borders — rather than adding a competing stripe to every card. With no
+   entity loaded --entity-accent falls back to --primary, so nothing shifts. */
+
+@media (max-width: 620px) {
+  .entity-switcher span { display:none; }
+}

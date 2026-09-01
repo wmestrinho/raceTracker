@@ -1,0 +1,29 @@
+{
+  "updatedAt": "2026-09-01",
+  "notes": "Evolution Kart School and The Kart Depot are legally separate businesses under the same owner, sharing this app. The shell stays common; accent and badge change per entity so it is always clear whose data is on screen. accent values are PLACEHOLDERS derived from the current palette — replace them with the real brand colours from the evo-krt-schl workspace. accentContrast must be a colour that reads on accent; validate_structure.py checks it is present.",
+  "defaultEntityId": "evolution-kart-school",
+  "entities": [
+    {
+      "id": "evolution-kart-school",
+      "name": "Evolution Kart School",
+      "shortName": "Evolution",
+      "legalName": "Evolution Kart & Mechanic School",
+      "badgeLabel": "EVO",
+      "accent": "#bfff00",
+      "accentContrast": "#050607",
+      "accentPlaceholder": true,
+      "role": "Driver coaching, race-weekend operations and mechanic training."
+    },
+    {
+      "id": "the-kart-depot",
+      "name": "The Kart Depot",
+      "shortName": "Kart Depot",
+      "legalName": "The Kart Depot",
+      "badgeLabel": "TKD",
+      "accent": "#129df0",
+      "accentContrast": "#ffffff",
+      "accentPlaceholder": true,
+      "role": "Kart, parts and equipment retail; workshop supply."
+    }
+  ]
+}

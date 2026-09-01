@@ -38,6 +38,7 @@ required_files = [
     CANON / "assets/data/event-schedule.json",
     CANON / "assets/data/billing.json",
     CANON / "assets/data/series-calendars.json",
+    CANON / "assets/data/entities.json",
     CANONICAL_LOGO,
 ]
 for f in required_files:
@@ -155,6 +156,39 @@ if css_text:
                 f"style.css:{line_no} hardcodes a brand hue in rgba(); use "
                 f"rgb(var(--primary-rgb) / a) or rgb(var(--accent-rgb) / a) instead"
             )
+
+# ── Entity integrity ──────────────────────────────────────────────────────
+# Evolution Kart School and The Kart Depot are separate legal entities. An
+# expense pointing at an entity that does not exist would silently land in the
+# wrong set of books.
+ENTITIES_PATH = CANON / "assets/data/entities.json"
+BILLING_PATH = CANON / "assets/data/billing.json"
+
+entity_ids = set()
+try:
+    entities_doc = json.loads(ENTITIES_PATH.read_text(errors="replace"))
+    entity_ids = {e.get("id") for e in entities_doc.get("entities", [])}
+    if len(entity_ids) < 2:
+        errors.append("entities.json must define both Evolution Kart School and The Kart Depot")
+    for entity in entities_doc.get("entities", []):
+        for field in ("id", "name", "shortName", "legalName", "badgeLabel", "accent", "accentContrast"):
+            if not entity.get(field):
+                errors.append(f"entities.json entry {entity.get('id', '?')}: missing {field}")
+    if entities_doc.get("defaultEntityId") not in entity_ids:
+        errors.append("entities.json defaultEntityId does not match any entity")
+except (OSError, json.JSONDecodeError) as exc:
+    errors.append(f"Could not parse entities.json: {exc}")
+
+try:
+    billing_doc = json.loads(BILLING_PATH.read_text(errors="replace"))
+    for expense in billing_doc.get("expenses", []):
+        owner = expense.get("entityId")
+        if not owner:
+            errors.append(f"billing.json {expense.get('id', '?')}: missing entityId")
+        elif entity_ids and owner not in entity_ids:
+            errors.append(f"billing.json {expense.get('id', '?')}: unknown entityId '{owner}'")
+except (OSError, json.JSONDecodeError) as exc:
+    errors.append(f"Could not parse billing.json: {exc}")
 
 # ── Series calendar completeness ──────────────────────────────────────────
 CAL_PATH = CANON / "assets/data/series-calendars.json"
