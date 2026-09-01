@@ -118,6 +118,44 @@ for html_file in html_files:
     if missing:
         errors.append(f"{html_file.relative_to(ROOT)} missing anchor targets: " + ", ".join(missing))
 
+# ── Brand palette drift ───────────────────────────────────────────────────
+# <meta name="theme-color"> cannot reference a CSS variable, so it is the one
+# place the brand colour must be repeated by hand. Pin it to --primary.
+CSS_PATH = CANON / "assets/css/style.css"
+try:
+    css_text = CSS_PATH.read_text(errors="replace")
+except OSError as exc:
+    css_text = ""
+    errors.append(f"Could not read {CSS_PATH.name}: {exc}")
+
+if css_text:
+    primary_match = re.search(r"--primary:\s*(#[0-9a-fA-F]{3,8})", css_text)
+    if not primary_match:
+        errors.append("Could not parse --primary from style.css — the theme-color guard is not running")
+    else:
+        primary = primary_match.group(1).lower()
+        for html_file in sorted(CANON.glob("*.html")):
+            found = re.search(r'name="theme-color"\s+content="(#[0-9a-fA-F]{3,8})"',
+                              html_file.read_text(errors="replace"))
+            if not found:
+                errors.append(f"{html_file.relative_to(ROOT)} has no theme-color meta tag")
+            elif found.group(1).lower() != primary:
+                errors.append(
+                    f"{html_file.relative_to(ROOT)} theme-color {found.group(1)} does not match "
+                    f"--primary {primary} in style.css"
+                )
+
+    # A raw brand rgba() literal would survive a palette swap. Channel tokens exist
+    # precisely so it cannot; series badge colours are a documented exception.
+    for line_no, line in enumerate(css_text.splitlines(), start=1):
+        if "cal-sbadge--" in line:
+            continue
+        if re.search(r"rgba\(\s*(?:191,\s*255,\s*0|18,\s*157,\s*240)", line):
+            errors.append(
+                f"style.css:{line_no} hardcodes a brand hue in rgba(); use "
+                f"rgb(var(--primary-rgb) / a) or rgb(var(--accent-rgb) / a) instead"
+            )
+
 # ── Series calendar completeness ──────────────────────────────────────────
 CAL_PATH = CANON / "assets/data/series-calendars.json"
 TRACKS_PATH = CANON / "assets/data/track-context.json"
