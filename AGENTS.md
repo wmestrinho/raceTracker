@@ -71,5 +71,13 @@ Live data guardrails
 - Candidate event/registration sources currently include NCMP official schedule, Route 66/USPKS Race Select, Trackhouse official events, Trackhouse MotorsportReg, and Trackhouse Clubspeed/timing.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection without a team-approved source/API.
 
+Businesses and scope
+- The app serves Evolution Kart School and The Kart Depot, two legally separate businesses under
+  the same owner. `raceTracker/assets/data/entities.json` is the source of truth; every billing
+  record carries an `entityId` and the validator enforces it.
+- Calendar scope is US series only through roughly 2028. The validator fails on a non-US round.
+- The palette lives in `:root`. Brand tints use `rgb(var(--primary-rgb) / a)`; a raw brand rgba()
+  literal fails the build. Series badge colours are excluded on purpose.
+
 Coordination warning
 - Another AI agent may be working on this project. Before destructive edits, branch resets, rebases, or force pushes, check `git status` and coordinate with Luiz.

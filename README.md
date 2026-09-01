@@ -38,13 +38,14 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/data/event-schedule.json`
 - `raceTracker/assets/data/series-calendars.json`
 - `raceTracker/assets/data/race-weather.json` (generated — see Race weekend weather)
+- `raceTracker/assets/data/entities.json`
 - `raceTracker/assets/images/racetracker-logo.png`
 - `scripts/refresh_race_weather.py`
 - `.github/workflows/refresh-race-weather.yml`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.13.0`
+- Current version: `v1.14.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -85,6 +86,31 @@ Race weekend weather
   read the tire and engine call it produces. It runs the shipped classifier, not a copy.
   Draft thresholds live in `localStorage` only — copy them into **both**
   `WEATHER_THRESHOLDS` (main.js) and `RISK_THRESHOLDS` (refresh script) to make them real.
+
+Businesses (Evolution Kart School / The Kart Depot)
+- raceTracker is the internal ops app for two legally separate businesses under the same owner.
+  `raceTracker/assets/data/entities.json` defines both.
+- The shell is shared; `--entity-accent` and the sidebar badge change with the selected business,
+  so it is never ambiguous whose data is on screen. Selection persists per browser under
+  `raceTracker.activeEntityId`.
+- Every expense in `billing.json` carries an `entityId`. The ledger and KPIs scope to the active
+  business; `validate_structure.py` fails on a missing or unknown one. Two sets of books must not blend.
+- The accent values in `entities.json` are placeholders (`accentPlaceholder: true`) until the real
+  Evolution and TKD brand colours land. Replacing them is an edit to that file plus `:root`.
+- Inventory is entity-neutral for now: it is static HTML with no data file, so entity-tagged stock
+  needs an `inventory.json` that does not exist yet.
+
+Theme and palette
+- The whole palette lives in `:root` in `style.css`. Translucent brand tints must use
+  `rgb(var(--primary-rgb) / a)` or `rgb(var(--accent-rgb) / a)` — a raw brand `rgba()` literal
+  would survive a palette swap, so `validate_structure.py` fails the build on one.
+- `<meta name="theme-color">` cannot reference a CSS variable, so the validator pins it to `--primary`.
+- Series badge colours (`.cal-sbadge--*`) are SKUSA's, USPKS's, CKNA's and ROK's identity, not ours.
+  They are deliberately excluded from the palette and must not be harmonised with it.
+
+Scope
+- US series only through roughly 2028. Non-US series and rounds were removed deliberately; recover
+  them from git history if that changes. `validate_structure.py` fails on a non-US series or round.
 
 Live data
 - Weather source: Open-Meteo forecast API, configured by `raceTracker/assets/data/track-context.json`.
@@ -144,7 +170,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.13.0`
+- Current baseline version: `v1.14.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

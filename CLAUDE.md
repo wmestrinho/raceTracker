@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.12.0`
+- Current version: `v1.14.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -60,6 +60,30 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 - `raceTracker/weather.html` runs the shipped classifier in the browser. If you change
   `build_prep`, change `buildPrepLines` in main.js too — `test_race_weather.py` asserts
   the wording matches
+
+## Businesses and Theme
+
+- raceTracker is the internal app for **Evolution Kart School** and **The Kart Depot** —
+  legally separate businesses, same owner. `raceTracker/assets/data/entities.json` defines both
+- The shell is shared; only `--entity-accent` and the sidebar badge change per business.
+  Do not build a full per-entity theme
+- Every `billing.json` expense needs an `entityId`; the validator fails without one.
+  Two sets of books must never blend
+- Accent values in `entities.json` are placeholders until the real brand colours land —
+  `accentPlaceholder: true` marks them
+- Inventory is entity-neutral (static HTML, no data file). Entity-tagged stock needs an
+  `inventory.json` that does not exist yet — do not fake it
+- The palette lives entirely in `:root`. Never write a raw brand `rgba()` literal; use
+  `rgb(var(--primary-rgb) / a)`. `validate_structure.py` fails the build on one
+- `<meta name="theme-color">` is pinned to `--primary` by the validator — it cannot use a var
+- **Series badge colours (`.cal-sbadge--*`) are the series' own identity, not ours.** Do not
+  harmonise them with the palette, however tempting it looks
+
+## Scope
+
+- **US series only** through roughly 2028. Non-US series and rounds were removed deliberately;
+  recover from git history if that changes
+- `validate_structure.py` fails on any series or round with a country other than `US`
 
 ## Before Committing
 
