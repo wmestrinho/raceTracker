@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-06-02T00:00:00-04:00",
+  "updatedAt": "2026-09-01T00:00:00-04:00",
   "tasks": [
     {
       "id": "tsk-001",
-      "owner": "Nuno",
+      "owner": "Emerson",
       "kart": "Race kart",
       "task": "Pre-session driver debrief",
       "due": "Now",
@@ -33,7 +33,7 @@
     },
     {
       "id": "tsk-004",
-      "owner": "Tyler",
+      "owner": "Add Mechanic",
       "kart": "Kart #2",
       "task": "Brake pad check",
       "due": "Now",
@@ -43,7 +43,7 @@
     },
     {
       "id": "tsk-005",
-      "owner": "Tyler",
+      "owner": "Add Mechanic",
       "kart": "Kart #4",
       "task": "Front-end toe reset",
       "due": "15:30",
@@ -53,7 +53,7 @@
     },
     {
       "id": "tsk-006",
-      "owner": "Enzo",
+      "owner": "Add Coach",
       "kart": "Kart #1",
       "task": "Telemetry sensor QA",
       "due": "16:30",
@@ -63,7 +63,7 @@
     },
     {
       "id": "tsk-007",
-      "owner": "Jason",
+      "owner": "Add Mechanic",
       "kart": "Team",
       "task": "Session staging checklist",
       "due": "17:00",

@@ -10,7 +10,11 @@ VERSION = ROOT / "VERSION"
 README = ROOT / "README.md"
 WRANGLER = ROOT / "wrangler.jsonc"
 CANONICAL_DOMAIN = "tracker.absolutelyplausible.com"
-CANONICAL_LOGO = CANON / "assets/images/racetracker-logo.png"
+BRAND_LOGOS = {
+    CANON / "assets/images/evolution-kart-school.png",
+    CANON / "assets/images/tkd-the-kart-depot.png",
+}
+LEGACY_LOGO = CANON / "assets/images/racetracker-logo.png"
 
 errors = []
 
@@ -39,7 +43,7 @@ required_files = [
     CANON / "assets/data/billing.json",
     CANON / "assets/data/series-calendars.json",
     CANON / "assets/data/entities.json",
-    CANONICAL_LOGO,
+    *sorted(BRAND_LOGOS),
 ]
 for f in required_files:
     if not f.exists():
@@ -59,12 +63,17 @@ for ds_store in ROOT.rglob(".DS_Store"):
     if ".git" not in ds_store.parts:
         errors.append(f"Remove macOS metadata file: {ds_store.relative_to(ROOT)}")
 
-# Prevent ambiguous logo variants. Canonical deployed logo is racetracker-logo.png.
+# The two client logos are the deployed identity. Keep the legacy raceTracker mark
+# recoverable during the transition, but reject any other untracked logo variants.
 images_dir = CANON / "assets/images"
 if images_dir.exists():
+    allowed_logos = BRAND_LOGOS | {LEGACY_LOGO}
     for logo in images_dir.glob("*logo*"):
-        if logo != CANONICAL_LOGO:
-            errors.append(f"Unexpected logo variant: {logo.relative_to(ROOT)}; keep canonical {CANONICAL_LOGO.relative_to(ROOT)}")
+        if logo not in allowed_logos:
+            errors.append(
+                f"Unexpected logo variant: {logo.relative_to(ROOT)}; allowed logos are "
+                + ", ".join(str(path.relative_to(ROOT)) for path in sorted(allowed_logos))
+            )
 
 version = ""
 if VERSION.exists():
@@ -112,6 +121,37 @@ for html_file in html_files:
     if version and version not in html:
         errors.append(f"VERSION is not displayed in {html_file.relative_to(ROOT)} footer: {version}")
 
+    # Workspace header/footer contract. Keep these structural checks close to the
+    # HTML loop so a copied page cannot silently drift from the shared shell.
+    headers = re.findall(r"<header\b[\s\S]*?</header>", html)
+    if len(headers) != 1:
+        errors.append(f"{html_file.relative_to(ROOT)} must contain exactly one <header>")
+    else:
+        header = headers[0]
+        if not re.match(r'<header\b[^>]*>\s*<div class="header-inner">', header):
+            errors.append(f"{html_file.relative_to(ROOT)} header must start with one .header-inner wrapper")
+        if '<nav aria-label="Primary">' not in header:
+            errors.append(f"{html_file.relative_to(ROOT)} primary nav must be inside the header")
+        if not re.search(r'<a href="/" class="brand" aria-label="[^"]+ home"[^>]*>', header):
+            errors.append(f"{html_file.relative_to(ROOT)} brand must link to / with a '<Brand> home' label")
+        entity_logo = re.search(r'<img[^>]*data-entity-logo[^>]*>', header)
+        if not entity_logo or 'alt=""' not in entity_logo.group(0):
+            errors.append(f"{html_file.relative_to(ROOT)} header brand logo must be decorative (alt=\"\")")
+
+    footers = re.findall(r"<footer\b[\s\S]*?</footer>", html)
+    if len(footers) != 1:
+        errors.append(f"{html_file.relative_to(ROOT)} must contain exactly one <footer>")
+    else:
+        footer = footers[0]
+        if not re.match(r'<footer class="site-footer">\s*<div class="site-footer__inner">', footer):
+            errors.append(f"{html_file.relative_to(ROOT)} footer must use the client-site wrapper")
+        if 'Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a>' not in footer:
+            errors.append(f"{html_file.relative_to(ROOT)} footer must use canonical client attribution")
+        if not re.search(r'<p class="footer-version">[^<]+</p>\s*</div>\s*</footer>$', footer):
+            errors.append(f"{html_file.relative_to(ROOT)} version must be the final footer element")
+        if '<span data-current-year>' not in footer:
+            errors.append(f"{html_file.relative_to(ROOT)} footer copyright year must be JS-current")
+
     # Internal anchor validation, only for same-page hash hrefs
     ids = set(re.findall(r'\sid="([^"]+)"', html))
     hrefs = re.findall(r'href="#([^"]*)"', html)
@@ -121,7 +161,8 @@ for html_file in html_files:
 
 # ── Brand palette drift ───────────────────────────────────────────────────
 # <meta name="theme-color"> cannot reference a CSS variable, so it is the one
-# place the brand colour must be repeated by hand. Pin it to --primary.
+# place the brand colour must be repeated by hand. Pin it to the Trackside Navy
+# page ground rather than the yellow action accent.
 CSS_PATH = CANON / "assets/css/style.css"
 try:
     css_text = CSS_PATH.read_text(errors="replace")
@@ -130,9 +171,9 @@ except OSError as exc:
     errors.append(f"Could not read {CSS_PATH.name}: {exc}")
 
 if css_text:
-    primary_match = re.search(r"--primary:\s*(#[0-9a-fA-F]{3,8})", css_text)
+    primary_match = re.search(r"--navy:\s*(#[0-9a-fA-F]{3,8})", css_text)
     if not primary_match:
-        errors.append("Could not parse --primary from style.css — the theme-color guard is not running")
+        errors.append("Could not parse --navy from style.css — the theme-color guard is not running")
     else:
         primary = primary_match.group(1).lower()
         for html_file in sorted(CANON.glob("*.html")):
@@ -143,15 +184,15 @@ if css_text:
             elif found.group(1).lower() != primary:
                 errors.append(
                     f"{html_file.relative_to(ROOT)} theme-color {found.group(1)} does not match "
-                    f"--primary {primary} in style.css"
+                    f"--navy {primary} in style.css"
                 )
 
-    # A raw brand rgba() literal would survive a palette swap. Channel tokens exist
-    # precisely so it cannot; series badge colours are a documented exception.
+    # A raw brand rgba()/rgb() literal would survive a palette swap. Channel tokens
+    # exist precisely so it cannot; series badge colours are a documented exception.
     for line_no, line in enumerate(css_text.splitlines(), start=1):
         if "cal-sbadge--" in line:
             continue
-        if re.search(r"rgba\(\s*(?:191,\s*255,\s*0|18,\s*157,\s*240)", line):
+        if re.search(r"rgba?\(\s*(?:0[ ,]+26[ ,]+82|10[ ,]+76[ ,]+255|254[ ,]+191[ ,]+0)", line):
             errors.append(
                 f"style.css:{line_no} hardcodes a brand hue in rgba(); use "
                 f"rgb(var(--primary-rgb) / a) or rgb(var(--accent-rgb) / a) instead"
@@ -171,9 +212,18 @@ try:
     if len(entity_ids) < 2:
         errors.append("entities.json must define both Evolution Kart School and The Kart Depot")
     for entity in entities_doc.get("entities", []):
-        for field in ("id", "name", "shortName", "legalName", "badgeLabel", "accent", "accentContrast"):
+        for field in ("id", "name", "shortName", "legalName", "badgeLabel", "logo", "accent", "accentContrast"):
             if not entity.get(field):
                 errors.append(f"entities.json entry {entity.get('id', '?')}: missing {field}")
+        if entity.get("accentPlaceholder"):
+            errors.append(f"entities.json entry {entity.get('id', '?')}: brand accent is still marked as a placeholder")
+        logo_path = str(entity.get("logo", ""))
+        if logo_path.startswith("/assets/images/"):
+            resolved_logo = CANON / logo_path.removeprefix("/")
+            if resolved_logo not in BRAND_LOGOS or not resolved_logo.exists():
+                errors.append(f"entities.json entry {entity.get('id', '?')}: unknown brand logo {logo_path!r}")
+        else:
+            errors.append(f"entities.json entry {entity.get('id', '?')}: logo must live under /assets/images/")
     if entities_doc.get("defaultEntityId") not in entity_ids:
         errors.append("entities.json defaultEntityId does not match any entity")
 except (OSError, json.JSONDecodeError) as exc:

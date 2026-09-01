@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  initCurrentYear();
   initSidebarToggle();
   initActiveNav();
   initEntityContext();
@@ -12,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initSeriesCalendars();
   initWeatherSandbox();
 });
+
+function initCurrentYear() {
+  document.querySelectorAll('[data-current-year]').forEach(el => {
+    el.textContent = new Date().getFullYear();
+  });
+}
 
 function initSidebarToggle() {
   const btn = document.querySelector('[data-sidebar-toggle]');
@@ -41,7 +48,10 @@ function initActiveNav() {
   const bodyPage = document.body.getAttribute('data-page');
   if (!bodyPage) return;
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
-    if (link.getAttribute('data-page') === bodyPage) link.classList.add('active');
+    if (link.getAttribute('data-page') === bodyPage) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
+    }
   });
 }
 
@@ -106,20 +116,17 @@ function applyNavClearance(clearance) {
 async function loadMechanicData() {
   const fallback = {
     mechanics: [
-      { name: 'Nuno',  role: 'Team Principal / Driver',          clearance: 'admin' },
-      { name: 'Seth',  role: 'Team Owner',                       clearance: 'admin' },
-      { name: 'Enzo',  role: 'Coach Mechanic / Telemetry',       clearance: 'staff' },
-      { name: 'Tyler', role: 'Mechanic',                         clearance: 'staff' },
-      { name: 'Jason', role: 'Mechanic',                         clearance: 'staff' },
-      { name: 'Luiz',  role: 'Trackside Mechanic (AP)',          clearance: 'staff' }
+      { name: 'Emerson',     role: 'Owner / Team Principal', clearance: 'admin' },
+      { name: 'Luiz',        role: 'AP Operations',          clearance: 'staff' },
+      { name: 'Add Mechanic', role: 'Mechanic',              clearance: 'staff' },
+      { name: 'Add Coach',    role: 'Driver Coach',          clearance: 'staff' }
     ],
     tasks: [
+      { owner: 'Emerson', kart: 'Race kart', task: 'Pre-session driver debrief', due: 'Now', dueState: 'now', status: 'Due now', priority: 'alert' },
       { owner: 'Luiz', kart: 'Kart #3', task: 'Rear axle alignment', due: 'Now', dueState: 'now', status: 'Due now', priority: 'alert' },
       { owner: 'Luiz', kart: 'Kart #1', task: 'Fuel line inspection', due: '14:00', dueState: 'next', status: 'Pending', priority: 'warn' },
-      { owner: 'Leo', kart: 'Kart #2', task: 'Brake pad check', due: 'Now', dueState: 'now', status: 'In progress', priority: 'warn' },
-      { owner: 'Leo', kart: 'Kart #4', task: 'Front-end toe reset', due: '15:30', dueState: 'next', status: 'Pending', priority: 'warn' },
-      { owner: 'Nico', kart: 'Kart #1', task: 'Telemetry sensor QA', due: '16:30', dueState: 'next', status: 'Ready', priority: 'ok' },
-      { owner: 'Paula', kart: 'Team', task: 'Session staging checklist', due: '17:00', dueState: 'next', status: 'Prep', priority: 'warn' }
+      { owner: 'Add Mechanic', kart: 'Kart #2', task: 'Brake pad check', due: 'Now', dueState: 'now', status: 'In progress', priority: 'warn' },
+      { owner: 'Add Coach', kart: 'Kart #1', task: 'Telemetry sensor QA', due: '16:30', dueState: 'next', status: 'Ready', priority: 'ok' }
     ]
   };
 
@@ -584,6 +591,7 @@ async function initTeamRoster() {
 
   if (staffGrid && data.mechanics) {
     staffGrid.innerHTML = data.mechanics.map(renderCard).join('');
+    setText('[data-team-staff-count]', `${data.mechanics.length} profiles`);
   }
   if (driverGrid && data.driverRoster) {
     driverGrid.innerHTML = data.driverRoster.map(renderCard).join('');
@@ -883,7 +891,7 @@ window.approveBillingExpense = function(id) {
   const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
   const exp = stored.find(e => e.id === id);
   if (!exp) return;
-  const profile = localStorage.getItem('raceTracker.mechanicProfile') || 'Seth';
+  const profile = localStorage.getItem('raceTracker.mechanicProfile') || 'Emerson';
   exp.approvalStatus = 'approved';
   exp.approvedBy = profile;
   try { localStorage.setItem(BILLING_KEY, JSON.stringify(stored)); } catch {}
@@ -1811,9 +1819,9 @@ function thresholdExport() {
 // ── Entity context ────────────────────────────────────────────
 //
 // Evolution Kart School and The Kart Depot are separate legal entities sharing
-// this app. The shell is common; the accent and badge change so it is never
-// ambiguous whose data is on screen — which matters most on billing, where two
-// sets of books must not blur.
+// this app. They share one approved palette; the active logo, name, and badge
+// make the current workspace explicit. Billing is still entity-scoped because
+// the two sets of books must never blur.
 
 const ENTITY_STORAGE_KEY = 'raceTracker.activeEntityId';
 let activeEntity = null;
@@ -1848,13 +1856,19 @@ function applyEntity(entity) {
   document.querySelectorAll('[data-entity-name]').forEach(el => {
     el.textContent = entity.shortName;
   });
+  document.querySelectorAll('[data-entity-logo]').forEach(el => {
+    el.src = entity.logo;
+  });
+  document.querySelectorAll('[data-entity-home]').forEach(el => {
+    el.setAttribute('aria-label', `${entity.name} home`);
+  });
 }
 
 function renderEntitySelectors(entities, getActive, onChange) {
   document.querySelectorAll('[data-entity-slot]').forEach(slot => {
     slot.innerHTML = `
       <label class="entity-switcher">
-        <span>Business</span>
+        <span>Workspace</span>
         <select data-entity-select aria-label="Select business">
           ${entities.map(e =>
             `<option value="${escapeHtml(e.id)}" ${e.id === getActive().id ? 'selected' : ''}>${escapeHtml(e.name)}</option>`

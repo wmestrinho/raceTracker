@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-02T00:00:00-04:00",
+  "updatedAt": "2026-09-01T00:00:00-04:00",
   "clearanceLevels": {
     "admin":  "Full access — owner/principal. Sees all data, clearance info, and settings.",
     "staff":  "Ops access — mechanics, coaches, consultants. Sees all operational pages.",
@@ -8,52 +8,36 @@
   },
   "mechanics": [
     {
-      "id": "nuno",
-      "name": "Nuno",
-      "role": "Team Principal / Driver",
+      "id": "emerson",
+      "name": "Emerson",
+      "role": "Owner / Team Principal",
       "clearance": "admin",
       "shift": "All day",
-      "specialty": "Race strategy and driver feedback"
-    },
-    {
-      "id": "seth",
-      "name": "Seth",
-      "role": "Team Owner",
-      "clearance": "admin",
-      "shift": "All day",
-      "specialty": "Team management and operations"
-    },
-    {
-      "id": "enzo",
-      "name": "Enzo",
-      "role": "Coach Mechanic / Telemetry Supervisor",
-      "clearance": "staff",
-      "shift": "Race days",
-      "specialty": "Driver coaching and live telemetry"
-    },
-    {
-      "id": "tyler",
-      "name": "Tyler",
-      "role": "Mechanic",
-      "clearance": "staff",
-      "shift": "Race days",
-      "specialty": "Kart setup and maintenance"
-    },
-    {
-      "id": "jason",
-      "name": "Jason",
-      "role": "Mechanic",
-      "clearance": "staff",
-      "shift": "Race days",
-      "specialty": "Kart setup and maintenance"
+      "specialty": "Evolution Kart School and The Kart Depot operations"
     },
     {
       "id": "luiz",
       "name": "Luiz",
-      "role": "Trackside Mechanic (AP)",
+      "role": "AP Operations",
       "clearance": "staff",
-      "shift": "07:00-18:00",
-      "specialty": "Race-day execution and AP ops"
+      "shift": "Race days",
+      "specialty": "Race-day execution and operations systems"
+    },
+    {
+      "id": "mechanic-placeholder",
+      "name": "Add Mechanic",
+      "role": "Mechanic",
+      "clearance": "staff",
+      "shift": "TBD",
+      "specialty": "Replace with a confirmed team member"
+    },
+    {
+      "id": "coach-placeholder",
+      "name": "Add Coach",
+      "role": "Driver Coach",
+      "clearance": "staff",
+      "shift": "TBD",
+      "specialty": "Replace with a confirmed team member"
     }
   ],
   "driverRoster": [

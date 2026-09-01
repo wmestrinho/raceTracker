@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Project Overview
 
-Static frontend prototype for karting operations, workshop execution, and telemetry visibility.
-**Client context:** Sergio "Nuno" Campos (internal branding reference: "Nash")
+Shared operations app for Evolution Kart School and The Kart Depot, built on the raceTracker codebase.
+**Client context:** Emerson Silveira
 **Live site:** [tracker.absolutelyplausible.com](https://tracker.absolutelyplausible.com)
 
-Keep external app naming as `raceTracker` so it can be adapted for other teams, mechanics, or vendors later.
+The repository and storage keys retain `raceTracker`; the deployed interface is branded for Evolution/TKD.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.14.0`
+- Current version: `v1.15.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -65,17 +65,17 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 
 - raceTracker is the internal app for **Evolution Kart School** and **The Kart Depot** —
   legally separate businesses, same owner. `raceTracker/assets/data/entities.json` defines both
-- The shell is shared; only `--entity-accent` and the sidebar badge change per business.
-  Do not build a full per-entity theme
+- The shell is shared. The active logo, name, and badge change per business; both use the same
+  approved Trackside Navy palette. Do not build separate per-entity colour systems
 - Every `billing.json` expense needs an `entityId`; the validator fails without one.
   Two sets of books must never blend
-- Accent values in `entities.json` are placeholders until the real brand colours land —
-  `accentPlaceholder: true` marks them
+- Brand colours come from `kart-depot-shopify/brand/tokens.json`; web logo copies derive from
+  the masters in `evo-krt-schl/assets/brand/`
 - Inventory is entity-neutral (static HTML, no data file). Entity-tagged stock needs an
   `inventory.json` that does not exist yet — do not fake it
 - The palette lives entirely in `:root`. Never write a raw brand `rgba()` literal; use
   `rgb(var(--primary-rgb) / a)`. `validate_structure.py` fails the build on one
-- `<meta name="theme-color">` is pinned to `--primary` by the validator — it cannot use a var
+- `<meta name="theme-color">` is pinned to the `--navy` page ground by the validator — it cannot use a var
 - **Series badge colours (`.cal-sbadge--*`) are the series' own identity, not ours.** Do not
   harmonise them with the palette, however tempting it looks
 

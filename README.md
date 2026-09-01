@@ -1,6 +1,6 @@
 # raceTracker
 
-Static frontend prototype for raceTracker: karting operations, workshop execution, and telemetry visibility.
+Shared operations app for Evolution Kart School and The Kart Depot, built from the raceTracker platform.
 
 Live site
 - https://tracker.absolutelyplausible.com
@@ -14,9 +14,9 @@ Legacy local path
 
 
 Client / MVP context
-- Current client context: Sergio “Nuno” Campos.
-- “Nash” may appear in internal theme/branding references; it is the original internal naming for this client-specific theme and is intentional.
-- Keep external app naming as raceTracker so the prototype can later be adapted for other teams, mechanics, or vendors.
+- Current client context: Emerson Silveira, owner of Evolution Kart School and The Kart Depot.
+- The repository and internal storage keys retain `raceTracker`; the interface is branded for the two businesses.
+- Trackside Navy is the approved shared theme. Evolution and TKD keep distinct logos but one palette.
 
 Agent instructions
 - Read `AGENTS.md` before making changes.
@@ -39,13 +39,14 @@ Canonical project structure (single source of truth)
 - `raceTracker/assets/data/series-calendars.json`
 - `raceTracker/assets/data/race-weather.json` (generated — see Race weekend weather)
 - `raceTracker/assets/data/entities.json`
-- `raceTracker/assets/images/racetracker-logo.png`
+- `raceTracker/assets/images/evolution-kart-school.png`
+- `raceTracker/assets/images/tkd-the-kart-depot.png`
 - `scripts/refresh_race_weather.py`
 - `.github/workflows/refresh-race-weather.yml`
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.14.0`
+- Current version: `v1.15.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -90,13 +91,13 @@ Race weekend weather
 Businesses (Evolution Kart School / The Kart Depot)
 - raceTracker is the internal ops app for two legally separate businesses under the same owner.
   `raceTracker/assets/data/entities.json` defines both.
-- The shell is shared; `--entity-accent` and the sidebar badge change with the selected business,
-  so it is never ambiguous whose data is on screen. Selection persists per browser under
+- The shell and approved palette are shared; the active logo, name, and badge change with the
+  selected business so it is never ambiguous whose data is on screen. Selection persists under
   `raceTracker.activeEntityId`.
 - Every expense in `billing.json` carries an `entityId`. The ledger and KPIs scope to the active
   business; `validate_structure.py` fails on a missing or unknown one. Two sets of books must not blend.
-- The accent values in `entities.json` are placeholders (`accentPlaceholder: true`) until the real
-  Evolution and TKD brand colours land. Replacing them is an edit to that file plus `:root`.
+- `kart-depot-shopify/brand/tokens.json` is the detailed palette source; logo masters live in
+  `evo-krt-schl/assets/brand/`, with committed web copies in this app.
 - Inventory is entity-neutral for now: it is static HTML with no data file, so entity-tagged stock
   needs an `inventory.json` that does not exist yet.
 
@@ -104,7 +105,7 @@ Theme and palette
 - The whole palette lives in `:root` in `style.css`. Translucent brand tints must use
   `rgb(var(--primary-rgb) / a)` or `rgb(var(--accent-rgb) / a)` — a raw brand `rgba()` literal
   would survive a palette swap, so `validate_structure.py` fails the build on one.
-- `<meta name="theme-color">` cannot reference a CSS variable, so the validator pins it to `--primary`.
+- `<meta name="theme-color">` cannot reference a CSS variable, so the validator pins it to the `--navy` page ground.
 - Series badge colours (`.cal-sbadge--*`) are SKUSA's, USPKS's, CKNA's and ROK's identity, not ours.
   They are deliberately excluded from the palette and must not be harmonised with it.
 
@@ -170,7 +171,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.14.0`
+- Current baseline version: `v1.15.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

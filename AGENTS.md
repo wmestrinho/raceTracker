@@ -10,13 +10,14 @@ Legacy path
 - Treat it as deprecated after migration. Do not start new work there unless Luiz explicitly says the migration is paused or reversed.
 
 Project purpose
-- Static frontend prototype for karting operations, workshop execution, and telemetry visibility.
+- Shared operations app for Evolution Kart School and The Kart Depot, built on the raceTracker codebase.
+- Covers race calendars, weather, workshop execution, billing, registrations, and telemetry visibility.
 - Live target: `https://tracker.absolutelyplausible.com`
 
 Client / branding context
-- Current client context: Sergio “Nuno” Campos.
-- “Nash” may appear in internal theme/branding references; it is intentional original naming for this client-specific theme.
-- Keep external app naming as raceTracker so this prototype/MVP can later be adapted for other teams, mechanics, or vendors.
+- Current client context: Emerson Silveira, owner of Evolution Kart School and The Kart Depot.
+- The repository and internal storage keys retain the `raceTracker` name; the interface is branded for Evolution/TKD.
+- The approved shared theme is Trackside Navy. Brand masters live in `evo-krt-schl`; the detailed token source is `kart-depot-shopify/brand/tokens.json`.
 
 Source of truth
 - Frontend assets live only under `raceTracker/`.
@@ -26,7 +27,7 @@ Source of truth
 Case/path guardrails
 - The canonical frontend directory is exactly `raceTracker/`.
 - On macOS, `RaceTracker/` and `racetracker/` may resolve to the same directory because the filesystem is case-insensitive; do not create or reference those aliases.
-- Do not add logo variants under `raceTracker/assets/images/` unless the validation script is intentionally updated. The canonical logo is `raceTracker/assets/images/racetracker-logo.png`.
+- Do not add logo variants under `raceTracker/assets/images/` unless the validation script is intentionally updated. The deployed brand logos are `evolution-kart-school.png` and `tkd-the-kart-depot.png`.
 - Do not commit `.DS_Store` files.
 
 Required files
@@ -36,7 +37,8 @@ Required files
 - `raceTracker/index.html` — static entrypoint.
 - `raceTracker/assets/css/style.css`
 - `raceTracker/assets/js/main.js`
-- `raceTracker/assets/images/racetracker-logo.png`
+- `raceTracker/assets/images/evolution-kart-school.png`
+- `raceTracker/assets/images/tkd-the-kart-depot.png`
 
 Version rule
 - Every web UI must visibly display the version.
@@ -78,6 +80,7 @@ Businesses and scope
 - Calendar scope is US series only through roughly 2028. The validator fails on a non-US round.
 - The palette lives in `:root`. Brand tints use `rgb(var(--primary-rgb) / a)`; a raw brand rgba()
   literal fails the build. Series badge colours are excluded on purpose.
+- Evolution and TKD share one palette; the active logo, name, and badge change by entity. Do not invent separate colour systems.
 
 Coordination warning
 - Another AI agent may be working on this project. Before destructive edits, branch resets, rebases, or force pushes, check `git status` and coordinate with Luiz.
