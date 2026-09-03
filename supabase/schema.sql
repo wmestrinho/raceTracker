@@ -247,3 +247,100 @@ on conflict (id) do update set
   ingestion_status = excluded.ingestion_status,
   notes = excluded.notes,
   updated_at = now();
+
+-- ── Auth + mechanic sign-off sheets (v1.17.0) ──────────────────────────────
+-- Real per-user identity, replacing the client-side name-picker in main.js.
+-- Login is Supabase Auth magic-link email, sent only via signInWithOtp with
+-- shouldCreateUser:false — the allowlist is "an auth.users row already exists,"
+-- created by hand in Supabase Studio (Authentication -> Add user) alongside a
+-- matching profiles row. There is deliberately no insert/update policy here
+-- for `authenticated`: provisioning is admin-side only.
+
+create table if not exists public.entities (
+  id text primary key,
+  name text not null,
+  short_name text not null
+);
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null unique,
+  name text not null,
+  role text,
+  clearance text not null, -- 'admin' | 'staff' today; intentionally no CHECK so
+                            -- driver/parent accounts can be added later without
+                            -- a migration.
+  shift text,
+  specialty text,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.pretech_mechanic_signoffs (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  entity_id text not null references public.entities(id),
+  kart text,
+  notes text,
+  items jsonb not null default '{}'::jsonb,
+  complete boolean not null default false,
+  signoff_date date not null,
+  signed_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  -- One sign-off per mechanic per BUSINESS per day, not one globally — a
+  -- mechanic servicing both fleets in a day certifies each separately, the
+  -- same "never blend the two businesses" boundary billing already enforces.
+  -- This is also what lets the workshop crew table split cleanly by the
+  -- active entity switcher instead of showing a stale cross-business status.
+  unique (profile_id, entity_id, signoff_date)
+);
+
+create index if not exists idx_pretech_signoffs_date on public.pretech_mechanic_signoffs(signoff_date);
+
+alter table public.entities enable row level security;
+alter table public.profiles enable row level security;
+alter table public.pretech_mechanic_signoffs enable row level security;
+
+create or replace function public.current_user_is_admin()
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and clearance = 'admin' and active
+  );
+$$;
+
+create policy if not exists "public read entities" on public.entities
+  for select to anon, authenticated using (true);
+
+-- The full roster (name/role/clearance) is readable by any signed-in staff
+-- member, same as today's openly-fetchable mechanics.json (actually a privacy
+-- *improvement*, since that file is public even to logged-out visitors). This
+-- is what lets the workshop crew table list mechanics who have NOT signed off
+-- yet, not just the ones who have. What stays admin-only is signoff *history*
+-- (see the pretech_mechanic_signoffs policies below), which is the actually
+-- sensitive/audit-relevant data.
+create policy if not exists "authenticated read profiles" on public.profiles
+  for select to authenticated using (true);
+
+create policy if not exists "select own, today, or admin signoffs" on public.pretech_mechanic_signoffs
+  for select to authenticated using (
+    profile_id = auth.uid()
+    or signoff_date = current_date
+    or public.current_user_is_admin()
+  );
+create policy if not exists "insert own signoff" on public.pretech_mechanic_signoffs
+  for insert to authenticated with check (profile_id = auth.uid());
+create policy if not exists "update own signoff" on public.pretech_mechanic_signoffs
+  for update to authenticated using (profile_id = auth.uid()) with check (profile_id = auth.uid());
+
+grant select on table public.entities to anon;
+grant select, insert, update on table public.profiles, public.pretech_mechanic_signoffs to authenticated;
+
+insert into public.entities (id, name, short_name) values
+  ('evolution-kart-school', 'Evolution Kart School', 'Evolution'),
+  ('the-kart-depot', 'The Kart Depot', 'TKD')
+on conflict (id) do update set
+  name = excluded.name,
+  short_name = excluded.short_name;

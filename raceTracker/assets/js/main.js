@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebarToggle();
   initActiveNav();
   initEntityContext();
-  initMechanicContext();
+  initAuthContext();
   initTelemetryUpdates();
   initWeatherContext();
   initAddTaskForm();
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPreTechMechanicChecklist();
   initTeamRoster();
   initBillingModule();
+  initSupervisorPage();
   initSeriesCalendars();
   initWeatherSandbox();
 });
@@ -57,51 +58,44 @@ function initActiveNav() {
   });
 }
 
-async function initMechanicContext() {
-  const storageKey = 'raceTracker.mechanicProfile';
+// Real per-user identity via Supabase Auth (assets/js/auth.js), replacing the
+// old client-side name-picker. requireAuth() redirects to /login.html for any
+// page that needs a session (everything except login.html itself and pages
+// opting out via <body data-auth-required="false">, i.e. registrations.html's
+// open driver Pre-Tech form).
+async function initAuthContext() {
+  const ok = await window.raceTrackerAuth.requireAuth();
+  if (!ok) return; // redirecting to /login.html
+
   const mechanicData = await loadMechanicData();
-  const mechanics = mechanicData.mechanics.map(mechanic => mechanic.name);
-  const tasks = mechanicData.tasks;
+  renderWorkshopTasks(mechanicData.tasks);
+
+  const profile = await window.raceTrackerAuth.currentProfile();
   const slots = document.querySelectorAll('[data-mechanic-slot]');
-  renderWorkshopTasks(tasks);
-  if (!slots.length) {
-    updateMechanicOwnedTasks(localStorage.getItem(storageKey) || mechanics[0]);
+  const onLoginPage = window.location.pathname.endsWith('/login.html') || window.location.pathname === '/login';
+
+  if (!profile) {
+    slots.forEach(slot => {
+      slot.innerHTML = onLoginPage ? '' :
+        '<a href="/login.html" class="mechanic-switcher"><span>Not signed in</span><strong>Log in</strong></a>';
+    });
+    applyNavClearance('driver');
     return;
   }
 
-  const getSelected = () => {
-    const saved = localStorage.getItem(storageKey);
-    return mechanics.includes(saved) ? saved : mechanics[0];
-  };
-  const saveSelected = (name) => {
-    localStorage.setItem(storageKey, name);
-    renderMechanicSlots(name);
-    updateMechanicOwnedTasks(name);
-    const person = mechanicData.mechanics.find(m => m.name === name);
-    applyNavClearance(person ? person.clearance : 'staff');
-  };
+  slots.forEach(slot => {
+    slot.innerHTML = `
+      <div class="mechanic-switcher">
+        <span>Signed in</span>
+        <strong>${escapeHtml(profile.name)}</strong>
+        <button type="button" class="timer-btn" style="padding:.3rem .6rem;font-size:.72rem;" data-signout-btn>Log out</button>
+      </div>
+    `;
+    slot.querySelector('[data-signout-btn]').addEventListener('click', () => window.raceTrackerAuth.signOut());
+  });
 
-  function renderMechanicSlots(selected) {
-    slots.forEach(slot => {
-      slot.innerHTML = `
-        <label class="mechanic-switcher">
-          <span>Mechanic</span>
-          <select data-mechanic-select aria-label="Select mechanic profile">
-            ${mechanics.map(name => `<option value="${name}" ${name === selected ? 'selected' : ''}>${name}</option>`).join('')}
-          </select>
-        </label>
-      `;
-      slot.querySelector('[data-mechanic-select]').addEventListener('change', (event) => {
-        saveSelected(event.target.value);
-      });
-    });
-  }
-
-  const selected = getSelected();
-  renderMechanicSlots(selected);
-  updateMechanicOwnedTasks(selected);
-  const person = mechanicData.mechanics.find(m => m.name === selected);
-  applyNavClearance(person ? person.clearance : 'staff');
+  updateMechanicOwnedTasks(profile.name);
+  applyNavClearance(profile.clearance);
 }
 
 function applyNavClearance(clearance) {
@@ -115,6 +109,10 @@ function applyNavClearance(clearance) {
   });
 }
 
+// Still used for the demo workshop-tasks.json feed and as an offline fallback
+// roster — but `mechanics.json`'s `mechanics` array is no longer the runtime
+// identity source. Real staff/admin identity comes from Supabase `profiles`
+// (see initAuthContext, fetchPreTechSignoffs, and initBillingModule below).
 async function loadMechanicData() {
   const fallback = {
     mechanics: [
@@ -737,12 +735,6 @@ function readPreTechItems(checklist) {
   return items;
 }
 
-function currentMechanicName() {
-  return localStorage.getItem('raceTracker.mechanicProfile')
-    || document.querySelector('[data-mechanic-select]')?.value
-    || '';
-}
-
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -809,8 +801,25 @@ function renderPreTechDriverList() {
   `).join('');
 }
 
-// -- Mechanic daily sign-off (workshop.html) -----------------------------
-const PRETECH_MECHANIC_KEY = 'raceTracker.preTechMechanicSignoffs';
+// -- Mechanic daily sign-off (workshop.html + supervisor.html) ----------
+// Stored server-side in public.pretech_mechanic_signoffs, keyed to the
+// logged-in user's profile — not localStorage — so "who signed off" is a
+// verified fact, not a client-side name string. One sign-off per mechanic
+// per business per day (see the unique constraint in supabase/schema.sql).
+
+async function fetchPreTechSignoffs({ entityId, dateFrom, dateTo, profileId } = {}) {
+  let query = window.raceTrackerAuth.supabaseClient
+    .from('pretech_mechanic_signoffs')
+    .select('*')
+    .order('signoff_date', { ascending: false });
+  if (dateFrom) query = query.gte('signoff_date', dateFrom);
+  if (dateTo) query = query.lte('signoff_date', dateTo);
+  if (entityId) query = query.eq('entity_id', entityId);
+  if (profileId) query = query.eq('profile_id', profileId);
+  const { data, error } = await query;
+  if (error) { console.error('fetchPreTechSignoffs failed', error); return []; }
+  return data || [];
+}
 
 function initPreTechMechanicChecklist() {
   const form = document.querySelector('[data-pretech-mechanic-form]');
@@ -818,72 +827,167 @@ function initPreTechMechanicChecklist() {
   const checklist = form.querySelector('[data-pretech-checklist]');
   renderPreTechChecklist(checklist, 'mechanic');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = currentMechanicName();
-    if (!name) return;
+    const profile = await window.raceTrackerAuth.currentProfile();
+    if (!profile) return;
     const data = new FormData(form);
     const items = readPreTechItems(checklist);
     const record = {
-      id: `pretech-mech-${Date.now()}`,
-      entityId: activeEntityId(),
-      mechanicName: name,
+      profile_id: profile.id,
+      entity_id: activeEntityId(),
       kart: data.get('kart') || '',
       notes: data.get('notes') || '',
       items,
       complete: Object.values(items).every(Boolean),
-      date: todayKey(),
-      signedAt: new Date().toISOString()
+      signoff_date: todayKey(),
+      signed_at: new Date().toISOString()
     };
-    const today = todayKey();
-    const all = getPreTechMechanicSignoffs().filter(r => !(r.mechanicName === name && r.date === today));
-    all.unshift(record);
-    try { localStorage.setItem(PRETECH_MECHANIC_KEY, JSON.stringify(all)); } catch {}
+    const { error } = await window.raceTrackerAuth.supabaseClient
+      .from('pretech_mechanic_signoffs')
+      .upsert(record, { onConflict: 'profile_id,entity_id,signoff_date' });
+    if (error) { console.error('pretech signoff failed', error); return; }
     form.reset();
     renderPreTechChecklist(checklist, 'mechanic');
     renderPreTechMechanicStatus();
   });
 
-  document.addEventListener('change', (e) => {
-    if (e.target.matches && e.target.matches('[data-mechanic-select]')) renderPreTechMechanicStatus();
-  });
+  document.addEventListener('racetracker:entitychange', renderPreTechMechanicStatus);
 
   renderPreTechMechanicStatus();
-}
-
-function getPreTechMechanicSignoffs() {
-  try { return JSON.parse(localStorage.getItem(PRETECH_MECHANIC_KEY) || '[]'); } catch { return []; }
 }
 
 async function renderPreTechMechanicStatus() {
   const statusEl = document.querySelector('[data-pretech-mechanic-status]');
   const crewBody = document.querySelector('[data-pretech-crew-status]');
   if (!statusEl && !crewBody) return;
+
   const today = todayKey();
-  const signedToday = getPreTechMechanicSignoffs().filter(r => r.date === today);
-  const name = currentMechanicName();
+  const entityId = activeEntityId();
+  const [signedToday, profile] = await Promise.all([
+    fetchPreTechSignoffs({ entityId, dateFrom: today, dateTo: today }),
+    window.raceTrackerAuth.currentProfile()
+  ]);
 
   if (statusEl) {
-    const mine = signedToday.find(r => r.mechanicName === name);
+    const mine = profile && signedToday.find(r => r.profile_id === profile.id);
     statusEl.textContent = mine
-      ? `Signed off today at ${new Date(mine.signedAt).toLocaleTimeString()}`
+      ? `Signed off today at ${new Date(mine.signed_at).toLocaleTimeString()}`
       : 'Not signed off yet today';
     statusEl.classList.remove('ok', 'warn');
     statusEl.classList.add(mine ? 'ok' : 'warn');
   }
 
   if (crewBody) {
-    const mechanicData = await loadMechanicData();
-    crewBody.innerHTML = mechanicData.mechanics.map(m => {
-      const signed = signedToday.find(r => r.mechanicName === m.name);
+    const { data: roster, error } = await window.raceTrackerAuth.supabaseClient
+      .from('profiles').select('id, name, role').eq('active', true);
+    if (error) { console.error('profiles fetch failed', error); return; }
+    crewBody.innerHTML = (roster || []).map(m => {
+      const signed = signedToday.find(r => r.profile_id === m.id);
       return `<tr>
         <td>${escapeHtml(m.name)}</td>
         <td>${escapeHtml(m.role || '')}</td>
         <td><span class="badge ${signed ? 'ok' : 'alert'}">${signed ? 'Signed' : 'Not signed'}</span></td>
-        <td>${signed ? escapeHtml(new Date(signed.signedAt).toLocaleTimeString()) : '—'}</td>
+        <td>${signed ? escapeHtml(new Date(signed.signed_at).toLocaleTimeString()) : '—'}</td>
       </tr>`;
     }).join('');
   }
+}
+
+// -- Supervisor review (supervisor.html) ---------------------------------
+// Admin-only in the UI (nav hidden via data-min-clearance="admin"), and
+// backstopped for real by RLS: a non-admin visiting this page directly still
+// only gets their own history plus everyone's *today* rows back from
+// pretech_mechanic_signoffs (see supabase/schema.sql), never other people's
+// past sign-offs.
+const ENTITY_SHORT_LABEL = { 'evolution-kart-school': 'Evolution', 'the-kart-depot': 'TKD' };
+
+function initSupervisorPage() {
+  const crewGrid = document.querySelector('[data-supervisor-crew-grid]');
+  const mechSelect = document.querySelector('[data-supervisor-mechanic-select]');
+  const individualBody = document.querySelector('[data-supervisor-individual-body]');
+  const fromInput = document.querySelector('[data-supervisor-from]');
+  const toInput = document.querySelector('[data-supervisor-to]');
+  if (!crewGrid && !mechSelect) return;
+
+  const today = todayKey();
+  const weekAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+  if (fromInput && !fromInput.value) fromInput.value = weekAgo;
+  if (toInput && !toInput.value) toInput.value = today;
+
+  let roster = [];
+
+  async function loadRoster() {
+    const { data, error } = await window.raceTrackerAuth.supabaseClient
+      .from('profiles').select('id, name, role').eq('active', true).order('name');
+    if (error) { console.error('supervisor roster fetch failed', error); return; }
+    roster = data || [];
+    if (mechSelect) {
+      const selected = mechSelect.value;
+      mechSelect.innerHTML = '<option value="">— pick mechanic —</option>' +
+        roster.map(m => `<option value="${escapeHtml(m.id)}" ${m.id === selected ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
+    }
+  }
+
+  async function renderCrew() {
+    if (!crewGrid) return;
+    const entityId = activeEntityId();
+    const dateFrom = fromInput?.value || today;
+    const dateTo = toInput?.value || today;
+    const [rangeRows, todayRows] = await Promise.all([
+      fetchPreTechSignoffs({ entityId, dateFrom, dateTo }),
+      fetchPreTechSignoffs({ entityId, dateFrom: today, dateTo: today })
+    ]);
+    const totalDays = Math.max(1, Math.round((new Date(dateTo) - new Date(dateFrom)) / 86400000) + 1);
+    crewGrid.innerHTML = roster.map(m => {
+      const signedToday = todayRows.some(r => r.profile_id === m.id);
+      const daysSigned = new Set(rangeRows.filter(r => r.profile_id === m.id).map(r => r.signoff_date)).size;
+      return `
+        <div class="team-person-card">
+          <div class="team-person-header">
+            <span class="team-person-name">${escapeHtml(m.name)}</span>
+            <span class="badge ${signedToday ? 'ok' : 'alert'}">${signedToday ? 'Signed today' : 'Not signed'}</span>
+          </div>
+          <div class="team-person-role">${escapeHtml(m.role || '')}</div>
+          <div class="team-person-shift">${daysSigned}/${totalDays} days signed in range</div>
+        </div>`;
+    }).join('');
+  }
+
+  async function renderIndividual() {
+    if (!individualBody || !mechSelect) return;
+    if (!mechSelect.value) {
+      individualBody.innerHTML = '<tr><td colspan="6" class="reg-empty">Pick a mechanic to load their sheet.</td></tr>';
+      return;
+    }
+    const dateFrom = fromInput?.value || today;
+    const dateTo = toInput?.value || today;
+    const rows = await fetchPreTechSignoffs({ dateFrom, dateTo, profileId: mechSelect.value });
+    if (!rows.length) {
+      individualBody.innerHTML = '<tr><td colspan="6" class="reg-empty">No sign-offs in this range.</td></tr>';
+      return;
+    }
+    individualBody.innerHTML = rows.map(r => {
+      const itemLines = PRETECH_ITEMS.map(item =>
+        `<div>${r.items?.[item.id] ? '✓' : '✕'} ${escapeHtml(item.label)}</div>`
+      ).join('');
+      return `<tr>
+        <td>${escapeHtml(r.signoff_date)}</td>
+        <td>${escapeHtml(ENTITY_SHORT_LABEL[r.entity_id] || r.entity_id)}</td>
+        <td>${escapeHtml(r.kart || '—')}</td>
+        <td><span class="badge ${r.complete ? 'ok' : 'warn'}">${r.complete ? 'Complete' : 'Incomplete'}</span></td>
+        <td>${escapeHtml(new Date(r.signed_at).toLocaleTimeString())}</td>
+        <td><details><summary>Items</summary>${itemLines}${r.notes ? `<p class="muted-copy">${escapeHtml(r.notes)}</p>` : ''}</details></td>
+      </tr>`;
+    }).join('');
+  }
+
+  fromInput?.addEventListener('change', () => { renderCrew(); renderIndividual(); });
+  toInput?.addEventListener('change', () => { renderCrew(); renderIndividual(); });
+  mechSelect?.addEventListener('change', renderIndividual);
+  document.addEventListener('racetracker:entitychange', renderCrew);
+
+  loadRoster().then(renderCrew);
 }
 
 // ── Billing module ────────────────────────────────────────────
@@ -916,23 +1020,22 @@ async function initBillingModule() {
 
   const events   = scheduleData?.events || [];
   const drivers  = (mechanicsData?.driverRoster || [{ id: 'driver-1', name: 'Driver' }]);
-  const profile  = localStorage.getItem('raceTracker.mechanicProfile') || 'Luiz';
-  const allPeople = mechanicsData?.mechanics || [];
-  const personData = allPeople.find(m => m.name === profile) || { clearance: 'staff' };
-  const clearance = personData.clearance || 'staff';
+  const profile  = await window.raceTrackerAuth.currentProfile();
+  const profileName = profile?.name || 'Guest';
+  const clearance = profile?.clearance || 'staff';
 
   const rerender = () => {
     // Untagged expenses belong to nobody's books, so they show under whichever
     // business is selected rather than disappearing behind the filter.
     const scoped = allExpenses.filter(e =>
       !activeEntityId() || !e.entityId || e.entityId === activeEntityId());
-    renderBillingLedger(scoped, drivers, events, clearance, profile);
+    renderBillingLedger(scoped, drivers, events, clearance, profileName);
     updateBillingKpis(scoped);
   };
 
   populateBillingFilters(drivers, events, rerender);
-  populateExpenseForm(drivers, events, profile);
-  wireBillingForm(drivers, events, profile, allExpenses, rerender);
+  populateExpenseForm(drivers, events, profileName);
+  wireBillingForm(drivers, events, profileName, allExpenses, rerender);
   showAddFormByRole(clearance);
   // Switching business re-scopes the ledger; the two sets of books never mix.
   document.addEventListener('racetracker:entitychange', rerender);
@@ -1084,13 +1187,13 @@ function wireBillingForm(drivers, events, profile, allExpenses, rerender) {
   });
 }
 
-window.approveBillingExpense = function(id) {
+window.approveBillingExpense = async function(id) {
   const stored = (() => { try { return JSON.parse(localStorage.getItem(BILLING_KEY) || '[]'); } catch { return []; } })();
   const exp = stored.find(e => e.id === id);
   if (!exp) return;
-  const profile = localStorage.getItem('raceTracker.mechanicProfile') || 'Emerson';
+  const profile = await window.raceTrackerAuth.currentProfile();
   exp.approvalStatus = 'approved';
-  exp.approvedBy = profile;
+  exp.approvedBy = profile?.name || 'Admin';
   try { localStorage.setItem(BILLING_KEY, JSON.stringify(stored)); } catch {}
   initBillingModule();
 };

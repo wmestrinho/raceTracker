@@ -36,6 +36,7 @@
           <a class="nav-link" data-page="registrations" href="/registrations.html">Registrations</a>
           <a class="nav-link" data-page="billing" href="/billing.html">Billing</a>
           <a class="nav-link" data-page="team" href="/team.html" data-min-clearance="staff">Team</a>
+          <a class="nav-link" data-page="supervisor" href="/supervisor.html" data-min-clearance="admin">Supervisor</a>
           <a class="nav-link" data-page="settings" href="/settings.html" data-min-clearance="admin">Settings</a>
         </div>
         </nav>
@@ -56,7 +57,7 @@
 <section class="page-grid">
   <div class="card full">
     <h2>Team Roster</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Core operations team for race-day execution. Clearance controls data access — full auth requires Supabase backend (planned).</p>
+    <p style="color:var(--muted);margin-top:.35rem;">Core operations team for race-day execution. Staff and admin log in by email (Supabase Auth, magic link); clearance controls data access and is enforced server-side, not just in the sidebar.</p>
   </div>
 
   <div class="card full" data-team-roster-panel>
@@ -96,7 +97,7 @@
       <div><span class="badge clearance-driver">Driver</span><p>Overview, telemetry (own data), schedule, and registrations. No workshop or settings.</p></div>
       <div><span class="badge clearance-parent">Parent</span><p>Overview, schedule, and registrations only. Read-only view.</p></div>
     </div>
-    <p class="muted-copy" style="margin-top:.75rem;font-size:.8rem;">Full auth enforcement requires the Supabase backend. Current clearance filters the sidebar nav for selected profiles.</p>
+    <p class="muted-copy" style="margin-top:.75rem;font-size:.8rem;">Enforced by Supabase Row Level Security, not just sidebar filtering — see <a href="/supervisor.html">Supervisor</a> for admin-only sign-off review across the crew.</p>
   </div>
 </section>
 
@@ -104,12 +105,14 @@
           <div class="site-footer__inner">
             <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
             <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-            <p class="footer-version">v1.16.0</p>
+            <p class="footer-version">v1.17.0</p>
           </div>
         </footer>
       </main>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>

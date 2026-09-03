@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telemetry | Evolution + TKD Operations</title>
+  <title>Supervisor | Evolution + TKD Operations</title>
   <meta name="description" content="Shared race and shop operations for Evolution Kart School and The Kart Depot">
   <meta name="theme-color" content="#001a52">
   <link rel="icon" type="image/png" href="/assets/images/tkd-the-kart-depot.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="telemetry">
+<body data-page="supervisor">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <header id="primary-sidebar" class="sidebar" aria-label="Application sidebar">
@@ -45,73 +45,63 @@
     <div class="main">
       <div class="topbar">
         <div>
-          <h1>Telemetry</h1>
-          <p>Live kart metrics and health signals</p>
+          <h1>Supervisor</h1>
+          <p>Mechanic sign-off compliance, individually or as a crew</p>
         </div>
         <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </div>
       <main id="main-content" class="content" role="main">
-        
+
 <section class="page-grid">
   <div class="card full">
-    <h2>Live Telemetry Feed</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Updated: <span id="telemetry-updated-at">loading...</span></p>
-  </div>
-  <div class="card split-2" data-telemetry-card>
-    <h3>Kart #1</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <tbody>
-        <tr><td>Lap Time</td><td data-metric="lap">--</td></tr>
-        <tr><td>Speed</td><td data-metric="speed">--</td></tr>
-        <tr><td>RPM</td><td data-metric="rpm">--</td></tr>
-        <tr><td>Temp</td><td data-metric="temp">--</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card split-2" data-telemetry-card>
-    <h3>Kart #2</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <tbody>
-        <tr><td>Lap Time</td><td data-metric="lap">--</td></tr>
-        <tr><td>Speed</td><td data-metric="speed">--</td></tr>
-        <tr><td>RPM</td><td data-metric="rpm">--</td></tr>
-        <tr><td>Temp</td><td data-metric="temp">--</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card full live-context-card" data-weather-panel>
-    <div class="section-headline">
-      <div>
-        <h3>Weather Impact</h3>
-        <p class="muted-copy">Live trackside conditions paired with telemetry review. Use this to flag wind/rain sessions before comparing lap deltas.</p>
-      </div>
-      <div class="track-selector" data-track-selector></div>
-      <span class="badge warn" data-weather-risk>Loading</span>
-    </div>
-    <table class="table" style="margin-top:.7rem;">
-      <tbody>
-        <tr><td>Track</td><td data-track-name>Orlando, FL</td></tr>
-        <tr><td>Temperature</td><td data-weather-temp>--°F</td></tr>
-        <tr><td>Wind / gust</td><td><span data-weather-wind>-- mph</span> / <span data-weather-gust>-- mph</span></td></tr>
-        <tr><td>Precipitation</td><td data-weather-rain>-- in</td></tr>
-        <tr><td>Updated</td><td data-weather-updated>Connecting</td></tr>
-      </tbody>
-    </table>
-    <p class="mechanic-focus" data-weather-guidance>Loading live weather guidance...</p>
+    <h2>Sign-Off Compliance</h2>
+    <p style="color:var(--muted);margin-top:.35rem;">Admin-only view of the Daily Safety Tech Checklist every mechanic signs off on. Scoped to the selected business (top right) and enforced server-side — a non-admin account gets nothing back here, not just a hidden link.</p>
   </div>
 
   <div class="card full">
     <div class="section-headline">
       <div>
-        <h3>Lap Timer</h3>
-        <p class="muted-copy">Manual precision stopwatch for trackside timing. Sessions auto-save — your lap history persists across page reloads. Select the kart before starting.</p>
+        <h3>Crew, This Range</h3>
+        <p class="muted-copy">One card per mechanic — today's status plus their completion rate across the date range below.</p>
+      </div>
+      <div class="task-add-row" style="align-items:flex-end;">
+        <label class="task-field-label">
+          From
+          <input type="date" class="task-field-input" data-supervisor-from>
+        </label>
+        <label class="task-field-label">
+          To
+          <input type="date" class="task-field-input" data-supervisor-to>
+        </label>
       </div>
     </div>
-    <div data-lap-timer style="margin-top:1rem;"></div>
+    <div class="team-roster-grid" data-supervisor-crew-grid style="margin-top:.85rem;">
+      <p class="muted-copy">Loading crew…</p>
+    </div>
   </div>
 
+  <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>Individual Sheet</h3>
+        <p class="muted-copy">Pull up one mechanic's sign-off history for the date range above.</p>
+      </div>
+      <label class="task-field-label" style="min-width:200px;">
+        Mechanic
+        <select class="task-field-input" data-supervisor-mechanic-select>
+          <option value="">Loading…</option>
+        </select>
+      </label>
+    </div>
+    <table class="table" style="margin-top:1.1rem;">
+      <thead><tr><th>Date</th><th>Business</th><th>Kart(s)</th><th>Status</th><th>Signed at</th><th></th></tr></thead>
+      <tbody data-supervisor-individual-body>
+        <tr><td colspan="6" class="reg-empty">Pick a mechanic to load their sheet.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
         <footer class="site-footer">
@@ -127,9 +117,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/main.js"></script>
-  <script type="module">
-    import { initLapTimer } from '/assets/js/timer.js';
-    initLapTimer();
-  </script>
 </body>
 </html>

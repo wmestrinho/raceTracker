@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telemetry | Evolution + TKD Operations</title>
+  <title>Log In | Evolution + TKD Operations</title>
   <meta name="description" content="Shared race and shop operations for Evolution Kart School and The Kart Depot">
   <meta name="theme-color" content="#001a52">
   <link rel="icon" type="image/png" href="/assets/images/tkd-the-kart-depot.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-page="telemetry">
+<body data-page="login">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <header id="primary-sidebar" class="sidebar" aria-label="Application sidebar">
@@ -45,73 +45,30 @@
     <div class="main">
       <div class="topbar">
         <div>
-          <h1>Telemetry</h1>
-          <p>Live kart metrics and health signals</p>
+          <h1>Log In</h1>
+          <p>Sign in with your email — no password</p>
         </div>
         <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
         <button class="mobile-toggle" data-sidebar-toggle type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-sidebar">Menu</button>
       </div>
       <main id="main-content" class="content" role="main">
-        
+
 <section class="page-grid">
-  <div class="card full">
-    <h2>Live Telemetry Feed</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Updated: <span id="telemetry-updated-at">loading...</span></p>
-  </div>
-  <div class="card split-2" data-telemetry-card>
-    <h3>Kart #1</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <tbody>
-        <tr><td>Lap Time</td><td data-metric="lap">--</td></tr>
-        <tr><td>Speed</td><td data-metric="speed">--</td></tr>
-        <tr><td>RPM</td><td data-metric="rpm">--</td></tr>
-        <tr><td>Temp</td><td data-metric="temp">--</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card split-2" data-telemetry-card>
-    <h3>Kart #2</h3>
-    <table class="table" style="margin-top:.6rem;">
-      <tbody>
-        <tr><td>Lap Time</td><td data-metric="lap">--</td></tr>
-        <tr><td>Speed</td><td data-metric="speed">--</td></tr>
-        <tr><td>RPM</td><td data-metric="rpm">--</td></tr>
-        <tr><td>Temp</td><td data-metric="temp">--</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card full live-context-card" data-weather-panel>
-    <div class="section-headline">
-      <div>
-        <h3>Weather Impact</h3>
-        <p class="muted-copy">Live trackside conditions paired with telemetry review. Use this to flag wind/rain sessions before comparing lap deltas.</p>
+  <div class="card split-2" style="grid-column: 3 / span 6;">
+    <h3>Sign in</h3>
+    <p class="muted-copy" style="margin-bottom:.85rem;">Enter the email your supervisor has on file. We'll send you a one-time sign-in link — no password to remember. Only pre-approved crew emails can request a link.</p>
+    <form class="task-add-form" data-login-form>
+      <div class="task-add-row">
+        <label class="task-field-label" style="flex:1 1 100%;">
+          Email
+          <input type="email" name="email" class="task-field-input" placeholder="you@example.com" required autocomplete="email">
+        </label>
       </div>
-      <div class="track-selector" data-track-selector></div>
-      <span class="badge warn" data-weather-risk>Loading</span>
-    </div>
-    <table class="table" style="margin-top:.7rem;">
-      <tbody>
-        <tr><td>Track</td><td data-track-name>Orlando, FL</td></tr>
-        <tr><td>Temperature</td><td data-weather-temp>--°F</td></tr>
-        <tr><td>Wind / gust</td><td><span data-weather-wind>-- mph</span> / <span data-weather-gust>-- mph</span></td></tr>
-        <tr><td>Precipitation</td><td data-weather-rain>-- in</td></tr>
-        <tr><td>Updated</td><td data-weather-updated>Connecting</td></tr>
-      </tbody>
-    </table>
-    <p class="mechanic-focus" data-weather-guidance>Loading live weather guidance...</p>
+      <button type="submit" class="timer-btn timer-btn-start" style="margin-top:.85rem;">Send me a link</button>
+    </form>
+    <p class="pretech-source-note" data-login-status style="min-height:1.2em;"></p>
   </div>
-
-  <div class="card full">
-    <div class="section-headline">
-      <div>
-        <h3>Lap Timer</h3>
-        <p class="muted-copy">Manual precision stopwatch for trackside timing. Sessions auto-save — your lap history persists across page reloads. Select the kart before starting.</p>
-      </div>
-    </div>
-    <div data-lap-timer style="margin-top:1rem;"></div>
-  </div>
-
 </section>
 
         <footer class="site-footer">
@@ -127,9 +84,35 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/main.js"></script>
-  <script type="module">
-    import { initLapTimer } from '/assets/js/timer.js';
-    initLapTimer();
+  <script>
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || '/index.html';
+
+      const redirectIfSignedIn = async () => {
+        const session = await window.raceTrackerAuth.getSession();
+        if (session) window.location.replace(next);
+      };
+      await redirectIfSignedIn();
+      window.raceTrackerAuth.onAuthChange((event) => {
+        if (event === 'SIGNED_IN') redirectIfSignedIn();
+      });
+
+      const form = document.querySelector('[data-login-form]');
+      const status = document.querySelector('[data-login-status]');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = new FormData(form).get('email');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        status.textContent = 'Sending…';
+        const { error } = await window.raceTrackerAuth.requestMagicLink(email);
+        submitBtn.disabled = false;
+        status.textContent = error
+          ? "Couldn't send a link — confirm this email is on file with your supervisor, then try again."
+          : `Check ${email} for a sign-in link. It's good for one use.`;
+      });
+    })();
   </script>
 </body>
 </html>

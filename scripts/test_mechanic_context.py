@@ -49,21 +49,25 @@ def main():
     workshop = read(WORKSHOP)
     settings = read(SETTINGS)
 
-    assert_in("raceTracker.mechanicProfile", js, "persistent mechanic profile key")
-    assert_in("initMechanicContext", js, "mechanic context initializer")
+    assert_in("initAuthContext", js, "auth context initializer")
+    assert_in("requireAuth", js, "login-gate call")
+    assert_in("currentProfile", js, "verified-identity accessor")
+    assert_in("raceTrackerAuth", js, "auth.js bridge")
     assert_in("loadMechanicData", js, "JSON-backed mechanic data loader")
     assert_in("/assets/data/mechanics.json", js, "mechanics JSON endpoint")
     assert_in("/assets/data/workshop-tasks.json", js, "workshop tasks JSON endpoint")
-    assert_in("data-mechanic-select", js, "mechanic selector hook")
+    assert_in("data-signout-btn", js, "log-out control hook")
     assert_in("data-owner", workshop, "workshop task ownership data")
     assert_in("data-my-task-count", workshop, "my task count KPI")
-    assert_in("Mechanic profile", settings, "settings mechanic profile section")
+    assert_in("Signed in as", settings, "settings identity section")
     assert_in(".mechanic-switcher", css, "mechanic switcher styles")
     assert_in(".is-my-task", css, "selected mechanic task highlight")
 
     for page in PAGES:
         text = read(page)
         assert_in("data-mechanic-slot", text, f"mechanic slot in {page.name}")
+        assert_in("/assets/js/auth.js", text, f"auth.js include in {page.name}")
+        assert_in("supabase-js", text, f"Supabase client include in {page.name}")
 
     assert_real_data_contract()
 
