@@ -23,10 +23,37 @@
   --body-ink-rgb: 196 210 240;
   --muted-rgb: 126 144 189;
 
+  /* Per-entity shell — Evolution reads blue, The Kart Depot reads yellow.
+     Evolution keeps the Trackside Navy page ground but with lighter card/nav
+     surfaces than the raw --navy-2/--navy-3; it is the default shell below
+     since Evolution is the default entity. The Kart Depot block further down
+     swaps the whole shell (ground, surfaces, text, borders) to a warm amber
+     ground so the yellow brand accent it already uses (entities.json) reads
+     as the dominant hue, not just a highlight. */
+  --evo-surface: #1c4090;
+  --evo-surface-soft: #123374;
+  --evo-surface-soft-rgb: 18 51 116;
+  --tkd-bg: #2b1d00;
+  --tkd-surface: #3f2b00;
+  --tkd-surface-soft: #241902;
+  --tkd-surface-soft-rgb: 36 25 2;
+  --tkd-text: #ffe9b3;
+  --tkd-muted: #c9a666;
+  --tkd-muted-rgb: 201 166 102;
+
+  /* Hero-card diagonal stripe (.card.full:first-child) — Evolution keeps the
+     original navy/blue/yellow stripe; the Kart Depot block below swaps it to
+     an amber-dominant stripe with a navy/yellow pop instead of a blue chunk. */
+  --hero-stripe-a: var(--navy-2);
+  --hero-stripe-b: var(--blue);
+  --hero-stripe-c: var(--yellow);
+  --hero-stripe-d: var(--navy-3);
+
   /* Existing semantic contract, mapped onto the approved brand palette. */
   --bg: var(--navy);
-  --surface: var(--navy-3);
-  --surface-soft: var(--navy-2);
+  --surface: var(--evo-surface);
+  --surface-soft: var(--evo-surface-soft);
+  --surface-soft-rgb: var(--evo-surface-soft-rgb);
   --surface-track: rgb(var(--white-rgb) / .045);
   --border: rgb(var(--muted-rgb) / .24);
   --border-strong: rgb(var(--muted-rgb) / .48);
@@ -42,8 +69,8 @@
   --accent-blue-soft: rgb(var(--blue-rgb) / .16);
   --accent-blue-dark: var(--blue-hi);
   --ink: var(--white);
-  --graphite: var(--navy-2);
-  --carbon: var(--navy-2);
+  --graphite: var(--evo-surface-soft);
+  --carbon: var(--evo-surface-soft);
   --amber: var(--yellow);
   --success: #5ce3a4;
   --success-rgb: 92 227 164;
@@ -178,7 +205,7 @@ button, .badge, .nav-group-title, .nav-link, label {
 .topbar {
   min-height: 72px;
   border-bottom: 1px solid var(--border);
-  background: rgb(var(--navy-2-rgb) / .88);
+  background: rgb(var(--surface-soft-rgb) / .88);
   backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
@@ -247,7 +274,7 @@ button, .badge, .nav-group-title, .nav-link, label {
 }
 .card.full:first-child {
   background:
-    linear-gradient(115deg,var(--navy-2) 0 68%,var(--blue) 68% 72%,var(--yellow) 72% 74%,var(--navy-3) 74%),
+    linear-gradient(115deg,var(--hero-stripe-a) 0 68%,var(--hero-stripe-b) 68% 72%,var(--hero-stripe-c) 72% 74%,var(--hero-stripe-d) 74%),
     var(--surface);
   color: var(--white);
   min-height: 148px;
@@ -258,7 +285,7 @@ button, .badge, .nav-group-title, .nav-link, label {
 }
 .card.full:first-child p { max-width: 650px; }
 .card.full:first-child p,
-.card.full:first-child span { color: var(--body-ink) !important; }
+.card.full:first-child span { color: var(--text) !important; }
 .card.full:first-child h2 { font-size: clamp(1.35rem, 2vw, 2.1rem); }
 
 .kpi-grid {
@@ -579,6 +606,12 @@ button, .badge, .nav-group-title, .nav-link, label {
 .setup-notes { border:1px solid var(--border); border-radius:0; background:var(--navy-2); color:var(--ink); font-size:.88rem; padding:.45rem .55rem; resize:vertical; width:100%; }
 .setup-notes:focus { outline:none; border-color:var(--accent-blue); box-shadow:0 0 0 2px rgb(var(--accent-rgb) / .12); }
 
+/* ── Pre-Tech / Safety Tech Checklist ─────────────────────────── */
+.pretech-checklist { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:.5rem; margin:.85rem 0; }
+.pretech-item { display:flex; align-items:flex-start; gap:.55rem; font-size:.85rem; line-height:1.4; color:var(--text); border:1px solid var(--border); background:var(--surface-soft); padding:.55rem .65rem; cursor:pointer; }
+.pretech-item input { margin-top:.2rem; accent-color:var(--primary); flex-shrink:0; }
+.pretech-source-note { font-size:.76rem; color:var(--muted); margin-top:.85rem; line-height:1.5; }
+
 /* ── Registration lists ──────────────────────────────────────── */
 .reg-event-card { border:1px solid var(--border); background:var(--surface-soft); margin-bottom:1rem; }
 .reg-event-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:.85rem 1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
@@ -643,7 +676,7 @@ button, .badge, .nav-group-title, .nav-link, label {
   .section-headline { flex-direction: column; }
   .track-selector { margin-left: 0; }
   .track-switcher { align-items: flex-start; flex-direction: column; }
-  .card.full:first-child { background: linear-gradient(180deg, var(--carbon), var(--navy)); }
+  .card.full:first-child { background: linear-gradient(180deg, var(--carbon), var(--bg)); }
 }
 
 /* ── Series Calendars ────────────────────────────────────────── */
@@ -789,6 +822,38 @@ button, .badge, .nav-group-title, .nav-link, label {
    --entity-accent is set on <body> by initEntityContext(); the fallback keeps
    the shell coherent if entities.json fails to load. */
 :root { --entity-accent: var(--primary); --entity-accent-contrast: var(--navy); }
+
+/* The Kart Depot shell — warm amber ground, replacing Evolution's navy/blue.
+   Scoped to [data-entity] (set on <body> by applyEntity() in main.js) so every
+   token consumer repaints automatically; only the two decorative gradients
+   below need restating because they hardcode the Evolution blue wash instead
+   of reading a token. */
+body[data-entity="the-kart-depot"] {
+  --bg: var(--tkd-bg);
+  --surface: var(--tkd-surface);
+  --surface-soft: var(--tkd-surface-soft);
+  --surface-soft-rgb: var(--tkd-surface-soft-rgb);
+  --carbon: var(--tkd-surface-soft);
+  --graphite: var(--tkd-surface-soft);
+  --text: var(--tkd-text);
+  --muted: var(--tkd-muted);
+  --border: rgb(var(--tkd-muted-rgb) / .28);
+  --border-strong: rgb(var(--tkd-muted-rgb) / .52);
+  --hero-stripe-a: var(--tkd-surface-soft);
+  --hero-stripe-b: var(--navy);
+  --hero-stripe-c: var(--yellow-hi);
+  --hero-stripe-d: var(--tkd-surface);
+  background:
+    radial-gradient(circle at top right, rgb(var(--yellow-rgb) / .22), transparent 34rem),
+    linear-gradient(135deg, rgb(var(--white-rgb) / .025) 0 25%, transparent 25% 50%, rgb(var(--navy-rgb) / .05) 50% 75%, transparent 75%),
+    var(--bg);
+  background-size: auto, 34px 34px, auto;
+}
+body[data-entity="the-kart-depot"] .sidebar {
+  background:
+    linear-gradient(180deg, rgb(var(--yellow-rgb) / .16), transparent 20rem),
+    var(--carbon);
+}
 
 .entity-badge {
   margin-left:auto; align-self:center; flex-shrink:0;

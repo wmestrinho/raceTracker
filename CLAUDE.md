@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.15.0`
+- Current version: `v1.16.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -65,19 +65,33 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 
 - raceTracker is the internal app for **Evolution Kart School** and **The Kart Depot** —
   legally separate businesses, same owner. `raceTracker/assets/data/entities.json` defines both
-- The shell is shared. The active logo, name, and badge change per business; both use the same
-  approved Trackside Navy palette. Do not build separate per-entity colour systems
+- The shell structure is shared (same layout, components, nav), but the two businesses now run
+  **distinct per-entity color themes**, scoped via the `data-entity` attribute `applyEntity()`
+  sets on `<body>` (`raceTracker/assets/js/main.js`): **Evolution reads blue** (navy ground,
+  blue accent, unchanged from the original Trackside Navy look, just with lighter card/nav
+  surface tokens — `--evo-surface`/`--evo-surface-soft` in `style.css`); **The Kart Depot reads
+  yellow** (warm amber ground/surfaces via the `body[data-entity="the-kart-depot"]` block in
+  `style.css`, `--tkd-*` tokens). As a brand rule going forward: **yellow signals TKD, blue
+  signals Evolution** — apply that association to any new UI, not just the shell background
+- This supersedes the earlier "one shared palette, no per-entity colour systems" rule. Extend
+  the theming through the semantic tokens (`--bg`, `--surface`, `--surface-soft`, `--carbon`,
+  `--text`, `--muted`, `--border`) so it cascades automatically — don't hand-pick colours per
+  component
 - Every `billing.json` expense needs an `entityId`; the validator fails without one.
   Two sets of books must never blend
 - Brand colours come from `kart-depot-shopify/brand/tokens.json`; web logo copies derive from
   the masters in `evo-krt-schl/assets/brand/`
 - Inventory is entity-neutral (static HTML, no data file). Entity-tagged stock needs an
   `inventory.json` that does not exist yet — do not fake it
-- The palette lives entirely in `:root`. Never write a raw brand `rgba()` literal; use
-  `rgb(var(--primary-rgb) / a)`. `validate_structure.py` fails the build on one
-- `<meta name="theme-color">` is pinned to the `--navy` page ground by the validator — it cannot use a var
+- The palette lives entirely in `:root` (plus the `body[data-entity="the-kart-depot"]` override
+  block). Never write a raw brand `rgba()` literal; use `rgb(var(--primary-rgb) / a)`.
+  `validate_structure.py` fails the build on one
+- `<meta name="theme-color">` is statically pinned to `--navy` (Evolution, the default entity's
+  ground) by the validator for the pre-JS first paint — it cannot use a var. `applyEntity()`
+  repaints it at runtime via `ENTITY_THEME_COLOR` in `main.js` when The Kart Depot is selected;
+  keep that mapping in step with `--tkd-bg` by hand, the validator can't check it
 - **Series badge colours (`.cal-sbadge--*`) are the series' own identity, not ours.** Do not
-  harmonise them with the palette, however tempting it looks
+  harmonise them with the Evolution/TKD palette, however tempting it looks
 
 ## Scope
 

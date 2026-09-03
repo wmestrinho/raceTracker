@@ -73,6 +73,47 @@
   </div>
 
   <div class="card full">
+    <div class="section-headline">
+      <div>
+        <h3>NKA Pre-Tech Submission</h3>
+        <p class="muted-copy">Modeled on the NKA Technical/Safety Inspection Form (Rulebook §10.4.12) — every driver fills this out and signs before entering the grid for qualifying. Event officials may still spot-check on the day.</p>
+      </div>
+      <span class="badge warn">Driver sign-off</span>
+    </div>
+    <form class="task-add-form" data-pretech-driver-form>
+      <div class="task-add-row">
+        <label class="task-field-label">
+          Driver
+          <input type="text" name="driverName" class="task-field-input" placeholder="Driver name" required>
+        </label>
+        <label class="task-field-label">
+          Kart #
+          <input type="text" name="kart" class="task-field-input" placeholder="Kart #1">
+        </label>
+        <label class="task-field-label">
+          Class
+          <input type="text" name="className" class="task-field-input" placeholder="Class">
+        </label>
+        <label class="task-field-label">
+          Event
+          <input type="text" name="event" class="task-field-input" placeholder="Event / round">
+        </label>
+      </div>
+      <div class="pretech-checklist" data-pretech-checklist></div>
+      <label class="task-field-label" style="max-width:520px;">
+        Notes
+        <textarea name="notes" class="task-field-input" rows="2" placeholder="Anything an official should know…"></textarea>
+      </label>
+      <button type="submit" class="timer-btn timer-btn-start" style="margin-top:.75rem;">Submit &amp; Sign Pre-Tech</button>
+    </form>
+    <table class="table" style="margin-top:1.1rem;">
+      <thead><tr><th>Driver</th><th>Kart</th><th>Class</th><th>Event</th><th>Submitted</th><th>Status</th></tr></thead>
+      <tbody data-pretech-driver-list></tbody>
+    </table>
+    <p class="pretech-source-note">Checklist items follow the NKA Rulebook: §10.4.6 (helmet, neck collar, chest protector), §10.4.10 (weight/ballast) and §10.4.11 (Safety Tech Standards — nylock-nut/safety-wired connections). NKA's own Pre-Tech form is only available by request from NKA directly; confirm against your sanctioned series' current rulebook — this is not a substitute for official tech.</p>
+  </div>
+
+  <div class="card full">
     <h3>How This Works</h3>
     <div class="integration-path">
       <div>
@@ -98,7 +139,7 @@
           <div class="site-footer__inner">
             <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
             <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-            <p class="footer-version">v1.15.0</p>
+            <p class="footer-version">v1.16.0</p>
           </div>
         </footer>
       </main>

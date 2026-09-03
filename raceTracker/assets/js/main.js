@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initWeatherContext();
   initAddTaskForm();
   initSetupSheet();
+  initPreTechDriverForm();
+  initPreTechMechanicChecklist();
   initTeamRoster();
   initBillingModule();
   initSeriesCalendars();
@@ -687,6 +689,201 @@ function initSetupSheet() {
       });
     });
   });
+}
+
+// ── Pre-Tech / Safety Tech Checklist ────────────────────────────
+// Modeled on the NKA Rulebook (nkaonline.com/rules — the literal Pre-Tech
+// Submission form itself is gated behind an NKA email request, so this
+// mirrors the checklist items §10.4.12 says that form must cover) §10.4.12:
+// entrants fill out and sign a Technical/Safety Inspection Form before
+// entering the grid for qualifying. Items below come from §10.4.6 (safety
+// gear), §10.4.10 (weight/ballast) and §10.4.11 (Safety Tech Standards —
+// the nylock-nut/safety-wire connections). The mechanic daily sign-off
+// sheet on the Workshop page reuses this exact item list.
+
+const PRETECH_ITEMS = [
+  { id: 'helmet',          label: 'Helmet meets spec and is in-date (Snell M/SA2015, CMR/CMS2016 Youth, or FIA 8859-2015 / 8860-2010 / 8860-2018)' },
+  { id: 'neck-collar',     label: 'Neck collar worn — mandatory Rookie/Junior, recommended Senior' },
+  { id: 'chest-protector', label: 'Chest protector worn, SFI 20.1 spec — required Rookie/Junior up to 13' },
+  { id: 'pedals',          label: 'Pedals (brake & throttle) — nylock nut and/or safety wired' },
+  { id: 'brake-rods',      label: 'Brake rods & safety tether — nylock nut and/or safety wired' },
+  { id: 'master-cylinder', label: 'Master cylinder to frame — nylock nut and/or safety wired' },
+  { id: 'calipers',        label: 'Calipers to frame/spindle — nylock nut and/or safety wired' },
+  { id: 'rotor-hub',       label: 'Rotor-to-hub bolts & kingpins — mechanical lock nuts' },
+  { id: 'steering-shaft',  label: 'Steering shaft to frame — nylock nut and/or safety wired' },
+  { id: 'tie-rods',        label: 'Tie rods, all mounting points — nylock nut and/or safety wired' },
+  { id: 'steering-hub',    label: 'Steering hub to steering shaft — nylock nut and/or safety wired' },
+  { id: 'steering-wheel',  label: 'Steering wheel to steering hub, min. 3 points — nylock nut and/or safety wired' },
+  { id: 'third-bearing',   label: 'Third bearing support bolts, min. 2 — nylock nut and/or safety wired' },
+  { id: 'weight',          label: "Ballast bolted per spec (white, kart number marked); none on the driver or the chassis underside" }
+];
+
+function renderPreTechChecklist(container, prefix) {
+  if (!container) return;
+  container.innerHTML = PRETECH_ITEMS.map(item => `
+    <label class="pretech-item">
+      <input type="checkbox" name="${escapeHtml(prefix)}-${escapeHtml(item.id)}" data-pretech-check="${escapeHtml(item.id)}">
+      <span>${escapeHtml(item.label)}</span>
+    </label>
+  `).join('');
+}
+
+function readPreTechItems(checklist) {
+  const items = {};
+  PRETECH_ITEMS.forEach(item => {
+    const box = checklist.querySelector(`[data-pretech-check="${item.id}"]`);
+    items[item.id] = !!(box && box.checked);
+  });
+  return items;
+}
+
+function currentMechanicName() {
+  return localStorage.getItem('raceTracker.mechanicProfile')
+    || document.querySelector('[data-mechanic-select]')?.value
+    || '';
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// -- Driver submission (registrations.html) -----------------------------
+const PRETECH_DRIVER_KEY = 'raceTracker.preTechDriverSubmissions';
+
+function initPreTechDriverForm() {
+  const form = document.querySelector('[data-pretech-driver-form]');
+  if (!form) return;
+  const checklist = form.querySelector('[data-pretech-checklist]');
+  renderPreTechChecklist(checklist, 'driver');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const driverName = (data.get('driverName') || '').trim();
+    if (!driverName) return;
+    const items = readPreTechItems(checklist);
+    const submission = {
+      id: `pretech-${Date.now()}`,
+      entityId: activeEntityId(),
+      driverName,
+      kart: data.get('kart') || '',
+      className: data.get('className') || '',
+      event: data.get('event') || '',
+      notes: data.get('notes') || '',
+      items,
+      complete: Object.values(items).every(Boolean),
+      submittedAt: new Date().toISOString()
+    };
+    const all = getPreTechDriverSubmissions();
+    all.unshift(submission);
+    try { localStorage.setItem(PRETECH_DRIVER_KEY, JSON.stringify(all)); } catch {}
+    form.reset();
+    renderPreTechChecklist(checklist, 'driver');
+    renderPreTechDriverList();
+  });
+
+  renderPreTechDriverList();
+}
+
+function getPreTechDriverSubmissions() {
+  try { return JSON.parse(localStorage.getItem(PRETECH_DRIVER_KEY) || '[]'); } catch { return []; }
+}
+
+function renderPreTechDriverList() {
+  const body = document.querySelector('[data-pretech-driver-list]');
+  if (!body) return;
+  const rows = getPreTechDriverSubmissions();
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="6" class="reg-empty">No pre-tech submissions yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.driverName)}</td>
+      <td>${escapeHtml(r.kart || '—')}</td>
+      <td>${escapeHtml(r.className || '—')}</td>
+      <td>${escapeHtml(r.event || '—')}</td>
+      <td>${escapeHtml(new Date(r.submittedAt).toLocaleString())}</td>
+      <td><span class="badge ${r.complete ? 'ok' : 'warn'}">${r.complete ? 'Complete' : 'Incomplete'}</span></td>
+    </tr>
+  `).join('');
+}
+
+// -- Mechanic daily sign-off (workshop.html) -----------------------------
+const PRETECH_MECHANIC_KEY = 'raceTracker.preTechMechanicSignoffs';
+
+function initPreTechMechanicChecklist() {
+  const form = document.querySelector('[data-pretech-mechanic-form]');
+  if (!form) return;
+  const checklist = form.querySelector('[data-pretech-checklist]');
+  renderPreTechChecklist(checklist, 'mechanic');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = currentMechanicName();
+    if (!name) return;
+    const data = new FormData(form);
+    const items = readPreTechItems(checklist);
+    const record = {
+      id: `pretech-mech-${Date.now()}`,
+      entityId: activeEntityId(),
+      mechanicName: name,
+      kart: data.get('kart') || '',
+      notes: data.get('notes') || '',
+      items,
+      complete: Object.values(items).every(Boolean),
+      date: todayKey(),
+      signedAt: new Date().toISOString()
+    };
+    const today = todayKey();
+    const all = getPreTechMechanicSignoffs().filter(r => !(r.mechanicName === name && r.date === today));
+    all.unshift(record);
+    try { localStorage.setItem(PRETECH_MECHANIC_KEY, JSON.stringify(all)); } catch {}
+    form.reset();
+    renderPreTechChecklist(checklist, 'mechanic');
+    renderPreTechMechanicStatus();
+  });
+
+  document.addEventListener('change', (e) => {
+    if (e.target.matches && e.target.matches('[data-mechanic-select]')) renderPreTechMechanicStatus();
+  });
+
+  renderPreTechMechanicStatus();
+}
+
+function getPreTechMechanicSignoffs() {
+  try { return JSON.parse(localStorage.getItem(PRETECH_MECHANIC_KEY) || '[]'); } catch { return []; }
+}
+
+async function renderPreTechMechanicStatus() {
+  const statusEl = document.querySelector('[data-pretech-mechanic-status]');
+  const crewBody = document.querySelector('[data-pretech-crew-status]');
+  if (!statusEl && !crewBody) return;
+  const today = todayKey();
+  const signedToday = getPreTechMechanicSignoffs().filter(r => r.date === today);
+  const name = currentMechanicName();
+
+  if (statusEl) {
+    const mine = signedToday.find(r => r.mechanicName === name);
+    statusEl.textContent = mine
+      ? `Signed off today at ${new Date(mine.signedAt).toLocaleTimeString()}`
+      : 'Not signed off yet today';
+    statusEl.classList.remove('ok', 'warn');
+    statusEl.classList.add(mine ? 'ok' : 'warn');
+  }
+
+  if (crewBody) {
+    const mechanicData = await loadMechanicData();
+    crewBody.innerHTML = mechanicData.mechanics.map(m => {
+      const signed = signedToday.find(r => r.mechanicName === m.name);
+      return `<tr>
+        <td>${escapeHtml(m.name)}</td>
+        <td>${escapeHtml(m.role || '')}</td>
+        <td><span class="badge ${signed ? 'ok' : 'alert'}">${signed ? 'Signed' : 'Not signed'}</span></td>
+        <td>${signed ? escapeHtml(new Date(signed.signedAt).toLocaleTimeString()) : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ── Billing module ────────────────────────────────────────────
@@ -1844,11 +2041,20 @@ async function initEntityContext() {
   });
 }
 
+const ENTITY_THEME_COLOR = {
+  'evolution-kart-school': '#001a52', // --navy, matches the static <meta theme-color> default
+  'the-kart-depot':        '#2b1d00'  // --tkd-bg
+};
+
 function applyEntity(entity) {
   const root = document.body;
   root.style.setProperty('--entity-accent', entity.accent);
   root.style.setProperty('--entity-accent-contrast', entity.accentContrast);
   root.setAttribute('data-entity', entity.id);
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta && ENTITY_THEME_COLOR[entity.id]) {
+    themeColorMeta.setAttribute('content', ENTITY_THEME_COLOR[entity.id]);
+  }
   document.querySelectorAll('[data-entity-badge]').forEach(el => {
     el.textContent = entity.badgeLabel;
     el.title = entity.legalName;

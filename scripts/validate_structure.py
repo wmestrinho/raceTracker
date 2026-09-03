@@ -161,8 +161,12 @@ for html_file in html_files:
 
 # ── Brand palette drift ───────────────────────────────────────────────────
 # <meta name="theme-color"> cannot reference a CSS variable, so it is the one
-# place the brand colour must be repeated by hand. Pin it to the Trackside Navy
-# page ground rather than the yellow action accent.
+# place the brand colour must be repeated by hand. It is pinned to the
+# Trackside Navy page ground of the *default* entity (Evolution Kart School)
+# for the pre-JS/first-paint value; applyEntity() in main.js repaints it to
+# --tkd-bg at runtime when The Kart Depot workspace is selected (see
+# ENTITY_THEME_COLOR there) — that second mapping isn't statically checkable
+# here, so keep the two in step by hand if either shell colour changes.
 CSS_PATH = CANON / "assets/css/style.css"
 try:
     css_text = CSS_PATH.read_text(errors="replace")

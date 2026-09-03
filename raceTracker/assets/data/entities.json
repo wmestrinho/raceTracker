@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-09-01",
-  "notes": "Evolution Kart School and The Kart Depot are legally separate businesses under the same owner, sharing this app. They use the approved Trackside Navy palette together; the active logo, name, and badge make the current workspace explicit. Billing remains scoped by entity so the two sets of books never blend.",
+  "notes": "Evolution Kart School and The Kart Depot are legally separate businesses under the same owner, sharing this app's shell and Trackside Navy/Blue/Yellow brand palette. Evolution's workspace reads blue (navy ground, blue accent); The Kart Depot's reads yellow (amber ground, yellow accent) — see style.css's body[data-entity] block. Billing remains scoped by entity so the two sets of books never blend.",
   "defaultEntityId": "evolution-kart-school",
   "entities": [
     {
@@ -10,8 +10,8 @@
       "legalName": "Evolution Karting & Mechanic School",
       "badgeLabel": "EVO",
       "logo": "/assets/images/evolution-kart-school.png",
-      "accent": "#febf00",
-      "accentContrast": "#001a52",
+      "accent": "#0a4cff",
+      "accentContrast": "#f5f8ff",
       "accentPlaceholder": false,
       "role": "Driver coaching, race-weekend operations and mechanic training."
     },
