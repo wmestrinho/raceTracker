@@ -13,13 +13,15 @@
       "role": "Owner / Team Principal",
       "clearance": "admin",
       "shift": "All day",
-      "specialty": "Evolution Kart School and The Kart Depot operations"
+      "specialty": "Evolution Kart School and The Kart Depot operations",
+      "note": "Not onboarded yet — no Supabase login until he joins."
     },
     {
       "id": "luiz",
       "name": "Luiz",
+      "email": "absolutelyplausible@gmail.com",
       "role": "AP Operations",
-      "clearance": "staff",
+      "clearance": "admin",
       "shift": "Race days",
       "specialty": "Race-day execution and operations systems"
     },

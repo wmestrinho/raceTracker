@@ -117,7 +117,7 @@ async function loadMechanicData() {
   const fallback = {
     mechanics: [
       { name: 'Emerson',     role: 'Owner / Team Principal', clearance: 'admin' },
-      { name: 'Luiz',        role: 'AP Operations',          clearance: 'staff' },
+      { name: 'Luiz',        role: 'AP Operations',          clearance: 'admin' },
       { name: 'Add Mechanic', role: 'Mechanic',              clearance: 'staff' },
       { name: 'Add Coach',    role: 'Driver Coach',          clearance: 'staff' }
     ],
