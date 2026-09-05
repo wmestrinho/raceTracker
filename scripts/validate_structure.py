@@ -79,18 +79,21 @@ if images_dir.exists():
             )
 
 version = ""
+display_version = ""
 if VERSION.exists():
     version = VERSION.read_text(errors="replace").strip()
-    if not re.fullmatch(r"v\d+\.\d+\.\d+(?: (?:alpha|beta|rc))?", version):
+    if not re.fullmatch(r"\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?", version):
         errors.append(f"VERSION has invalid format: {version!r}")
+    else:
+        display_version = f"v{version}"
 
-if README.exists() and version:
+if README.exists() and display_version:
     readme = README.read_text(errors="replace")
-    stale_versions = sorted(set(re.findall(r"v\d+\.\d+\.\d+(?: (?:alpha|beta|rc))?", readme)) - {version})
+    stale_versions = sorted(set(re.findall(r"v\d+\.\d+\.\d+(?: (?:alpha|beta|rc))?", readme)) - {display_version})
     if stale_versions:
         errors.append("README.md contains stale version reference(s): " + ", ".join(stale_versions))
-    if version not in readme:
-        errors.append(f"README.md does not mention current VERSION: {version}")
+    if display_version not in readme:
+        errors.append(f"README.md does not mention current VERSION: {display_version}")
 
 if WRANGLER.exists():
     try:
@@ -121,8 +124,8 @@ for html_file in html_files:
     if bad_lines:
         errors.append(f"{html_file.relative_to(ROOT)} contains line-number prefixes at lines: {bad_lines[:5]}")
 
-    if version and version not in html:
-        errors.append(f"VERSION is not displayed in {html_file.relative_to(ROOT)} footer: {version}")
+    if display_version and display_version not in html:
+        errors.append(f"VERSION is not displayed in {html_file.relative_to(ROOT)} footer: {display_version}")
 
     # Workspace header/footer contract. Keep these structural checks close to the
     # HTML loop so a copied page cannot silently drift from the shared shell.
