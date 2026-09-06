@@ -141,9 +141,29 @@ intake shipped on D1 hours before it was moved off.
 
 - **evo-krt-schl:** `wrangler.jsonc` vars (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) and
   `functions/api/intake.js` point at the dead project. Its D1 database `evolution-intake`
-  and the D1 intake path still work. **Stay on D1.** raceTracker's `intake_requests` table
-  is written to match Evolution's committed shape (`intake_type`, contact fields, `status`),
-  so converging later is a binding change, not a redesign. Not edited from this session.
+  and the D1 intake path still work. **Stay on D1** until the rebind below. Not edited
+  from this session.
+
+  **Correction, same day:** 0001's `intake_requests` did *not* match Evolution's committed
+  shape, and 56e3fb8's commit message wrongly said it did. The Evolution session caught it.
+  Verified against both `evo-krt-schl/docs/05-decision-log.md` (2026-09-05 DDL) and the live
+  validation in `functions/api/intake.js`: the form collects each driver's **age** (validated
+  4-80), a **guardian name**, an **acknowledgement**, and a type-specific detail block, none
+  of which 0001 had a column for. Those are the fields a karting school and an
+  arrive-and-drive booking legally turn on, so putting them in `message` as prose was not an
+  acceptable downgrade. `migrations/0002_intake_driver_details.sql` adds `driver_count`,
+  `drivers_json`, `detail_json`, `guardian_name` and `acknowledgement`; applied local and
+  remote (the table held no rows).
+
+  **Agreed intake contract.** Evolution conforms to raceTracker's column names and
+  constraints; raceTracker carries Evolution's richer fields. Writers send `entity_id`
+  `'evolution-kart-school'`, `status` `'new'`, `notes` as `message`, and one `request_id`
+  per *form instance* rather than per submit, so a double-click or a retry dedupes instead
+  of creating a second lead. **Language is `'pt'`, not `'pt-BR'`** — one vocabulary with
+  `clients.preferred_language`, because an intake request becomes a client and two
+  spellings would diverge at exactly that conversion. A trigger refuses anything else at
+  write time rather than letting it fail silently later. `converted_client_id` stays
+  raceTracker's; the public form never writes it.
 - **kart-depot-shopify:** unaffected — `kart-depot-events-rsvp` was already D1. It remains
   the owner of `events.json`, and therefore the only repo that applies reported calendar
   drift. Four confirmed ROK Cup USA rounds on Emerson's page are currently unpublished
