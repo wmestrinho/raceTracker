@@ -11,5 +11,31 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+
+  // Operational records: clients, drivers, mechanics, staff profiles, intake
+  // and pre-tech sign-offs. Schema in migrations/; apply with
+  //   npx wrangler d1 migrations apply OPS_DB --local
+  //   npx wrangler d1 migrations apply OPS_DB --remote
+  "d1_databases": [
+    {
+      "binding": "OPS_DB",
+      "database_name": "racetracker-ops",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Cloudflare Access configuration. Neither value is a secret: the AUD tag
+  // identifies the Access application so ops-api.js can reject a token minted
+  // for a different app, and it is checked, never presented as a credential.
+  // Both come from Zero Trust -> Access controls -> Applications after the
+  // self-hosted app for tracker.absolutelyplausible.com is created.
+  //
+  // If either is missing, verifyAccessJwt() fails closed with 503 — an
+  // unconfigured deployment must never read as "no auth required".
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "REPLACE_WITH_TEAM_DOMAIN.cloudflareaccess.com",
+    "ACCESS_AUD": "REPLACE_WITH_ACCESS_AUD_TAG"
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "id": "stars-2026-09-10",
+      "series": "STARS Championship Series",
+      "name": "Race Night Fight",
+      "dates": "September 10-12, 2026",
+      "venue": "Trackhouse Motorplex, Mooresville, NC",
+      "days": [{ "id": "2026-09-10" }, { "id": "2026-09-11" }, { "id": "2026-09-12" }]
+    },
+    {
+      "id": "rok-vegas-2026",
+      "series": "ROK Cup USA",
+      "name": "ROK Vegas — Dirt, Sprint and Enduro",
+      "dates": "October 28-November 1, 2026",
+      "venue": "Rio All-Suites Hotel & Casino, Las Vegas, NV",
+      "days": [{ "id": "2026-10-28" }, { "id": "2026-11-01" }]
+    }
+  ]
+}

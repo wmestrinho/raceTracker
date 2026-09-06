@@ -46,7 +46,7 @@
       <div class="topbar">
         <div>
           <h1>Registrations</h1>
-          <p>Official entry lists for every event</p>
+          <p>Requests and preparation for our shared calendar</p>
         </div>
         <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
@@ -56,21 +56,20 @@
 
 <section class="page-grid">
   <div class="card full">
-    <h2>Event Registration Lists</h2>
-    <p style="color:var(--muted);margin-top:.35rem;">Pull the official driver entry list for any event directly from MotorsportReg or RaceSelect. Data is cached locally and refreshes on demand. Real event IDs must be confirmed by the team before live pulls.</p>
+    <h2>Event requests</h2>
+    <p class="muted-copy">Choose from Emerson’s published calendar and request support through The Kart Depot Events. Requests are confirmed by the team.</p>
   </div>
 
-  <div class="card full">
+  <div class="card full" data-calendar-view>
     <div class="section-headline">
       <div>
         <h3>Upcoming Events</h3>
-        <p class="muted-copy">Click "Pull Entries" on any event to fetch the full registered driver list, grouped by class.</p>
+        <p class="muted-copy">Dates and venues come directly from our shared Events calendar.</p>
       </div>
-      <span class="badge warn">Live pull</span>
+      <button type="button" class="timer-btn" data-calendar-refresh>Refresh calendar</button>
     </div>
-    <div data-reg-events style="margin-top:1rem;">
-      <p class="muted-copy">Loading events…</p>
-    </div>
+    <p class="calendar-status" data-calendar-status role="status">Connecting to the Events calendar…</p>
+    <div data-calendar-list></div>
   </div>
 
   <div class="card full">
@@ -114,44 +113,20 @@
     <p class="pretech-source-note">Checklist items follow the NKA Rulebook: §10.4.6 (helmet, neck collar, chest protector), §10.4.10 (weight/ballast) and §10.4.11 (Safety Tech Standards — nylock-nut/safety-wired connections). NKA's own Pre-Tech form is only available by request from NKA directly; confirm against your sanctioned series' current rulebook — this is not a substitute for official tech.</p>
   </div>
 
-  <div class="card full">
-    <h3>How This Works</h3>
-    <div class="integration-path">
-      <div>
-        <span>MotorsportReg</span>
-        <strong>REST API</strong>
-        <small>Entry lists via <code>/rest/events/{id}/entrylist.json</code>. <code>{id}</code> is MotorsportReg's internal event ID — <strong>not</strong> the number in the public event URL — and isn't visible on the public event page; confirm it with MotorsportReg or the event organizer. Private events need <code>MOTORSPORTREG_APIKEY</code> set as a Worker secret.</small>
-      </div>
-      <div>
-        <span>RaceSelect</span>
-        <strong>HTML parse</strong>
-        <small>No public API — the Worker fetches the event's own <code>/EventEntries</code> page (not the series season-index page) and parses its entry rows. Verified working against a real live event.</small>
-      </div>
-      <div>
-        <span>Setup</span>
-        <strong>Add real event IDs</strong>
-        <small>Update <code>event-schedule.json</code> with the real MotorsportReg internal event ID or the RaceSelect <code>/EventEntries</code> URL once the team confirms its rounds.</small>
-      </div>
-    </div>
-  </div>
 </section>
 
         <footer class="site-footer">
           <div class="site-footer__inner">
             <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
-            <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-            <p class="footer-version">v1.17.0</p>
+            <p class="footer-attr-subtle">An <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a> Product Design and Solution</p>
+            <p class="footer-version">v1.19.0</p>
           </div>
         </footer>
       </main>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/calendar.js"></script>
   <script src="/assets/js/main.js"></script>
-  <script type="module">
-    import { initRegistrations } from '/assets/js/registrations.js';
-    initRegistrations();
-  </script>
 </body>
 </html>

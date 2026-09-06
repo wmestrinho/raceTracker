@@ -2,6 +2,17 @@
 
 This repo is the canonical working copy for raceTracker.
 
+Current shared strategy
+- Read `COLLABORATION.md` for the three-repo ownership map, business roles, priorities,
+  online-data contract and implementation/deployment status.
+- The only operational calendar is Emerson's published Events calendar at
+  `https://events.thekartdepot.com/events.json`, owned by `kart-depot-shopify`.
+  Consume its IDs and dates; do not add a second editable calendar here.
+- First product priority is shared onboarding for clients, drivers and mechanics,
+  followed by online operational records and a relationship-scoped customer portal.
+- Keep new operational writes server-confirmed; no browser-only success or silent
+  offline write queue. Existing local-storage workflows still need migration.
+
 Canonical path
 - `/Users/wmestrinho/Workspace/Projects/raceTracker`
 
@@ -68,8 +79,12 @@ Live data guardrails
 - Weather alerts post to `RACETRACKER_WEATHER_WEBHOOK_URL` (Slack/Discord), configured only as a GitHub Actions secret. Never commit a webhook URL.
 - Default high-frequency tracks are New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC).
 - Highest-value orchestration is live event schedule + registration-list ingestion by event/track.
-- Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward Supabase/backend ownership for durable multi-client use.
-- Supabase planning lives under `supabase/`; local secrets belong only in ignored `.env.local` and must not be copied into Git, static JS, markdown, or memory.
+- Early ops data may use Google Sheets via `scripts/ingest_google_sheet.py`, but design toward the Cloudflare D1 operational database (`OPS_DB`) for durable multi-client use.
+- The operational schema lives in `migrations/` (Cloudflare D1). Supabase was removed in
+  v1.19.0 — its project no longer exists and never launched; do not reintroduce it.
+- Staff identity is Cloudflare Access. Never add a login form, password field, session
+  cookie or auth token to this app: `access-jwt.js` verifies Access's assertion and
+  `ops-api.js` enforces roles. Provisioning stays admin-side in both places.
 - Candidate event/registration sources currently include NCMP official schedule, Route 66/USPKS Race Select, Trackhouse official events, Trackhouse MotorsportReg, and Trackhouse Clubspeed/timing.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection without a team-approved source/API.
 

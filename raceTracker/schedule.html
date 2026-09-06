@@ -75,37 +75,20 @@
     <p class="cal-wx-source"><small data-weather-countdown>Refresh in 5:00</small></p>
   </div>
 
-  <div class="card full">
+  <div class="card full" data-calendar-view>
     <div class="section-headline">
       <div>
-        <h3>Next Up</h3>
-        <p class="muted-copy">Nearest upcoming rounds across all series, each with its race-weekend weather outlook</p>
+        <h2>Our race calendar</h2>
+        <p class="muted-copy">Emerson’s calendar, shared with <a href="https://events.thekartdepot.com/">The Kart Depot Events</a>. One schedule for both businesses.</p>
       </div>
-      <span class="badge warn wx-stale-note" data-wx-stale hidden></span>
-      <span class="badge ok" data-nextup-badge>—</span>
+      <button type="button" class="timer-btn" data-calendar-refresh>Refresh calendar</button>
     </div>
-    <div data-next-up-list class="cal-nextup-list">
-      <p class="muted-copy">Loading calendar…</p>
+    <div class="calendar-controls">
+      <label>Find an event<input type="search" class="task-field-input" data-calendar-search placeholder="Event, series or venue"></label>
+      <label>Show<select class="task-field-input" data-calendar-period><option value="upcoming">Upcoming events</option><option value="all">All published events</option><option value="past">Past events</option></select></label>
     </div>
-  </div>
-
-  <div class="card full">
-    <div class="section-headline">
-      <div>
-        <h3>Series Calendars</h3>
-        <p class="muted-copy"><span data-cal-round-count>—</span> rounds shown ·
-          <span data-cal-engine-note>2-stroke · US only</span> ·
-          <span data-cal-updated>Calendar updated —</span></p>
-      </div>
-    </div>
-    <div class="series-filter-row" data-engine-filter></div>
-    <div class="series-filter-row" data-series-filter></div>
-    <div data-series-calendar-body>
-      <p class="muted-copy">Loading…</p>
-    </div>
-    <p class="cal-wx-source">Weather badges show the weekend peak: high temp · max gust · total rain.
-      Click a badge for the day-by-day outlook and prep notes. Weekends inside 16 days use a live
-      forecast; further out uses climate normals from past seasons.</p>
+    <p class="calendar-status" data-calendar-status role="status">Connecting to the Events calendar…</p>
+    <div data-calendar-list></div>
   </div>
 
 </section>
@@ -113,15 +96,15 @@
         <footer class="site-footer">
           <div class="site-footer__inner">
             <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
-            <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-            <p class="footer-version">v1.17.0</p>
+            <p class="footer-attr-subtle">An <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a> Product Design and Solution</p>
+            <p class="footer-version">v1.19.0</p>
           </div>
         </footer>
       </main>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/calendar.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>

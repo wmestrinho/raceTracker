@@ -2,6 +2,58 @@
 
 Shared operations app for Evolution Kart School and The Kart Depot, built from the raceTracker platform.
 
+Current strategy and cross-repo handoff: [COLLABORATION.md](COLLABORATION.md).
+
+Canonical operational calendar (v1.19.0)
+- Emerson's calendar at `https://events.thekartdepot.com/events.json` is the only
+  runtime calendar. The Events implementation is owned by `kart-depot-shopify`.
+- `GET /api/calendar` reads that fixed public feed, validates its event IDs/days,
+  excludes contact/pricing content, and returns a server-check timestamp.
+- Overview, Schedule, registration event browsing and billing event choices use
+  the shared browser client in `assets/js/calendar.js`. Active views refresh every
+  minute and on reconnection/tab return. Failures are visible; no local-calendar fallback.
+- Legacy `series-calendars.json`, `event-schedule.json`, external entry-list adapters
+  and weather-generation scripts are retained for migration/history. They are not
+  the operational calendar. Do not add new operational dates to those files.
+- Generated series-weather is not attached to canonical events until an explicit
+  venue/date mapping is reviewed. Independent live track weather remains available.
+- `node --test scripts/test_calendar.mjs` (Node 24) validates the adapter and connection states.
+- Preview with the Worker runtime to exercise `/api/calendar`; a static-file server
+  alone cannot serve this API.
+- Emerson's own prototype at `https://calenderrace.netlify.app/` seeded that feed in a
+  **one-time hand copy** on 2026-09-04 (23 of 39 rounds; venue-unconfirmed rounds and
+  series TKD does not price were excluded). Nothing propagates from it automatically.
+  `python3 scripts/check_calendar_drift.py` reports what diverged; `kart-depot-shopify`
+  owns applying it. CI runs the check as a warning, never a build failure.
+- `https://thekartdepot.netlify.app/` is a different prototype — Emerson's "Race Day
+  Loadout" **pricing** page, not a calendar. It is not a data source for this repo.
+
+Onboarding and online operations status
+- Shared client/driver/mechanic onboarding and the customer portal are the next
+  milestones, specified in `COLLABORATION.md`; they are not implemented yet.
+- Existing browser-only billing, task, setup and driver pre-tech workflows still
+  require database migration. The calendar change does not make them shared records.
+- Supabase is gone (see "Staff sign-in" below). The onboarding dashboard now builds on
+  Cloudflare D1, whose schema landed in `migrations/0001_init.sql` with v1.19.0.
+
+Staff sign-in (v1.19.0)
+- Sign-in is **Cloudflare Access** on `tracker.absolutelyplausible.com` — a self-hosted
+  Access application with a One-time PIN identity provider and an email allowlist. There
+  is no login form, no password, and no auth token in JavaScript.
+- The previous Supabase magic-link login pointed at project `lumllkbsiuxoohdolrtm`, which
+  returns NXDOMAIN as of 2026-09-05. It never launched and held no real data; the
+  `supabase/` folder was removed rather than repointed.
+- `access-jwt.js` re-verifies the `Cf-Access-Jwt-Assertion` header server-side on every
+  `/api/*` call (signature, issuer, audience, expiry). Access gating the edge is not
+  treated as proof by the Worker. Missing Access config fails **closed** with 503.
+- Two separate admin-side steps grant access: the email on the Access policy lets a person
+  into the app, and a `profiles` row gives them a role in it. Signing in creates neither.
+- Authorization that used to be Postgres RLS is now explicit in `ops-api.js`: a caller
+  only ever writes as themselves, only reads businesses granted in `profile_entities`, and
+  only sees sign-off history if admin (plus everyone's *today*, for the crew table).
+- `node --test scripts/test_ops.mjs` covers token forgery, wrong-audience, expiry,
+  unprovisioned accounts, entity scoping and spoofed `profile_id` on write.
+
 Live site
 - https://tracker.absolutelyplausible.com
 
@@ -46,7 +98,7 @@ Canonical project structure (single source of truth)
 
 Version rule
 - Single source of truth: `VERSION`
-- Current version: `v1.17.0`
+- Current version: `v1.19.0`
 - The version must be visibly displayed in the web UI footer.
 - Bump the version for UI/behavior changes.
 
@@ -126,7 +178,10 @@ Live data
   - Trackhouse Clubspeed booking/timing candidate: `https://bookings.clubspeed.com/MM/MMMooresville`
 - Keep public/browser-safe APIs in frontend JS only; any credentialed data source needs a backend/Worker proxy.
 - Google Sheets bridge: publish a Sheet tab as CSV and run `python3 scripts/ingest_google_sheet.py` with `RACETRACKER_EVENT_SHEET_CSV_URL` set.
-- Supabase plan: `supabase/schema.sql` defines the durable backend model. Local Supabase secrets are kept in ignored `.env.local`, never in Git.
+- Operational database: Cloudflare D1 (`racetracker-ops`, bound as `OPS_DB`). Schema and
+  migrations live in `migrations/`; apply with `npx wrangler d1 migrations apply OPS_DB
+  --local` then `--remote`. There are no database credentials in this repo — the binding
+  is the credential, and `.env.local` is no longer used by anything.
 - Telemetry is integration/export-only for now; do not build first-party telemetry collection unless a team-approved API/source is confirmed.
 
 Deployment
@@ -171,7 +226,7 @@ Deployment notes:
 - Cloudflare Workers/Pages via Wrangler. Config: `wrangler.jsonc` or `wrangler.toml`.
 
 Version rule:
-- Current baseline version: `v1.17.0`
+- Current baseline version: `v1.19.0`
 - Keep version source documented.
 - Web UIs must visibly display the version.
 

@@ -84,6 +84,20 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+.calendar-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-block: 1rem; }
+.calendar-controls label { display: grid; gap: .4rem; flex: 1 1 13rem; }
+.calendar-controls input, .calendar-controls select { width: 100%; min-height: 44px; }
+.calendar-status { margin-block: .8rem; color: var(--text); }
+.calendar-status-error { color: var(--warning); }
+.calendar-event { display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(0, 3fr) auto; gap: 1rem; align-items: start; padding-block: 1.25rem; border-top: 1px solid var(--border-strong); }
+.calendar-event h3 { margin-bottom: .35rem; }
+.calendar-event p { overflow-wrap: anywhere; }
+.calendar-event-date { color: var(--ink); font-weight: 600; }
+.calendar-event-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); text-decoration: underline; }
+@media (max-width: 640px) {
+  .calendar-event { grid-template-columns: 1fr; gap: .5rem; }
+  .calendar-controls { align-items: stretch; }
+}
 html, body { min-height: 100%; }
 body {
   font-family: var(--font-body);

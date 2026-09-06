@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initTeamRoster();
   initBillingModule();
   initSupervisorPage();
-  initSeriesCalendars();
   initWeatherSandbox();
 });
 
@@ -58,14 +57,14 @@ function initActiveNav() {
   });
 }
 
-// Real per-user identity via Supabase Auth (assets/js/auth.js), replacing the
-// old client-side name-picker. requireAuth() redirects to /login.html for any
-// page that needs a session (everything except login.html itself and pages
-// opting out via <body data-auth-required="false">, i.e. registrations.html's
-// open driver Pre-Tech form).
+// Real per-user identity via Cloudflare Access (assets/js/auth.js), replacing
+// the old client-side name-picker. Access gates every page at the edge before
+// this runs, so there is nothing to redirect to — the only pages that reach
+// here without a profile are the Bypass paths (registrations.html's open
+// driver Pre-Tech form) and accounts that are authenticated but not yet
+// provisioned in `profiles`. Both are handled below.
 async function initAuthContext() {
-  const ok = await window.raceTrackerAuth.requireAuth();
-  if (!ok) return; // redirecting to /login.html
+  await window.raceTrackerAuth.requireAuth();
 
   const mechanicData = await loadMechanicData();
   renderWorkshopTasks(mechanicData.tasks);
@@ -75,9 +74,15 @@ async function initAuthContext() {
   const onLoginPage = window.location.pathname.endsWith('/login.html') || window.location.pathname === '/login';
 
   if (!profile) {
+    // 403 = Access knows them, `profiles` does not. Saying so is what keeps an
+    // unprovisioned staff member from assuming the app is broken.
+    const err = window.raceTrackerAuth.profileError();
+    const needsProfile = err && err.status === 403;
     slots.forEach(slot => {
-      slot.innerHTML = onLoginPage ? '' :
-        '<a href="/login.html" class="mechanic-switcher"><span>Not signed in</span><strong>Log in</strong></a>';
+      if (onLoginPage) { slot.innerHTML = ''; return; }
+      slot.innerHTML = needsProfile
+        ? `<div class="mechanic-switcher"><span>No profile yet</span><strong>${escapeHtml(err.message)}</strong></div>`
+        : '<a href="/login.html" class="mechanic-switcher"><span>Not signed in</span><strong>Sign in</strong></a>';
     });
     applyNavClearance('driver');
     return;
@@ -111,8 +116,9 @@ function applyNavClearance(clearance) {
 
 // Still used for the demo workshop-tasks.json feed and as an offline fallback
 // roster — but `mechanics.json`'s `mechanics` array is no longer the runtime
-// identity source. Real staff/admin identity comes from Supabase `profiles`
-// (see initAuthContext, fetchPreTechSignoffs, and initBillingModule below).
+// identity source. Real staff/admin identity comes from the D1 `profiles`
+// table via /api/me (see initAuthContext, fetchPreTechSignoffs, and
+// initBillingModule below).
 async function loadMechanicData() {
   const fallback = {
     mechanics: [
@@ -483,10 +489,10 @@ async function initEventSchedule(context) {
   const body = document.querySelector('[data-event-schedule-body]');
   if (!body) return;
   try {
-    const res = await fetch('/assets/data/event-schedule.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('Event schedule unavailable');
-    const data = await res.json();
-    renderEventSchedule(data, context.tracks);
+    window.raceTrackerCalendar.subscribe(data => {
+      if (data.status === 'connected') renderEventSchedule({ ...data, sourceStatus: 'connected' }, context.tracks);
+      else setText('[data-event-source-status]', 'Calendar unavailable');
+    });
   } catch {
     setText('[data-event-source-status]', 'Offline');
   }
@@ -802,23 +808,25 @@ function renderPreTechDriverList() {
 }
 
 // -- Mechanic daily sign-off (workshop.html + supervisor.html) ----------
-// Stored server-side in public.pretech_mechanic_signoffs, keyed to the
-// logged-in user's profile — not localStorage — so "who signed off" is a
-// verified fact, not a client-side name string. One sign-off per mechanic
-// per business per day (see the unique constraint in supabase/schema.sql).
+// Stored server-side in D1 `pretech_signoffs`, keyed to the Access-verified
+// profile — not localStorage — so "who signed off" is a verified fact, not a
+// client-side name string. One sign-off per mechanic per business per day
+// (unique index in migrations/0001_init.sql). The Worker decides which rows a
+// caller may read; this function just asks.
 
 async function fetchPreTechSignoffs({ entityId, dateFrom, dateTo, profileId } = {}) {
-  let query = window.raceTrackerAuth.supabaseClient
-    .from('pretech_mechanic_signoffs')
-    .select('*')
-    .order('signoff_date', { ascending: false });
-  if (dateFrom) query = query.gte('signoff_date', dateFrom);
-  if (dateTo) query = query.lte('signoff_date', dateTo);
-  if (entityId) query = query.eq('entity_id', entityId);
-  if (profileId) query = query.eq('profile_id', profileId);
-  const { data, error } = await query;
-  if (error) { console.error('fetchPreTechSignoffs failed', error); return []; }
-  return data || [];
+  const params = new URLSearchParams();
+  if (entityId) params.set('entity', entityId);
+  if (dateFrom) params.set('from', dateFrom);
+  if (dateTo) params.set('to', dateTo);
+  if (profileId) params.set('profile', profileId);
+  try {
+    const data = await window.raceTrackerAuth.apiFetch(`/api/pretech/signoffs?${params}`);
+    return data?.signoffs || [];
+  } catch (err) {
+    console.error('fetchPreTechSignoffs failed', err);
+    return [];
+  }
 }
 
 function initPreTechMechanicChecklist() {
@@ -833,20 +841,29 @@ function initPreTechMechanicChecklist() {
     if (!profile) return;
     const data = new FormData(form);
     const items = readPreTechItems(checklist);
+    // profile_id and signed_at are the server's to decide — it takes the
+    // signer from the verified Access token, so this body cannot sign off on
+    // anyone else's behalf even if it tried.
     const record = {
-      profile_id: profile.id,
       entity_id: activeEntityId(),
       kart: data.get('kart') || '',
       notes: data.get('notes') || '',
       items,
-      complete: Object.values(items).every(Boolean),
-      signoff_date: todayKey(),
-      signed_at: new Date().toISOString()
+      signoff_date: todayKey()
     };
-    const { error } = await window.raceTrackerAuth.supabaseClient
-      .from('pretech_mechanic_signoffs')
-      .upsert(record, { onConflict: 'profile_id,entity_id,signoff_date' });
-    if (error) { console.error('pretech signoff failed', error); return; }
+    const status = form.querySelector('[data-pretech-save-status]');
+    try {
+      await window.raceTrackerAuth.apiFetch('/api/pretech/signoffs', {
+        method: 'POST',
+        body: JSON.stringify(record)
+      });
+    } catch (err) {
+      // The form keeps what was typed. Never report a save the server refused.
+      console.error('pretech signoff failed', err);
+      if (status) { status.textContent = `Not saved — ${err.message}`; status.className = 'badge alert'; }
+      return;
+    }
+    if (status) { status.textContent = 'Saved'; status.className = 'badge ok'; }
     form.reset();
     renderPreTechChecklist(checklist, 'mechanic');
     renderPreTechMechanicStatus();
@@ -879,10 +896,11 @@ async function renderPreTechMechanicStatus() {
   }
 
   if (crewBody) {
-    const { data: roster, error } = await window.raceTrackerAuth.supabaseClient
-      .from('profiles').select('id, name, role').eq('active', true);
-    if (error) { console.error('profiles fetch failed', error); return; }
-    crewBody.innerHTML = (roster || []).map(m => {
+    let roster = [];
+    try {
+      roster = (await window.raceTrackerAuth.apiFetch('/api/profiles'))?.profiles || [];
+    } catch (err) { console.error('profiles fetch failed', err); return; }
+    crewBody.innerHTML = roster.map(m => {
       const signed = signedToday.find(r => r.profile_id === m.id);
       return `<tr>
         <td>${escapeHtml(m.name)}</td>
@@ -896,10 +914,10 @@ async function renderPreTechMechanicStatus() {
 
 // -- Supervisor review (supervisor.html) ---------------------------------
 // Admin-only in the UI (nav hidden via data-min-clearance="admin"), and
-// backstopped for real by RLS: a non-admin visiting this page directly still
-// only gets their own history plus everyone's *today* rows back from
-// pretech_mechanic_signoffs (see supabase/schema.sql), never other people's
-// past sign-offs.
+// backstopped for real in the Worker: a non-admin visiting this page directly
+// still only gets their own history plus everyone's *today* rows back from
+// /api/pretech/signoffs (see handleSignoffList in ops-api.js), never other
+// people's past sign-offs. Hiding a nav link is not authorization.
 const ENTITY_SHORT_LABEL = { 'evolution-kart-school': 'Evolution', 'the-kart-depot': 'TKD' };
 
 function initSupervisorPage() {
@@ -918,10 +936,9 @@ function initSupervisorPage() {
   let roster = [];
 
   async function loadRoster() {
-    const { data, error } = await window.raceTrackerAuth.supabaseClient
-      .from('profiles').select('id, name, role').eq('active', true).order('name');
-    if (error) { console.error('supervisor roster fetch failed', error); return; }
-    roster = data || [];
+    try {
+      roster = (await window.raceTrackerAuth.apiFetch('/api/profiles'))?.profiles || [];
+    } catch (err) { console.error('supervisor roster fetch failed', err); return; }
     if (mechSelect) {
       const selected = mechSelect.value;
       mechSelect.innerHTML = '<option value="">— pick mechanic —</option>' +
@@ -993,6 +1010,7 @@ function initSupervisorPage() {
 // ── Billing module ────────────────────────────────────────────
 
 const BILLING_KEY = 'raceTracker.billing';
+let stopBillingCalendar;
 
 const EXPENSE_CATEGORIES = {
   'entry-fee':   'Entry Fee',
@@ -1006,10 +1024,11 @@ const EXPENSE_CATEGORIES = {
 
 async function initBillingModule() {
   if (!document.querySelector('[data-billing-page]')) return;
+  stopBillingCalendar?.();
 
   const [billingData, scheduleData, mechanicsData] = await Promise.all([
     fetchJson('/assets/data/billing.json'),
-    fetchJson('/assets/data/event-schedule.json'),
+    window.raceTrackerCalendar.refresh(),
     fetchJson('/assets/data/mechanics.json')
   ]);
 
@@ -1018,7 +1037,7 @@ async function initBillingModule() {
   const storedIds = new Set(stored.map(e => e.id));
   const allExpenses = [...stored, ...seedExpenses.filter(e => !storedIds.has(e.id))];
 
-  const events   = scheduleData?.events || [];
+  const events   = [...(scheduleData?.events || [])];
   const drivers  = (mechanicsData?.driverRoster || [{ id: 'driver-1', name: 'Driver' }]);
   const profile  = await window.raceTrackerAuth.currentProfile();
   const profileName = profile?.name || 'Guest';
@@ -1036,6 +1055,28 @@ async function initBillingModule() {
   populateBillingFilters(drivers, events, rerender);
   populateExpenseForm(drivers, events, profileName);
   wireBillingForm(drivers, events, profileName, allExpenses, rerender);
+  // Choices track the same published IDs as Schedule. Existing expense labels
+  // remain historical records; never remap them by guessing similar names.
+  stopBillingCalendar = window.raceTrackerCalendar.subscribe(snapshot => {
+    events.splice(0, events.length, ...snapshot.events);
+    for (const selector of ['[data-billing-event-filter]', '[data-expense-event-select]']) {
+      const select = document.querySelector(selector);
+      if (!select) continue;
+      const selected = select.value;
+      while (select.options.length > 1) select.remove(1);
+      events.forEach(event => select.add(new Option(event.name, event.id)));
+      select.value = [...select.options].some(option => option.value === selected) ? selected : select.options[0].value;
+      select.disabled = snapshot.status !== 'connected';
+    }
+    rerender();
+    const form = document.querySelector('[data-add-expense-form]');
+    if (form) {
+      form.dataset.calendarReady = String(snapshot.status === 'connected');
+      let notice = form.querySelector('[data-billing-calendar-status]');
+      if (!notice) { notice = document.createElement('p'); notice.dataset.billingCalendarStatus = ''; notice.setAttribute('role', 'status'); form.prepend(notice); }
+      notice.textContent = window.raceTrackerCalendar.statusText(snapshot);
+    }
+  });
   showAddFormByRole(clearance);
   // Switching business re-scopes the ledger; the two sets of books never mix.
   document.addEventListener('racetracker:entitychange', rerender);
@@ -1156,6 +1197,7 @@ function wireBillingForm(drivers, events, profile, allExpenses, rerender) {
     const fd = new FormData(form);
     const driverSel = fd.get('driverId');
     const eventSel  = fd.get('eventId');
+    if (!navigator.onLine || form.dataset.calendarReady !== 'true' || !events.some(event => event.id === eventSel)) return;
     const driverName = drivers.find(d => d.id === driverSel)?.name || driverSel;
     const ev = events.find(ev => ev.id === eventSel);
     const expense = {

@@ -1,85 +1,131 @@
-// raceTracker auth — Supabase magic-link login.
+// raceTracker auth — Cloudflare Access identity, no client-side auth library.
 //
-// SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are the public half of Supabase's
-// auth model (same trust boundary as a Stripe publishable key) — they are meant
-// to ship in client-side code. Enforcement lives entirely in Postgres Row Level
-// Security (see supabase/schema.sql), not in hiding these two values. The real
-// secrets (SUPABASE_DB_PASSWORD, SUPABASE_DB_DIRECT_URL, and any future
-// service_role key) never appear here or anywhere in raceTracker/.
-const SUPABASE_URL = 'https://lumllkbsiuxoohdolrtm.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3ySmRfk7FwdTmRBZ7V8b2A_cYlXXkJk';
+// Cloudflare Access sits in front of tracker.absolutelyplausible.com as a
+// self-hosted application. By the time any page in this app renders, Access has
+// already authenticated the visitor and set its session cookie; there is no
+// login form here, no token in JavaScript, and nothing in localStorage. The
+// browser's only job is to ask the Worker who it is: GET /api/me verifies the
+// Access assertion server-side and returns the matching profiles row.
+//
+// Two separate steps grant access, deliberately:
+//   1. the email on the Access policy  — lets you into the app at all
+//   2. a row in the profiles table     — gives you a role inside it
+// Neither alone is enough, and both are admin-side. Signing in never creates
+// a profile.
+//
+// This replaces the Supabase magic-link login. That project (ref
+// lumllkbsiuxoohdolrtm) no longer exists and never held real data.
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-});
+const ME_ENDPOINT = '/api/me';
 
+let profileRequest = null;
 let cachedProfile = null;
+let lastError = null;
+const listeners = new Set();
 
-supabaseClient.auth.onAuthStateChange((event) => {
-  if (event === 'SIGNED_OUT') cachedProfile = null;
-});
+function notify(event) {
+  for (const listener of listeners) {
+    try { listener(event, cachedProfile); } catch (err) { console.error('auth listener failed', err); }
+  }
+}
+
+async function apiFetch(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      Accept: 'application/json',
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers
+    },
+    // Access identity travels on its own cookie; never cache an identity reply.
+    cache: 'no-store',
+    credentials: 'same-origin'
+  });
+
+  let data = null;
+  try { data = await response.json(); } catch { /* non-JSON error page */ }
+
+  if (!response.ok) {
+    const error = new Error(data?.error || `Request failed (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * The signed-in profile, or null. Deduplicated: several page modules call this
+ * during init and they share one in-flight request.
+ */
+async function currentProfile() {
+  if (cachedProfile) return cachedProfile;
+  if (!profileRequest) {
+    profileRequest = apiFetch(ME_ENDPOINT)
+      .then(data => {
+        cachedProfile = data?.profile || null;
+        if (cachedProfile) cachedProfile.entities = data?.entities || [];
+        lastError = null;
+        notify('SIGNED_IN');
+        return cachedProfile;
+      })
+      .catch(err => {
+        // 401 means no Access session (only reachable on a Bypass path);
+        // 403 means authenticated but not provisioned. Both are "no profile"
+        // to the caller, but the message differs and the page shows it.
+        cachedProfile = null;
+        lastError = err;
+        return null;
+      })
+      .finally(() => { profileRequest = null; });
+  }
+  return profileRequest;
+}
+
+/** Why currentProfile() came back empty, for pages that want to say so. */
+function profileError() {
+  return lastError;
+}
 
 async function getSession() {
-  const { data } = await supabaseClient.auth.getSession();
-  return data.session;
+  const profile = await currentProfile();
+  return profile ? { user: { id: profile.id, email: profile.email } } : null;
 }
 
 function onAuthChange(cb) {
-  supabaseClient.auth.onAuthStateChange((event, session) => cb(event, session));
+  listeners.add(cb);
+  return () => listeners.delete(cb);
 }
 
-async function requestMagicLink(email) {
-  return supabaseClient.auth.signInWithOtp({
-    email,
-    options: {
-      // shouldCreateUser:false is the actual allowlist enforcement — Supabase
-      // refuses the request unless an auth.users row already exists for this
-      // email (created by hand in Supabase Studio). No custom callback route:
-      // login.html is both where the link is requested and where it lands.
-      emailRedirectTo: window.location.origin + '/login.html',
-      shouldCreateUser: false
-    }
-  });
+/**
+ * Access owns the logout flow — clearing its cookie is what actually ends the
+ * session, so a local-only sign-out would be a lie.
+ */
+function signOut() {
+  cachedProfile = null;
+  notify('SIGNED_OUT');
+  window.location.assign('/cdn-cgi/access/logout');
 }
 
-async function signOut() {
-  await supabaseClient.auth.signOut();
-  window.location.replace('/login.html');
-}
-
-async function currentProfile() {
-  if (cachedProfile) return cachedProfile;
-  const session = await getSession();
-  if (!session) return null;
-  const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-  if (error || !data) return null;
-  cachedProfile = data;
-  return cachedProfile;
-}
-
-// Call once per page (main.js does this before any other init). Redirects to
-// login unless a session exists, the page is login.html itself, or the page
-// opts out via <body data-auth-required="false"> (registrations.html, so the
-// driver-facing Pre-Tech form stays open with no login).
+/**
+ * Called once per page by main.js before anything else.
+ *
+ * Unlike the Supabase version this never redirects. Access has already gated
+ * every page it protects, so a redirect here could only fire on a Bypass path
+ * (registrations.html's open Pre-Tech form) — where it would produce a loop.
+ * Returning true lets the page render; initAuthContext decides what to show
+ * when there is no profile.
+ */
 async function requireAuth() {
-  const path = window.location.pathname;
-  if (path.endsWith('/login.html') || path === '/login') return true;
-  if (document.body.getAttribute('data-auth-required') === 'false') return true;
-
-  const session = await getSession();
-  if (!session) {
-    window.location.replace('/login.html?next=' + encodeURIComponent(path));
-    return false;
-  }
+  await currentProfile();
   return true;
 }
 
 window.raceTrackerAuth = {
-  supabaseClient,
   getSession,
   onAuthChange,
-  requestMagicLink,
   signOut,
   currentProfile,
-  requireAuth
+  profileError,
+  requireAuth,
+  apiFetch
 };

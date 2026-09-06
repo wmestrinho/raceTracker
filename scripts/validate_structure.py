@@ -92,9 +92,51 @@ if README.exists() and version:
     if version not in readme:
         errors.append(f"README.md does not mention current VERSION: {version}")
 
+def strip_jsonc(text: str) -> str:
+    """Drop // and /* */ comments so a real .jsonc file parses.
+
+    Wrangler accepts comments in wrangler.jsonc and this repo uses them to
+    record why a var is not a secret and how to apply migrations. String
+    contents are preserved, so a "//" inside a URL survives.
+    """
+    out = []
+    i, n = 0, len(text)
+    in_string = False
+    while i < n:
+        ch = text[i]
+        if in_string:
+            out.append(ch)
+            if ch == "\\" and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if ch == '"':
+                in_string = False
+            i += 1
+            continue
+        if ch == '"':
+            in_string = True
+            out.append(ch)
+            i += 1
+            continue
+        if text.startswith("//", i):
+            i = text.find("\n", i)
+            if i == -1:
+                break
+            continue
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+            continue
+        out.append(ch)
+        i += 1
+    # Trailing commas are legal in JSONC and common after a comment is removed.
+    return re.sub(r",(\s*[}\]])", r"\1", "".join(out))
+
+
 if WRANGLER.exists():
     try:
-        cfg = json.loads(WRANGLER.read_text(errors="replace"))
+        cfg = json.loads(strip_jsonc(WRANGLER.read_text(errors="replace")))
         # Accept either Pages pattern (pages_build_output_dir) or Worker+Assets pattern (assets.directory)
         pages_dir = cfg.get("pages_build_output_dir")
         assets_dir = (cfg.get("assets") or {}).get("directory")
@@ -110,6 +152,10 @@ if WRANGLER.exists():
 html_files = sorted(CANON.glob("*.html")) if CANON.exists() else []
 for html_file in html_files:
     html = html_file.read_text(errors="replace")
+    if '/assets/js/calendar.js' not in html:
+        errors.append(f"{html_file.relative_to(ROOT)} must load the canonical calendar client")
+    if 'data-series-calendar-body' in html or 'data-next-up-list' in html:
+        errors.append(f"{html_file.relative_to(ROOT)} must not revive the retired parallel calendar")
 
     # Detect control chars except common whitespace
     bad = [c for c in html if ord(c) < 32 and c not in "\n\r\t"]
@@ -148,7 +194,7 @@ for html_file in html_files:
         footer = footers[0]
         if not re.match(r'<footer class="site-footer">\s*<div class="site-footer__inner">', footer):
             errors.append(f"{html_file.relative_to(ROOT)} footer must use the client-site wrapper")
-        if 'Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a>' not in footer:
+        if 'An <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a> Product Design and Solution' not in footer:
             errors.append(f"{html_file.relative_to(ROOT)} footer must use canonical client attribution")
         if not re.search(r'<p class="footer-version">[^<]+</p>\s*</div>\s*</footer>$', footer):
             errors.append(f"{html_file.relative_to(ROOT)} version must be the final footer element")

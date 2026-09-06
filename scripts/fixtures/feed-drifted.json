@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "id": "stars-2026-09-10",
+      "series": "STARS Championship Series",
+      "name": "Race Night Fight",
+      "dates": "September 10-12, 2026",
+      "venue": "New Castle Motorsports Park, New Castle, IN",
+      "days": [{ "id": "2026-09-10" }, { "id": "2026-09-12" }]
+    },
+    {
+      "id": "skusa-supernationals-29-2026",
+      "series": "SKUSA",
+      "name": "SuperNationals 29",
+      "dates": "November 11-15, 2026",
+      "venue": "Las Vegas Motor Speedway, NV",
+      "days": [{ "id": "2026-11-11" }]
+    }
+  ]
+}

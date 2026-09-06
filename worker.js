@@ -1,15 +1,28 @@
 /**
- * raceTracker Worker — v1.15.0
- * GET /api/registrations?source=X&...  Registration entry list proxy
- *   sources: motorsportreg, raceselect, mylaps, raceentry, racemonitor,
- *            google-sheets, generic-html, motorsport-australia
+ * raceTracker Worker — v1.19.0
+ *
+ * GET  /api/calendar                   Canonical Events calendar adapter (public)
+ * GET  /api/registrations?source=X&... Registration entry list proxy (public)
+ * *    /api/me | /api/profiles
+ *      /api/pretech/signoffs           Operational API — Cloudflare Access identity + D1
+ *
+ * Staff identity is Cloudflare Access (see access-jwt.js). The Access
+ * application gates browser navigation at the edge; ops-api.js verifies the
+ * forwarded assertion again here, so a request arriving by any other route
+ * carries no authority. There are no auth secrets in this Worker.
+ *
  * Secrets (wrangler secret put <NAME>):
  *   MOTORSPORTREG_APIKEY, MYLAPS_APIKEY, MOTORSPORT_AU_APIKEY
  */
 
+import { handleCalendar } from './calendar-api.js';
+import { handleOps, OPS_ROUTES } from './ops-api.js';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/calendar') return handleCalendar(request);
+    if (OPS_ROUTES.includes(url.pathname)) return handleOps(request, env, url);
     if (url.pathname.startsWith('/api/')) return handleApi(url, env);
     return env.ASSETS.fetch(request);
   }

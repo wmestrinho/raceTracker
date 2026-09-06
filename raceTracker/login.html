@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log In | Evolution + TKD Operations</title>
+  <title>Session | Evolution + TKD Operations</title>
   <meta name="description" content="Shared race and shop operations for Evolution Kart School and The Kart Depot">
   <meta name="theme-color" content="#001a52">
   <link rel="icon" type="image/png" href="/assets/images/tkd-the-kart-depot.png">
@@ -45,8 +45,8 @@
     <div class="main">
       <div class="topbar">
         <div>
-          <h1>Log In</h1>
-          <p>Sign in with your email — no password</p>
+          <h1>Session</h1>
+          <p>Sign-in is handled by Cloudflare Access</p>
         </div>
         <div class="entity-slot" data-entity-slot></div>
         <div class="mechanic-slot" data-mechanic-slot></div>
@@ -56,62 +56,73 @@
 
 <section class="page-grid">
   <div class="card split-2" style="grid-column: 3 / span 6;">
-    <h3>Sign in</h3>
-    <p class="muted-copy" style="margin-bottom:.85rem;">Enter the email your supervisor has on file. We'll send you a one-time sign-in link — no password to remember. Only pre-approved crew emails can request a link.</p>
-    <form class="task-add-form" data-login-form>
-      <div class="task-add-row">
-        <label class="task-field-label" style="flex:1 1 100%;">
-          Email
-          <input type="email" name="email" class="task-field-input" placeholder="you@example.com" required autocomplete="email">
-        </label>
-      </div>
-      <button type="submit" class="timer-btn timer-btn-start" style="margin-top:.85rem;">Send me a link</button>
-    </form>
-    <p class="pretech-source-note" data-login-status style="min-height:1.2em;"></p>
+    <h3 data-session-heading>Checking your session…</h3>
+    <p class="muted-copy" data-session-detail style="margin-bottom:.85rem;">One moment.</p>
+    <div data-session-actions style="display:flex;gap:.6rem;flex-wrap:wrap;"></div>
+    <p class="pretech-source-note" style="margin-top:1rem;">
+      Access to this app is granted by email. If you have never signed in before, ask
+      Emerson or Luiz to add you — signing in does not create an account by itself.
+    </p>
   </div>
 </section>
 
         <footer class="site-footer">
           <div class="site-footer__inner">
             <p class="footer-license">© <span data-current-year>2026</span> Evolution Kart School &amp; The Kart Depot</p>
-            <p class="footer-attr-subtle">Site by <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a></p>
-            <p class="footer-version">v1.17.0</p>
+            <p class="footer-attr-subtle">An <a href="https://absolutelyplausible.com" target="_blank" rel="noopener">Absolutely Plausible</a> Product Design and Solution</p>
+            <p class="footer-version">v1.19.0</p>
           </div>
         </footer>
       </main>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/calendar.js"></script>
   <script src="/assets/js/main.js"></script>
   <script>
+    // Cloudflare Access owns the login form, so there is nothing to submit here.
+    // This page exists for the two states Access leaves to us: "signed in, come
+    // on through" and "signed in, but no profile yet". main.js has already
+    // resolved /api/me by the time this runs.
     (async () => {
+      // `next` is attacker-controllable, so it never reaches an href as given:
+      // only a same-origin absolute path survives. This rules out javascript:
+      // and protocol-relative //evil.example redirects.
       const params = new URLSearchParams(window.location.search);
-      const next = params.get('next') || '/index.html';
+      const requested = params.get('next') || '';
+      const next = /^\/[A-Za-z0-9._~\-/]*$/.test(requested) && !requested.startsWith('//')
+        ? requested
+        : '/index.html';
+      const heading = document.querySelector('[data-session-heading]');
+      const detail = document.querySelector('[data-session-detail]');
+      const actions = document.querySelector('[data-session-actions]');
 
-      const redirectIfSignedIn = async () => {
-        const session = await window.raceTrackerAuth.getSession();
-        if (session) window.location.replace(next);
-      };
-      await redirectIfSignedIn();
-      window.raceTrackerAuth.onAuthChange((event) => {
-        if (event === 'SIGNED_IN') redirectIfSignedIn();
-      });
+      const profile = await window.raceTrackerAuth.currentProfile();
+      if (profile) {
+        heading.textContent = `Signed in as ${profile.name}`;
+        detail.textContent = `${profile.role} · ${profile.clearance} clearance`;
+        actions.innerHTML = `<a class="timer-btn timer-btn-start" href="${next}">Continue</a>`
+          + '<button type="button" class="timer-btn" data-session-signout>Log out</button>';
+        actions.querySelector('[data-session-signout]')
+          .addEventListener('click', () => window.raceTrackerAuth.signOut());
+        return;
+      }
 
-      const form = document.querySelector('[data-login-form]');
-      const status = document.querySelector('[data-login-status]');
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = new FormData(form).get('email');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        status.textContent = 'Sending…';
-        const { error } = await window.raceTrackerAuth.requestMagicLink(email);
-        submitBtn.disabled = false;
-        status.textContent = error
-          ? "Couldn't send a link — confirm this email is on file with your supervisor, then try again."
-          : `Check ${email} for a sign-in link. It's good for one use.`;
-      });
+      const err = window.raceTrackerAuth.profileError();
+      if (err && err.status === 403) {
+        heading.textContent = 'No profile yet';
+        detail.textContent = err.message;
+        actions.innerHTML = '<button type="button" class="timer-btn" data-session-signout>Log out</button>';
+        actions.querySelector('[data-session-signout]')
+          .addEventListener('click', () => window.raceTrackerAuth.signOut());
+        return;
+      }
+
+      heading.textContent = 'Not signed in';
+      detail.textContent = err
+        ? `We could not confirm a session: ${err.message}`
+        : 'Open any page in the app and Access will ask for your email.';
+      actions.innerHTML = `<a class="timer-btn timer-btn-start" href="${next}">Sign in</a>`;
     })();
   </script>
 </body>

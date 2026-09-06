@@ -18,15 +18,26 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Set up Node for Worker contract tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Validate canonical structure
         run: python3 scripts/validate_structure.py
 
       - name: Validate JavaScript syntax
         run: |
           set -euo pipefail
-          for f in raceTracker/assets/js/*.js worker.js; do
+          for f in raceTracker/assets/js/*.js worker.js calendar-api.js ops-api.js access-jwt.js; do
             node --check "$f"
           done
+
+      - name: Canonical calendar contract and connectivity tests
+        run: node --test scripts/test_calendar.mjs
+
+      - name: Cloudflare Access and ops API authorization tests
+        run: node --test scripts/test_ops.mjs
 
       - name: Validate all data JSON
         run: |
@@ -40,6 +51,18 @@ jobs:
 
       - name: Race weather unit tests
         run: python3 scripts/test_race_weather.py
+
+      - name: Calendar drift checker unit tests
+        run: python3 scripts/test_calendar_drift.py
+
+      # Reports only. raceTracker does not own events.json — kart-depot-shopify
+      # does — so a date Emerson added to his prototype and nobody has published
+      # yet must never fail this repo's build. Read the step's log; it names
+      # exactly which rounds diverged. `|| true` also covers the checker being
+      # unable to reach either source from CI.
+      - name: Report calendar drift from Emerson's source (non-blocking)
+        continue-on-error: true
+        run: python3 scripts/check_calendar_drift.py || true
 
       # Offline: exercises the calendar/venue join, key generation and schema
       # build with no network, so a PR never fails on an Open-Meteo blip.

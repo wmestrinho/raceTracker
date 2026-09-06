@@ -28,7 +28,7 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 ## Version Rule
 
 - Single source of truth: `VERSION`
-- Current version: `v1.17.0`
+- Current version: `v1.19.0`
 - Version must be visibly displayed in the footer of `raceTracker/index.html`
 - Bump format: PATCH (bug/copy/polish) · MINOR (new section/feature) · MAJOR (rewrite/breaking layout)
 - Include version in commit messages: `feat: add lap timer — v1.8.0`
@@ -38,7 +38,17 @@ Custom domain: `tracker.absolutelyplausible.com` (set by `CNAME` file)
 - Browser-side live data must use **public, credential-free APIs only**
 - Credentialed sources go through a Cloudflare Worker proxy — **never** put API keys in static JS
 - Default tracks: New Castle Motorsports Park (IN) and Trackhouse Motorplex (Mooresville, NC)
-- Supabase secrets belong only in `.env.local` (gitignored) — never in Git, static JS, markdown, or memory
+- Operational records live in Cloudflare D1 (`racetracker-ops`, binding `OPS_DB`); schema
+  in `migrations/`. There are no database credentials in this repo — the Worker binding is
+  the credential. Supabase is gone: project `lumllkbsiuxoohdolrtm` returns NXDOMAIN, never
+  launched, and `supabase/` was removed in v1.19.0. Do not reintroduce it
+- Staff sign-in is **Cloudflare Access**, not application code. `ACCESS_TEAM_DOMAIN` and
+  `ACCESS_AUD` in `wrangler.jsonc` are not secrets (the AUD tag is checked, never
+  presented). `access-jwt.js` must keep re-verifying the assertion server-side and must
+  keep failing **closed** when that config is missing
+- Authorization is explicit in `ops-api.js` — it replaced Postgres RLS. A write always
+  takes the actor from the verified token, never from the request body; reads are scoped to
+  `profile_entities`. Hiding a nav link is not authorization
 - Telemetry is integration/export-only for now
 
 ## Race Weekend Weather
