@@ -35,7 +35,7 @@
   // If either is missing, verifyAccessJwt() fails closed with 503 — an
   // unconfigured deployment must never read as "no auth required".
   "vars": {
-    "ACCESS_TEAM_DOMAIN": "REPLACE_WITH_TEAM_DOMAIN.cloudflareaccess.com",
+    "ACCESS_TEAM_DOMAIN": "absolutelyplausible.cloudflareaccess.com",
     "ACCESS_AUD": "REPLACE_WITH_ACCESS_AUD_TAG"
   }
 }
