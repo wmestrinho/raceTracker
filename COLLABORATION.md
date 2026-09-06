@@ -201,6 +201,25 @@ intake shipped on D1 hours before it was moved off.
   a palette redesign. Do not add public marketing components to staff workflows.
 - Customer definitions and first portal access scope are pending optional clarification.
 
+## Shared look and feel — thekartdepot.com is the reference
+
+Luiz made `thekartdepot.com` the reference implementation for shared visual language.
+The contract is committed at `kart-depot-shopify/docs/CROSS-REPO-CONTRACT.md` (d113ee0).
+Read §1 and §9 before touching `style.css`. Two consequences for this repo:
+
+- **Coordinate visual changes with `kart-depot-shopify`, not with the other follower.**
+  Three-way peer negotiation is named in that contract as the cause of the existing drift.
+  Data and schema contracts (the intake agreement above) stay bilateral; the visual layer
+  is centralised.
+- **raceTracker already complies on type, and must not be "synced" down.** Verified
+  2026-09-05: `style.css` sets no `html { font-size }`, so this app runs the 16px browser
+  default — the root the shared `type_scale` tokens in `brand/tokens.json` are authored
+  for. The storefront currently renders ~40% smaller because `theme.liquid` computes a
+  10px root, and that is a Shopify-side fix (`body_scale: 160`) which cannot be deployed
+  automatically. Do **not** de-tune this app's type to match the storefront in the
+  meantime; per §1 that would break rem-based sizing and touch-target geometry to chase a
+  bug. Keep the tokens, keep the caveat, drop it when that repo confirms 16px.
+
 ## Coordination protocol
 
 Record each cross-repo change with: source repo and commit, contract affected,
