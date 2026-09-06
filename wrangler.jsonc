@@ -21,7 +21,7 @@
     {
       "binding": "OPS_DB",
       "database_name": "racetracker-ops",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "088559e7-70dc-49a1-9366-73c35e441db6",
       "migrations_dir": "migrations"
     }
   ],
